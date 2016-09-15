@@ -1,4 +1,5 @@
 var $ = require('cheerio');
+var fs = require('fs');
 var http = require("http");
 var request = require('request');
 var http = require("http"); 
@@ -6,6 +7,8 @@ var url = require("url");
 var qs = require('querystring');
 var Cookies = require('cookies');
 var Set = require('set') 
+
+var config = require('./config.json');
 
 function replaceAll (find, replace, str) {
   var find = find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -181,4 +184,4 @@ http.createServer(function(req, response) {
 			delete cookies[session] 
 		processRequest(req, request, response, pathname, cookies[session]);
 	}
-}).listen(8888);
+}).listen(config.port);
