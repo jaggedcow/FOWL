@@ -176,7 +176,7 @@ function processDashboard(html, module, _callback) {
 	async.each(Object.keys(sites), function(site, callback) {
 		processPage(sites[site], module, function(err, res) {
 			// do something with res
-			console.log(res);
+// 			console.log(res);
 			parsedHTML(res).after('#'+site)
 			callback(err);
 		})
