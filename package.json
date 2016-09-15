@@ -4,6 +4,7 @@
   "description": "Fake OWL website",
   "main": "index.js",
   "dependencies": {
+    "async": "^2.0.1",
     "cheerio": "^0.22.0",
     "cookies": "^0.6.1",
     "request": "^2.74.0",

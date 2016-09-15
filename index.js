@@ -1,4 +1,6 @@
 var $ = require('cheerio');
+var crypto = require('crypto');
+var async = require('async');
 var fs = require('fs');
 var http = require("http");
 var request = require('request');
@@ -33,9 +35,11 @@ function processRequest(req, module, response, pathname, cookies) {
             var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
             
 			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': cookies}, form:post}, function(err, resp, html) {          	
-				response.writeHead(200, {"Content-Type": "text/html"});  		
-				response.write(processDashboard(html));		
-				response.end();		
+				processDashboard(html, module, function(res) {
+					response.writeHead(200, {"Content-Type": "text/html"});  							
+					response.write(res);
+					response.end();							
+				});		
 			});	            
         });
     } else {
@@ -131,13 +135,29 @@ function processLogin(html) {
 	return _cleanHTML(parsedHTML, html);
 }
 
-function processDashboard(html) {
+function processPage(href, module, callback) {
+	href = href.replace('https','http');
+	console.log('PROCESS',href);
+	module({followAllRedirects: true, url: href, headers: {'Cookie': cookies}}, function(err, resp, html) {          
+		callback(err, html);
+	});	 	
+}
+
+function processDashboard(html, module, _callback) {
 	var parsedHTML = $.load(html);
 	
-// 	console.log("WHOO", html);
+	var sites = {}
 	
-	var temp = "";
-	var found = false;
+	// removes normal OWL content
+	parsedHTML('#innercontent').empty();
+	parsedHTML('li.nav-menu').css('display','none')
+	parsedHTML('li.more-tab').css('display','none')	
+	parsedHTML('.nav-selected').css('display','default')	
+	
+	var found = false;	
+	
+	parsedHTML('<ul class="topnav" id="faketopnav"></ul>').appendTo('#innercontent')
+	
 	
 	parsedHTML('ul[class=otherSitesCategorList]').children().map(function(i, li) {
 		found = true;
@@ -145,12 +165,25 @@ function processDashboard(html) {
 			var href = $(a).attr('href');
 			var title = $(a).attr('title');			
 			
-			if (!href.match('#'))
-				temp += '<a href="'+href+'" title="'+title+'">'+title+'</a><br><br>';
+			if (!href.match('#') && title.lastIndexOf('MEDICINE', 0) === 0) {
+				var hash = crypto.createHash('md5').update(title).digest('hex');
+				sites[hash] = href;
+				parsedHTML('<li><a id="'+hash+'" href="'+href+'" title="'+title+'"><span>'+title+'</span></a></li>').appendTo('#faketopnav');
+			}
 		})
 	});
 	
-	return _cleanHTML(parsedHTML, found?temp:html);
+	async.each(Object.keys(sites), function(site, callback) {
+		processPage(sites[site], module, function(err, res) {
+			// do something with res
+			console.log(res);
+			parsedHTML(res).after('#'+site)
+			callback(err);
+		})
+	}, function(err) {
+		if (err) console.log(err);
+		_callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html));		
+	});
 }
 
 var domain = '';
