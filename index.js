@@ -17,7 +17,7 @@ function replaceAll (find, replace, str) {
   return str.replace(new RegExp(find, 'g'), replace);
 }
 
-function processRequest(req, module, response, pathname, cookies) {
+function processRequest(req, module, response, pathname, session) {
     if (req.method == 'POST') {
     	console.log("POST "+pathname);
         var body = '';
@@ -34,8 +34,8 @@ function processRequest(req, module, response, pathname, cookies) {
             var post = qs.parse(body);
             var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
             
-			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': cookies}, form:post}, function(err, resp, html) {          	
-				processDashboard(html, module, function(res) {
+			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[session]?userInfo[session]['cookie']:''}, form:post}, function(err, resp, html) {          	
+				processDashboard(html, module, session, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
 					response.end();							
@@ -44,7 +44,7 @@ function processRequest(req, module, response, pathname, cookies) {
         });
     } else {
     	console.log("GET "+pathname);
-		module({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {'Cookie': cookies}}, function(err, resp, html) {          
+		module({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {'Cookie': userInfo[session]?userInfo[session]['cookie']:''}}, function(err, resp, html) {          
 			response.writeHead(200, {"Content-Type": "text/html"});  		
 			response.write(cleanHTML(html));		
 			response.end();		
@@ -57,7 +57,10 @@ function cleanHTML(html) {
 	return _cleanHTML($.load(html), html);
 }
 
-function _cleanHTML(parsedHTML, temp) {
+function _cleanHTML(parsedHTML, temp, ignoredURLs) {
+	if (!ignoredURLs)	// prevents having to check for existence, but not used
+		ignoredURLs = new Set();
+		
 	var replaceSet = new Set();
 	var redirectSet = new Set();
 	var downgradeSet = new Set();	
@@ -79,7 +82,7 @@ function _cleanHTML(parsedHTML, temp) {
 	parsedHTML('a').map(function(i, img) {
 		var href = $(img).attr('href')
 		var target = $(img).attr('target')		
-		if (!target)		// ignores external links
+		if (!target && !ignoredURLs.contains(href))		// ignores external links
 			redirectSet.add(href);
 	})	
 	parsedHTML('form').map(function(i, img) {
@@ -123,30 +126,28 @@ function replaceClasses(temp) {
 }
 
 function processLogin(html) {
-	var parsedHTML = $.load(html);
-	// get all img tags and loop over them
-	
-	// parsedHTML('div').map(function(i, div) {
-// 		var href = $(div).attr('id');
-// 		if (href && href.match('mastHead')) 
-// 			temp = $.html(div);
-// 	})
-	
-	return _cleanHTML(parsedHTML, html);
+	return _cleanHTML($.load(html), html);
 }
 
-function processPage(href, module, callback) {
+function processPage(href, module, session, callback) {
 	href = href.replace('https','http');
 	console.log('PROCESS',href);
-	module({followAllRedirects: true, url: href, headers: {'Cookie': cookies}}, function(err, resp, html) {          
-		callback(err, html);
+	module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
+		var output = $.load('<br><ul class="faketools" style="display:block !important; overflow:visible !important"></ul>');	// hacky css to overcome js hiding everything
+		var parsedHTML = $.load(html);    
+		parsedHTML('a.toolMenuLink').map(function(i, a) {
+// 			a.remove('.toolMenuIcon');
+			output('.faketools').append($(a).parent());
+		})    
+		callback(err, output.html());
 	});	 	
 }
 
-function processDashboard(html, module, _callback) {
+function processDashboard(html, module, session, _callback) {
 	var parsedHTML = $.load(html);
 	
 	var sites = {}
+	var ignoredURLs = new Set();
 	
 	// removes normal OWL content
 	parsedHTML('#innercontent').empty();
@@ -156,7 +157,7 @@ function processDashboard(html, module, _callback) {
 	
 	var found = false;	
 	
-	parsedHTML('<ul class="topnav" id="faketopnav"></ul>').appendTo('#innercontent')
+	parsedHTML('<div class="topnav" style="padding: 24px; -webkit-columns: 4 200px; -webkit-column-gap: 4em; -webkit-column-rule: 1px dotted #ddd;" id="faketopnav"></div>').appendTo('#innercontent')
 	
 	
 	parsedHTML('ul[class=otherSitesCategorList]').children().map(function(i, li) {
@@ -168,26 +169,28 @@ function processDashboard(html, module, _callback) {
 			if (!href.match('#') && title.lastIndexOf('MEDICINE', 0) === 0) {
 				var hash = crypto.createHash('md5').update(title).digest('hex');
 				sites[hash] = href;
-				parsedHTML('<li><a id="'+hash+'" href="'+href+'" title="'+title+'"><span>'+title+'</span></a></li>').appendTo('#faketopnav');
+				ignoredURLs.add(href);
+				parsedHTML('<div style="break-inside: avoid"><a id="'+hash+'" target="_blank" href="'+href+'" title="'+title+'"><span>'+title+'</span></a></div>').appendTo('#faketopnav');
 			}
 		})
 	});
 	
 	async.each(Object.keys(sites), function(site, callback) {
-		processPage(sites[site], module, function(err, res) {
+		processPage(sites[site], module, session, function(err, res) {
 			// do something with res
+// 			fs.writeFileSync(site+".html",res);
 // 			console.log(res);
-			parsedHTML(res).after('#'+site)
+			parsedHTML('#'+site).after(res)
 			callback(err);
 		})
 	}, function(err) {
 		if (err) console.log(err);
-		_callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html));		
+		_callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
 	});
 }
 
 var domain = '';
-var cookies = {};
+var userInfo = {};
 
 http.createServer(function(req, response) { 
 	var cookiejar = new Cookies(req, response);
@@ -195,26 +198,30 @@ http.createServer(function(req, response) {
 	
 	var session = cookiejar.get('JSESSIONID');
 	
-	if (!session || !cookies[session]) {
+	if (!session || !userInfo[session] || !userInfo[session]['cookie']) {
 		request('http://owl.uwo.ca/portal', function(err, resp, html) {
 			
-			cookieIn = resp.headers['set-cookie']		
-			for (var i = 0; i < cookies.length; i++) {
-				cookieIn[i] = cookieIn[i].replace('Secure;','')
-				cookieIn[i] = cookieIn[i].replace('secure','')						
+			if (err)
+				console.log(err)
+			if (resp) {
+				cookieIn = resp.headers['set-cookie']		
+				for (var i = 0; i < cookieIn.length; i++) {
+					cookieIn[i] = cookieIn[i].replace('Secure;','')
+					cookieIn[i] = cookieIn[i].replace('secure','')						
+				}
+				
+				session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
+				userInfo[session] = {'cookie': cookieIn};
+				cookiejar.set('JSESSIONID', session);
+
+				response.writeHead(200, {"Content-Type": "text/html"}); 		
+				response.write(processLogin(html));		
+				response.end();	
 			}
-			
-			session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
-			cookies[session] = cookieIn;
-			cookiejar.set('JSESSIONID', session);
-			
-			response.writeHead(200, {"Content-Type": "text/html"}); 		
-			response.write(processLogin(html));		
-			response.end();		
 		});
 	} else {
 		if (pathname.match('/portal/logout'))
-			delete cookies[session] 
-		processRequest(req, request, response, pathname, cookies[session]);
+			delete userInfo[session] 
+		processRequest(req, request, response, pathname, session);
 	}
 }).listen(config.port);
