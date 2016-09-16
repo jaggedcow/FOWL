@@ -131,19 +131,135 @@ function processLogin(html) {
 
 function processPage(href, module, session, callback) {
 	href = href.replace('https','http');
-	console.log('PROCESS',href);
 	module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
-		var output = $.load('<br><ul class="faketools" style="display:block !important; overflow:visible !important"></ul>');	// hacky css to overcome js hiding everything
-		var parsedHTML = $.load(html);    
-		parsedHTML('a.toolMenuLink').map(function(i, a) {
-// 			a.remove('.toolMenuIcon');
-			output('.faketools').append($(a).parent());
-		})    
-		callback(err, output.html());
+		if (err)
+			callback(err, null);
+		else {
+			processPageSidebar(html, module, session, function(err, res) {
+				callback(err, res);
+			});
+		}
 	});	 	
 }
 
-function processDashboard(html, module, session, _callback) {
+function processPageSidebar(html, module, session, callback) {
+	var options = ['PCCIA', 'Homework', 'Assignments'];
+	var blacklist = new Set(['Assignments Course Map']);
+	
+	var temp = {}
+	
+	var parsedHTML = $.load(html);    
+	var output = [];
+// 	
+	
+	parsedHTML('a.toolMenuLink').map(function(i, a) {
+		var title = $(a).children('.menuTitle').text();
+		var href = $(a).attr('href');		
+		
+		for (var i = 0; i < options.length; i++) {
+			if (title.indexOf(options[i]) !== -1 && !blacklist.contains(title)) {
+				temp[options[i]] = href;
+				break;
+			}
+		}
+	})   
+	
+	// used to sort output
+	for (var i = 0; i < options.length; i++) {
+		output.push(temp[options[i]]);
+	}
+	
+	async.mapSeries(output, function(site, _callback) {
+		processPageInner(site, module, session, _callback);
+	}, function(err, results) {
+		var out = $.load('<br><ul class="faketools" style="display:block !important; overflow:visible !important"></ul>');	// hacky css to overcome js hiding everything
+		
+		for (var i = 0; i < options.length; i++) {
+			if (!results[i])
+				continue;
+			out('.faketools').append('<span>'+options[i]+'</span>');			
+			out('.faketools').append(results[i]);
+		}
+		
+		if (err) console.log(err);
+		callback(err, out.html());		
+	});		
+}
+
+function processPageInner(href, module, session, callback) {
+	if (!href) {
+		callback(null, undefined);
+		return;
+	}
+
+	href = href.replace('https','http');	
+	
+	async.waterfall([
+		function(_callback) {
+			module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
+				if (err)
+					_callback(err, null);
+				else {
+					var parsedHTML = $.load(html);
+					
+					parsedHTML('iframe').map(function(i, frame) {
+						var src = $(frame).attr('src');
+						
+						_callback(err, src);
+					});
+				}
+			})			
+		},
+		function(src, _callback) {
+			module({followAllRedirects: true, url: src, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
+				if (err)
+					_callback(err, null);
+				else {
+					var parsedHTML = $.load(html);
+					var homework = [];
+					
+					parsedHTML('.itemlink').map(function(i, link) {
+						var href = $(link).attr('href');
+						
+						homework.push(href);
+					});
+					
+					if (homework.length === 0) {
+						var out = parsedHTML('table');
+						
+						_callback(err, '<table style="width:400px">'+out.html()+'</table>');
+					} else {
+						async.mapSeries(homework, function(href, __callback) {	
+							module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
+								if (err)
+									__callback(err, null);
+								else {
+									var parsedHTML = $.load(html);	
+									var out = parsedHTML('table');
+									
+									__callback(err, '<table style="width:400px">'+out.html()+'</table>');									
+								}
+							});						
+						}, function(err, results) {
+							var out = $.load('<table class="faketable" style="width:400px"></table>');
+							results.map(function(res) {
+								out('.faketable').append(res);
+							});
+							_callback(err, out.html());
+						});
+					}
+				}
+			})			
+		}
+	], function(err, result) {		
+		callback(err, result);
+	})
+	
+}
+
+var printed = false;
+
+function processDashboard(html, module, session, callback) {
 	var parsedHTML = $.load(html);
 	
 	var sites = {}
@@ -157,7 +273,7 @@ function processDashboard(html, module, session, _callback) {
 	
 	var found = false;	
 	
-	parsedHTML('<div class="topnav" style="padding: 24px; -webkit-columns: 4 200px; -webkit-column-gap: 4em; -webkit-column-rule: 1px dotted #ddd;" id="faketopnav"></div>').appendTo('#innercontent')
+	parsedHTML('<div class="topnav" style="padding: 24px; -webkit-columns: 4 450px; -webkit-column-gap: 4em; -webkit-column-rule: 1px dotted #ddd; -moz-columns: 4 450px; -moz-column-gap: 4em; -moz-column-rule: 1px dotted #ddd; columns: 4 450px; column-gap: 4em; column-rule: 1px dotted #ddd;" id="faketopnav"></div>').appendTo('#innercontent')
 	
 	
 	parsedHTML('ul[class=otherSitesCategorList]').children().map(function(i, li) {
@@ -175,17 +291,17 @@ function processDashboard(html, module, session, _callback) {
 		})
 	});
 	
-	async.each(Object.keys(sites), function(site, callback) {
+	async.each(Object.keys(sites), function(site, _callback) {
 		processPage(sites[site], module, session, function(err, res) {
 			// do something with res
 // 			fs.writeFileSync(site+".html",res);
 // 			console.log(res);
 			parsedHTML('#'+site).after(res)
-			callback(err);
+			_callback(err);
 		})
 	}, function(err) {
 		if (err) console.log(err);
-		_callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
+		callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
 	});
 }
 
