@@ -234,7 +234,7 @@ function processPageInner(href, module, pageType, course, session, callback) {
 						
 						_callback(err, processPageTableSync(out, pageType, course))//'<table style="width:400px">'+out.html()+'</table>');
 					} else {
-						async.map(homework, function(href, __callback) {	
+						async.mapSeries(homework, function(href, __callback) {	
 							module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
 								if (err)
 									__callback(err, null);
@@ -263,7 +263,7 @@ function processPageTableSync(input, type, course) {
 	
 	var columnOffset = 0; 	// used to adjust for multi-row date columns
 	var offendingRow = -1;	// row that caused the last column offset 
-	var lastDate = undefined;
+	var lastDate = undefined;	// date of the row that caused the last column offset
 	
 	var output = parsedHTML('tr').map(function(i, row) {
 		var temp = {}
@@ -271,6 +271,11 @@ function processPageTableSync(input, type, course) {
 		
 		if (columnOffset > 0) {
 			columnOffset--;
+			
+			if (columnOffset === 0) {
+				offendingRow = -1
+				lastDate = undefined
+			}
 		}
 		
 		$.load(row)('td, th').each(function(j, col) {
@@ -298,9 +303,10 @@ function processPageTableSync(input, type, course) {
 			}
 			
 			var rowspan = $(col).attr('rowspan');
-			if (rowspan !== undefined) {
+			if (j === 0 && rowspan !== undefined && parseInt(rowspan) > 1) {
 				columnOffset = parseInt(rowspan)
 				offendingRow = i
+				console.log("OFF",columnOffset);
 			}
 			
 			if (type.match('Assignments')) {					
@@ -359,8 +365,9 @@ function processPageTableSync(input, type, course) {
 						lecturer = j;
 					}					
 				} else {	
-					if (columnOffset > 0 && i !== offendingRow) {	
-						console.log("HWLLO");		
+					if (columnOffset > 0 && i !== offendingRow) {
+						if (j === date)
+							console.log(title, lastDate, columnOffset);
 						j++;
 						skipRow = false;
 						temp['date'] = lastDate;
@@ -391,16 +398,36 @@ function processPageTableSync(input, type, course) {
 					}					
 				}			
 			}
-// 			if (type.match('Homework'))
-// 				console.log(date, topic, objectives, resources, lecturer, temp);
 		});
-		return {'type':type, 'data':temp, 'course':course};
+		return {'type':type, 'data':processPageDates(temp, firstDate, endDate), 'course':course};
 	}).get();
 
 	return output
 }
 
-var printed = false;	// used to print large files just once
+function processPageDates(obj, firstDate, endDate) {
+// 	if (obj.date === undefined)
+		return obj;
+	
+	obj.textDate = obj.date;	// saves the original
+	
+// 	console.log(obj.date);
+	
+	if (obj.date.indexOf('Week') !== -1) {
+				console.log("1");
+	} else if (obj.date.indexOf('End') !== -1) {
+				console.log("2");
+	} else if (obj.date.indexOf('Session') !== -1 && obj.date.indexOf('(') !== -1 && obj.date.indexOf(')') !== -1) {
+				console.log("3");
+	} else if (obj.date.indexOf('(') !== -1 && obj.date.indexOf(')') !== -1) {
+				console.log("4");
+	} else {
+				console.log("5");
+		obj.date = new Date(obj.textDate+' '+new Date().getFullYear()+' UTC').toString();
+	}
+	
+	return obj;
+}
 
 // finds the class pages wanted on the dashboard
 function processDashboard(html, module, session, callback) {
@@ -435,7 +462,7 @@ function processDashboard(html, module, session, callback) {
 		})
 	});
 	
-	async.map(Object.keys(sites), function(site, _callback) {
+	async.mapSeries(Object.keys(sites), function(site, _callback) {
 		processPage(sites[site]['href'], module, sites[site]['course'], session, _callback)/*
 function(err, res) {
 			// do something with res
