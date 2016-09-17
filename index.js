@@ -19,7 +19,6 @@ function replaceAll (find, replace, str) {
 
 function processRequest(req, module, response, pathname, session) {
     if (req.method == 'POST') {
-    	console.log("POST "+pathname);
         var body = '';
 
         req.on('data', function (data) {
@@ -43,7 +42,6 @@ function processRequest(req, module, response, pathname, session) {
 			});	            
         });
     } else {
-    	console.log("GET "+pathname);
 		module({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {'Cookie': userInfo[session]?userInfo[session]['cookie']:''}}, function(err, resp, html) {          
 			response.writeHead(200, {"Content-Type": "text/html"});  		
 			response.write(cleanHTML(html));		
@@ -173,21 +171,6 @@ function processPageSidebar(html, module, course, session, callback) {
 	async.map(output, function(site, _callback) {
 		processPageInner(site, module, itemp[site], course, session, _callback);
 	}, callback);
-/*
-	}, function(err, results) {
-		var out = $.load('<br><ul class="faketools" style="display:block !important; overflow:visible !important"></ul>');	// hacky css to overcome js hiding everything
-		
-		for (var i = 0; i < options.length; i++) {
-			if (!results[i])
-				continue;
-			out('.faketools').append('<span>'+options[i]+'</span>');			
-			out('.faketools').append(results[i]);
-		}
-		
-		if (err) console.log(err);
-		callback(err, out.html());		
-	});	
-*/	
 }
 
 // finds the frame holding the homework or assignments list and grabs the table
@@ -516,8 +499,9 @@ function processDashboard(html, module, session, callback) {
 	
 	var found = false;	
 	
-	parsedHTML('<div class="topnav" style="padding: 24px; -webkit-columns: 4 450px; -webkit-column-gap: 4em; -webkit-column-rule: 1px dotted #ddd; -moz-columns: 4 450px; -moz-column-gap: 4em; -moz-column-rule: 1px dotted #ddd; columns: 4 450px; column-gap: 4em; column-rule: 1px dotted #ddd;" id="faketopnav"></div>').appendTo('#innercontent')
+	parsedHTML('<h2>Homework</h2><div class="topnav" style="padding: 24px; -webkit-columns: 3; -webkit-column-gap: 4em; -moz-columns: 3; -moz-column-gap: 4em; columns: 3; column-gap: 4em;" id="faketopnav"></div>').appendTo('#innercontent')
 	
+	parsedHTML('<div id="fakeweek" style="break-inside: avoid; min-width:200px"><h3>This Week</h3></div><div style="break-inside: avoid; min-width:200px"><h3>Course Pages</h3><ul id="fakehomework"></ul></div><div style="break-inside: avoid; min-width:200px"><div id="fakepccia"><h3>PCCIA</h3></div><div id="fakeassignments"><h3>Assignments</h3></div></div>').appendTo('#faketopnav');
 	
 	parsedHTML('ul[class=otherSitesCategorList]').children().map(function(i, li) {
 		found = true;
@@ -529,20 +513,13 @@ function processDashboard(html, module, session, callback) {
 				var hash = crypto.createHash('md5').update(title).digest('hex');
 				sites[hash] = {'href':href, 'course':title};
 				ignoredURLs.add(href);
-				parsedHTML('<div style="break-inside: avoid"><a id="'+hash+'" target="_blank" href="'+href+'" title="'+title+'"><span>'+title+'</span></a></div>').appendTo('#faketopnav');
+				parsedHTML('<li><a id="'+hash+'" target="_blank" href="'+href+'" title="'+title+'"><span>'+title+'</span></a></li>').appendTo('#fakehomework');
 			}
 		})
 	});
 	
 	async.map(Object.keys(sites), function(site, _callback) {
-		processPage(sites[site]['href'], module, sites[site]['course'], session, _callback)/*
-function(err, res) {
-			// do something with res
-// 			fs.writeFileSync(site+".html",res);
-			parsedHTML('#'+site).after(res)
-			_callback(err);
-		})
-*/
+		processPage(sites[site]['href'], module, sites[site]['course'], session, _callback)
 	}, function(err, results) {
 		if (err) console.log(err);
 		
@@ -558,7 +535,25 @@ function(err, res) {
 			results = pages;
 		}
 		
-		fs.writeFileSync('temp.json', JSON.stringify(pages, null, 4));
+// 		fs.writeFileSync('temp.json', JSON.stringify(pages, null, 4));
+		for (var i = 0; i < results.length; i++) {
+			var content = results[i];
+			
+			if (content.data === undefined || Object.keys(content.data).length < 2)
+				continue;
+			
+			if (content.type === 'PCCIA') {
+				parsedHTML('<div><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
+							content.data.objectives+'    '+content.data.resources+'<hr></div>').appendTo("#fakepccia")
+			} else if (content.type === 'Assignments') {
+				parsedHTML('<div><h4>'+content.data.title+'</h4>'+
+							'<strong>Status</strong>: '+content.data.status+'     <strong>Due</strong>: '+content.data.dueDate+'<hr></div>').appendTo("#fakeassignments")				
+			} else {
+				parsedHTML('<div><h4>'+content.data.date+'- '+content.data.topic+' ('+content.data.lecturer+')</h4>'+
+							content.data.objectives+'    '+content.data.resources+'<hr></div>').appendTo("#fakeweek")
+			}
+		}
+
 		callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
 	});
 }
