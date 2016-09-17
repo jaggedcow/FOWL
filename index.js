@@ -129,28 +129,28 @@ function processLogin(html) {
 	return _cleanHTML($.load(html), html);
 }
 
-function processPage(href, module, session, callback) {
+// grabs the dashboard info for a given class page
+function processPage(href, module, course, session, callback) {
 	href = href.replace('https','http');
 	module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
 		if (err)
 			callback(err, null);
 		else {
-			processPageSidebar(html, module, session, function(err, res) {
-				callback(err, res);
-			});
+			processPageSidebar(html, module, course, session, callback);
 		}
 	});	 	
 }
 
-function processPageSidebar(html, module, session, callback) {
+// grabs the sidebar links from a page and picks out the relevant parts for a dashboard
+function processPageSidebar(html, module, course, session, callback) {
 	var options = ['PCCIA', 'Homework', 'Assignments'];
 	var blacklist = new Set(['Assignments Course Map']);
 	
 	var temp = {}
+	var itemp = {}	// stores value:key compared to temp's key:value
 	
 	var parsedHTML = $.load(html);    
 	var output = [];
-// 	
 	
 	parsedHTML('a.toolMenuLink').map(function(i, a) {
 		var title = $(a).children('.menuTitle').text();
@@ -159,6 +159,7 @@ function processPageSidebar(html, module, session, callback) {
 		for (var i = 0; i < options.length; i++) {
 			if (title.indexOf(options[i]) !== -1 && !blacklist.contains(title)) {
 				temp[options[i]] = href;
+				itemp[href] = options[i];				
 				break;
 			}
 		}
@@ -170,7 +171,9 @@ function processPageSidebar(html, module, session, callback) {
 	}
 	
 	async.mapSeries(output, function(site, _callback) {
-		processPageInner(site, module, session, _callback);
+		processPageInner(site, module, itemp[site], course, session, _callback);
+	}, callback);
+/*
 	}, function(err, results) {
 		var out = $.load('<br><ul class="faketools" style="display:block !important; overflow:visible !important"></ul>');	// hacky css to overcome js hiding everything
 		
@@ -183,10 +186,12 @@ function processPageSidebar(html, module, session, callback) {
 		
 		if (err) console.log(err);
 		callback(err, out.html());		
-	});		
+	});	
+*/	
 }
 
-function processPageInner(href, module, session, callback) {
+// finds the frame holding the homework or assignments list and grabs the table
+function processPageInner(href, module, pageType, course, session, callback) {
 	if (!href) {
 		callback(null, undefined);
 		return;
@@ -227,9 +232,9 @@ function processPageInner(href, module, session, callback) {
 					if (homework.length === 0) {
 						var out = parsedHTML('table');
 						
-						_callback(err, '<table style="width:400px">'+out.html()+'</table>');
+						_callback(err, processPageTableSync(out, pageType, course))//'<table style="width:400px">'+out.html()+'</table>');
 					} else {
-						async.mapSeries(homework, function(href, __callback) {	
+						async.map(homework, function(href, __callback) {	
 							module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
 								if (err)
 									__callback(err, null);
@@ -237,28 +242,167 @@ function processPageInner(href, module, session, callback) {
 									var parsedHTML = $.load(html);	
 									var out = parsedHTML('table');
 									
-									__callback(err, '<table style="width:400px">'+out.html()+'</table>');									
+									__callback(err, processPageTableSync(out, pageType, course))//'<table style="width:400px">'+out.html()+'</table>');									
 								}
 							});						
-						}, function(err, results) {
-							var out = $.load('<table class="faketable" style="width:400px"></table>');
-							results.map(function(res) {
-								out('.faketable').append(res);
-							});
-							_callback(err, out.html());
-						});
+						}, _callback);
 					}
 				}
 			})			
 		}
-	], function(err, result) {		
-		callback(err, result);
-	})
-	
+	], callback)
 }
 
-var printed = false;
+// converts a table containing homework or assignment info and converts it to JSON
+function processPageTableSync(input, type, course) {
+	var startRow = -1;
+	var week, topic, objectives, resources, date, module, lecturer		// keeps track of which columns are which data
+	var parsedHTML = $.load(input.html());
+	var firstDate		// keeps track of when each block starts (to replace 'prior to Week N' dates)
+	var endDate			// keeps track of when each block ends (to replace 'prior to end of X' dates)
+	
+	var columnOffset = 0; 	// used to adjust for multi-row date columns
+	var offendingRow = -1;	// row that caused the last column offset 
+	var lastDate = undefined;
+	
+	var output = parsedHTML('tr').map(function(i, row) {
+		var temp = {}
+		var skipRow = false;
+		
+		if (columnOffset > 0) {
+			columnOffset--;
+		}
+		
+		$.load(row)('td, th').each(function(j, col) {
+			var header = $(col).attr('headers');
+			var title = $(col).find('a');			
 
+			if (title.length === 1) {
+				title = title.first();
+				title = '<a target="_blank" href="'+$(title).attr('href')+'">"'+$(title).text().trim()+'</a>'				
+			} else if (title.length >= 1) {
+				title = Object.keys(title).map(function (key) {return title[key]}) 	// converts title into an array
+				title = title.map(function(title) {
+					if ($(title).attr('href'))
+						return '<a target="_blank" href="'+$(title).attr('href')+'">"'+$(title).text().trim()+'</a>'
+					else
+						return undefined
+				}, '')
+			} else {
+				title = $(col).find('span');
+			
+				if (title.length === 1)
+					title = title.first().text().trim();
+				else
+					title = $(col).text().trim();
+			}
+			
+			var rowspan = $(col).attr('rowspan');
+			if (rowspan !== undefined) {
+				columnOffset = parseInt(rowspan)
+				offendingRow = i
+			}
+			
+			if (type.match('Assignments')) {					
+				temp[header] = title;			
+			} else if (type.match('PCCIA')) {
+				if (week === undefined || i === startRow) {
+					if (title.indexOf('Week') !== -1) {
+						week = j;
+						startRow = i;
+					}
+					if (title.indexOf('Topic') !== -1) {
+						topic = j;
+					}
+					if (title.indexOf('Objectives') !== -1) {
+						objectives = j;
+					}
+					if (title.indexOf('Module') !== -1) {
+						resources = j;
+					}
+				} else {
+					if (j === week) {
+						skipRow = title.length === 0;
+						if (!skipRow)
+							temp['week'] = title;
+					}
+					if (!skipRow) {
+						if (j == topic) {
+							temp['topic'] = title
+						}
+						if (j == objectives) {
+							temp['objectives'] = title
+						}
+						if (j == resources) {
+							temp['resources'] = title
+						}
+					}
+				}
+			} else if (type.match('Homework')) {			
+				if (date === undefined || i === startRow) {
+					if (title.indexOf('Date') !== -1) {
+						date = j;
+						startRow = i;						
+					}
+					if (title.indexOf('Topic') !== -1) {
+						topic = j;
+					} else if (title.indexOf('Reading') !== -1) {
+						topic = j;
+					}					
+					if (title.indexOf('Objectives') !== -1) {
+						objectives = j;
+					}
+					if (title.indexOf('Resources') !== -1) {
+						resources = j;
+					}
+					if (title.indexOf('Author') !== -1) {
+						lecturer = j;
+					}					
+				} else {	
+					if (columnOffset > 0 && i !== offendingRow) {	
+						console.log("HWLLO");		
+						j++;
+						skipRow = false;
+						temp['date'] = lastDate;
+					} else if (j === date) {
+						skipRow = title.length === 0;
+						if (!skipRow) {
+							temp['date'] = title;
+							if (i === offendingRow) {
+								lastDate = title
+							}
+						}
+					}
+					if (!skipRow) {
+						if (j == topic) {
+							temp['topic'] = title
+						}
+						if (j == objectives) {
+							if (typeof title !== 'string' || !title.match('NA'))							
+								temp['objectives'] = title
+						}
+						if (j == resources) {
+							if (typeof title !== 'string' || !title.match('NA'))
+								temp['resources'] = title
+						}
+						if (j == lecturer) {
+							temp['lecturer'] = title
+						}						
+					}					
+				}			
+			}
+// 			if (type.match('Homework'))
+// 				console.log(date, topic, objectives, resources, lecturer, temp);
+		});
+		return {'type':type, 'data':temp, 'course':course};
+	}).get();
+
+	return output
+}
+
+var printed = false;	// used to print large files just once
+
+// finds the class pages wanted on the dashboard
 function processDashboard(html, module, session, callback) {
 	var parsedHTML = $.load(html);
 	
@@ -284,26 +428,45 @@ function processDashboard(html, module, session, callback) {
 			
 			if (!href.match('#') && title.lastIndexOf('MEDICINE', 0) === 0) {
 				var hash = crypto.createHash('md5').update(title).digest('hex');
-				sites[hash] = href;
+				sites[hash] = {'href':href, 'course':title};
 				ignoredURLs.add(href);
 				parsedHTML('<div style="break-inside: avoid"><a id="'+hash+'" target="_blank" href="'+href+'" title="'+title+'"><span>'+title+'</span></a></div>').appendTo('#faketopnav');
 			}
 		})
 	});
 	
-	async.each(Object.keys(sites), function(site, _callback) {
-		processPage(sites[site], module, session, function(err, res) {
+	async.map(Object.keys(sites), function(site, _callback) {
+		processPage(sites[site]['href'], module, sites[site]['course'], session, _callback)/*
+function(err, res) {
 			// do something with res
 // 			fs.writeFileSync(site+".html",res);
-// 			console.log(res);
 			parsedHTML('#'+site).after(res)
 			_callback(err);
 		})
-	}, function(err) {
+*/
+	}, function(err, results) {
 		if (err) console.log(err);
+		
+		// flatten out all the data
+		while (isArray(results[0])) {
+			var pages = [];
+			for (var i = 0; i < results.length; i++) {
+				if (results[i] !== undefined)
+					for (var j = 0; j < results[i].length; j++) {
+						pages.push(results[i][j]);
+					}
+			}
+			results = pages;
+		}
+		
+		fs.writeFileSync('temp.json', JSON.stringify(pages, null, 4));
 		callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
 	});
 }
+
+function isArray(a) {
+    return (!!a) && (a.constructor === Array);
+};
 
 var domain = '';
 var userInfo = {};
