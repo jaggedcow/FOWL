@@ -501,7 +501,7 @@ function processDashboard(html, module, session, callback) {
 	
 	parsedHTML('<h2>Homework</h2><div class="topnav" style="padding: 24px; -webkit-columns: 3; -webkit-column-gap: 4em; -moz-columns: 3; -moz-column-gap: 4em; columns: 3; column-gap: 4em;" id="faketopnav"></div>').appendTo('#innercontent')
 	
-	parsedHTML('<div id="fakeweek" style="break-inside: avoid; min-width:200px"><h3>This Week</h3></div><div style="break-inside: avoid; min-width:200px"><h3>Course Pages</h3><ul id="fakehomework"></ul></div><div style="break-inside: avoid; min-width:200px"><div id="fakepccia"><h3>PCCIA</h3></div><div id="fakeassignments"><h3>Assignments</h3></div></div>').appendTo('#faketopnav');
+	parsedHTML('<div id="fakeweek" style="break-inside: avoid; min-width:200px; background-color:#ddd"><h3>This Week</h3></div><div style="break-inside: avoid; min-width:200px; background-color:#eee"><h3>Course Pages</h3><ul id="fakehomework"></ul></div><div style="break-inside: avoid; min-width:200px; background-color:#ddd"><div id="fakepccia"><h3>PCCIA</h3></div><div id="fakeassignments"><h3>Assignments</h3></div></div>').appendTo('#faketopnav');
 	
 	parsedHTML('ul[class=otherSitesCategorList]').children().map(function(i, li) {
 		found = true;
