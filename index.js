@@ -170,7 +170,7 @@ function processPageSidebar(html, module, course, session, callback) {
 		output.push(temp[options[i]]);
 	}
 	
-	async.mapSeries(output, function(site, _callback) {
+	async.map(output, function(site, _callback) {
 		processPageInner(site, module, itemp[site], course, session, _callback);
 	}, callback);
 /*
@@ -234,7 +234,7 @@ function processPageInner(href, module, pageType, course, session, callback) {
 						
 						_callback(err, processPageTableSync(out, pageType, course))//'<table style="width:400px">'+out.html()+'</table>');
 					} else {
-						async.mapSeries(homework, function(href, __callback) {	
+						async.map(homework, function(href, __callback) {	
 							module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
 								if (err)
 									__callback(err, null);
@@ -306,7 +306,6 @@ function processPageTableSync(input, type, course) {
 			if (j === 0 && rowspan !== undefined && parseInt(rowspan) > 1) {
 				columnOffset = parseInt(rowspan)
 				offendingRow = i
-				console.log("OFF",columnOffset);
 			}
 			
 			if (type.match('Assignments')) {					
@@ -366,8 +365,6 @@ function processPageTableSync(input, type, course) {
 					}					
 				} else {	
 					if (columnOffset > 0 && i !== offendingRow) {
-						if (j === date)
-							console.log(title, lastDate, columnOffset);
 						j++;
 						skipRow = false;
 						temp['date'] = lastDate;
@@ -462,7 +459,7 @@ function processDashboard(html, module, session, callback) {
 		})
 	});
 	
-	async.mapSeries(Object.keys(sites), function(site, _callback) {
+	async.map(Object.keys(sites), function(site, _callback) {
 		processPage(sites[site]['href'], module, sites[site]['course'], session, _callback)/*
 function(err, res) {
 			// do something with res
