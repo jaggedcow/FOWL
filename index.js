@@ -395,35 +395,110 @@ function processPageTableSync(input, type, course) {
 					}					
 				}			
 			}
-		});
-		return {'type':type, 'data':processPageDates(temp, firstDate, endDate), 'course':course};
+		});	
+		
+		return {'type':type, 'data':temp, 'course':course};
+/*
+		else {
+			deferredObj = {data:temp, row:i}
+			return {'type':type, 'course':course};	
+		}
+*/
 	}).get();
+	
+	var deferred = true;
+	
+	while (deferred) {
+		deferred = false;
+		for (var i = 0; i < output.length; i++) {
+			var dateData = processPageDates(output[i].data, firstDate, endDate)
+			firstDate = dateData.firstDate;
+			endDate = dateData.endDate;	
+			
+			if (!dateData.deferred)
+				output[i].data = dateData.data;
+			else 
+				deferred = true;
+		}
+	}
 
 	return output
 }
 
-function processPageDates(obj, firstDate, endDate) {
-// 	if (obj.date === undefined)
-		return obj;
+function processPageDates(obj, firstDate, lastDate) {
+	if (obj.date === undefined)
+		return {data: obj, firstDate:firstDate, endDate:lastDate};
+	if (obj.dateProcessed)
+		return {data: obj, firstDate:firstDate, endDate:lastDate};	
+	var temp = []	// used to determine the first and last dates
 	
 	obj.textDate = obj.date;	// saves the original
 	
-// 	console.log(obj.date);
 	
-	if (obj.date.indexOf('Week') !== -1) {
-				console.log("1");
-	} else if (obj.date.indexOf('End') !== -1) {
-				console.log("2");
-	} else if (obj.date.indexOf('Session') !== -1 && obj.date.indexOf('(') !== -1 && obj.date.indexOf(')') !== -1) {
-				console.log("3");
-	} else if (obj.date.indexOf('(') !== -1 && obj.date.indexOf(')') !== -1) {
-				console.log("4");
+	if (obj.date.toLowerCase().indexOf('end') !== -1) {
+		obj.date = addDays(lastDate,1).toString();
+	} else if (obj.date.toLowerCase().indexOf('week') !== -1) {		
+		if (firstDate == undefined) {
+			return {deferred: true, firstDate:firstDate, endDate:lastDate}
+		}	
+		var date = addDays(firstDate,-1)
+		var endDate = addDays(date, 4)
+		var out = []
+		
+		do {
+			out.push(date.toString())
+			temp.push(date);			
+			date = addDays(date, 1)
+		} while (date <= endDate)
+		
+		obj.date = out;
+	} else if (obj.date.toLowerCase().indexOf('session') !== -1 && obj.date.indexOf('(') !== -1 && obj.date.indexOf(')') !== -1) {
+		var dateString = obj.textDate.substring(obj.textDate.indexOf('(')+1,obj.textDate.indexOf(')'));
+		var string1 = dateString.substring(0, dateString.indexOf('-'))
+		var string2 = dateString.substring(0, dateString.indexOf(' '))+ ' '+dateString.substring(dateString.indexOf('-')+1)
+		
+		var date = new Date(string1+' '+new Date().getFullYear()+' UTC')
+		var endDate = new Date(string2+' '+new Date().getFullYear()+' UTC')
+		
+		var out = []
+		
+		do {
+			out.push(date.toString())
+			temp.push(date);			
+			date = addDays(date, 1)
+		} while (date <= endDate)
+		
+		obj.date = out;
+	} else if (obj.date.indexOf('(W)') !== -1 && obj.date.indexOf('(L)') !== -1) {
+		var windsorFirst = obj.date.indexOf('(W)') < obj.date.indexOf('(L)');
+		var string1 = obj.textDate.substring(0, obj.textDate.indexOf('('));
+		var string2 = obj.textDate.substring(0, obj.textDate.indexOf('(')-2) + ' '+ obj.textDate.substring(obj.textDate.lastIndexOf('(')-2,obj.textDate.lastIndexOf('('));		
+		var date1 = new Date(string1+' '+new Date().getFullYear()+' UTC')
+		var date2 = new Date(string2+' '+new Date().getFullYear()+' UTC')
+		
+		var out = [	{location:windsorFirst?'Windsor':'London' ,date:date1.toString()},
+					{location:windsorFirst?'London':'Windsor' ,date:date2.toString()}]
+					
+		temp.push(date1)
+		temp.push(date2)
+		
+		obj.date = out;
 	} else {
-				console.log("5");
-		obj.date = new Date(obj.textDate+' '+new Date().getFullYear()+' UTC').toString();
+		var date = new Date(obj.textDate+' '+new Date().getFullYear()+' UTC')
+		obj.date = date.toString();
+		temp.push(date);
 	}
 	
-	return obj;
+	for (var i = 0; i < temp.length; i++) {
+		if (firstDate === undefined || temp[i] < firstDate)
+			firstDate = temp[i]
+		if (lastDate === undefined || temp[i] > lastDate)
+			lastDate = temp[i]
+	}
+		
+	obj.dateProcessed = true;	
+		
+	return {data: obj, firstDate:firstDate, endDate:lastDate};
 }
 
 // finds the class pages wanted on the dashboard
@@ -491,6 +566,12 @@ function(err, res) {
 function isArray(a) {
     return (!!a) && (a.constructor === Array);
 };
+
+function addDays(date, days) {
+    var result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
 
 var domain = '';
 var userInfo = {};
