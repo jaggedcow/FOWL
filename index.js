@@ -801,8 +801,8 @@ function processDashboard(html, module, session, callback) {
 			
 			if ((passed || upcoming) && withinWeek) {
 				if (passed) {
-					output = output.replace('opacity: 1.0;', 'opacity: 0.3;');
-					output2 = output2.replace('opacity: 1.0;', 'opacity: 0.3;');					
+					output = output.replace('opacity: 1.0;', 'opacity: 0.4;');
+					output2 = output2.replace('opacity: 1.0;', 'opacity: 0.4;');					
 				}
 				
 				parsedHTML(output.replace('%DATE%', dateStr1)).appendTo('#fakeweek');
