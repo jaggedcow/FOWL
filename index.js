@@ -606,8 +606,6 @@ function processDashboard(html, module, session, callback) {
 			return new Date(dateA) - new Date(dateB);
 		})
 		
-		fs.writeFileSync('temphw.json', JSON.stringify(homework, null, 4))
-		
 		for (var i = 0; i < pccia.length; i++) {
 			var content = pccia[i];			
 			var output = '<div style="padding: 2px 8px 8px 8px; opacity: 1.0; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
