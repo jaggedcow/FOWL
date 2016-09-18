@@ -8,6 +8,7 @@ var http = require("http");
 var url = require("url");
 var qs = require('querystring');
 var Cookies = require('cookies');
+var df = require('dateformat');
 var Set = require('set') 
 
 var config = require('./config.json');
@@ -417,8 +418,8 @@ function processPageDates(obj, firstDate, lastDate) {
 	
 	obj.textDate = obj.date;	// saves the original
 	
-	
 	if (obj.date.toLowerCase().indexOf('end') !== -1) {
+		changeYearIfNeeded(lastDate);
 		obj.date = addDays(lastDate,1).toString();
 	} else if (obj.date.toLowerCase().indexOf('week') !== -1) {		
 		if (firstDate == undefined) {
@@ -429,6 +430,7 @@ function processPageDates(obj, firstDate, lastDate) {
 		var out = []
 		
 		do {
+			changeYearIfNeeded(date);
 			out.push(date.toString())
 			temp.push(date);			
 			date = addDays(date, 1)
@@ -446,6 +448,7 @@ function processPageDates(obj, firstDate, lastDate) {
 		var out = []
 		
 		do {
+			changeYearIfNeeded(date);
 			out.push(date.toString())
 			temp.push(date);			
 			date = addDays(date, 1)
@@ -459,6 +462,8 @@ function processPageDates(obj, firstDate, lastDate) {
 		var date1 = new Date(string1+' '+new Date().getFullYear()+' UTC')
 		var date2 = new Date(string2+' '+new Date().getFullYear()+' UTC')
 		
+		changeYearIfNeeded(date1);
+		changeYearIfNeeded(date2);
 		var out = [	{location:windsorFirst?'Windsor':'London' ,date:date1.toString()},
 					{location:windsorFirst?'London':'Windsor' ,date:date2.toString()}]
 					
@@ -467,7 +472,17 @@ function processPageDates(obj, firstDate, lastDate) {
 		
 		obj.date = out;
 	} else {
-		var date = new Date(obj.textDate+' '+new Date().getFullYear()+' UTC')
+		obj.date = obj.textDate;
+		
+		// todo: replace this with proper regex for numbers
+		if (obj.date.indexOf('lecture') !== -1) {
+			obj.date = obj.date.substring(0, obj.date.indexOf('lecture')-1);
+		}
+		if (obj.date.indexOf('test') !== -1) {
+			obj.date = obj.date.substring(0, obj.date.indexOf('test')-1);
+		}		
+		var date = new Date(obj.date+' '+new Date().getFullYear()+' UTC')
+		changeYearIfNeeded(date);
 		obj.date = date.toString();
 		temp.push(date);
 	}
@@ -499,9 +514,9 @@ function processDashboard(html, module, session, callback) {
 	
 	var found = false;	
 	
-	parsedHTML('<h2>Homework</h2><div class="topnav" style="padding: 24px; -webkit-columns: 3; -webkit-column-gap: 4em; -moz-columns: 3; -moz-column-gap: 4em; columns: 3; column-gap: 4em;" id="faketopnav"></div>').appendTo('#innercontent')
+	parsedHTML('<h1 style="padding-left:2.5%; margin-bottom: -30px;">Homework</h1><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
 	
-	parsedHTML('<div id="fakeweek" style="break-inside: avoid; min-width:200px; background-color:#ddd"><h3>This Week</h3></div><div style="break-inside: avoid; min-width:200px; background-color:#eee"><h3>Course Pages</h3><ul id="fakehomework"></ul></div><div style="break-inside: avoid; min-width:200px; background-color:#ddd"><div id="fakepccia"><h3>PCCIA</h3></div><div id="fakeassignments"><h3>Assignments</h3></div></div>').appendTo('#faketopnav');
+	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left;"><h2>This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments"><h2>Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
 	
 	parsedHTML('ul[class=otherSitesCategorList]').children().map(function(i, li) {
 		found = true;
@@ -513,7 +528,7 @@ function processDashboard(html, module, session, callback) {
 				var hash = crypto.createHash('md5').update(title).digest('hex');
 				sites[hash] = {'href':href, 'course':title};
 				ignoredURLs.add(href);
-				parsedHTML('<li><a id="'+hash+'" target="_blank" href="'+href+'" title="'+title+'"><span>'+title+'</span></a></li>').appendTo('#fakehomework');
+				parsedHTML('<div style="padding: 2px 8px 2px 8px; margin-bottom: 8px; '+dropShadowForCourse(title)+' background-color:'+colourForCourse(title)+';"><h3><a id="'+hash+'" target="_blank" href="'+href+'" title="'+title+'"><span>'+title+'</span></a><h3></div>').appendTo('#fakehomework');
 			}
 		})
 	});
@@ -523,49 +538,170 @@ function processDashboard(html, module, session, callback) {
 	}, function(err, results) {
 		if (err) console.log(err);
 		
-		// flatten out all the data
-		while (isArray(results[0])) {
-			var pages = [];
-			for (var i = 0; i < results.length; i++) {
-				if (results[i] !== undefined)
-					for (var j = 0; j < results[i].length; j++) {
-						pages.push(results[i][j]);
-					}
+		results = flattenArray(results)
+		
+		var homework = [];
+		var assignments = [];
+		var pccia = [];
+		
+		for (var i = 0; i < results.length; i++) {
+			if (results !== null && results[i] !== undefined && results[i].data !== undefined) {
+				if (Object.keys(results[i].data).length > 1) {
+					if (results[i].type === 'Homework')
+						homework.push(results[i]);
+					if (results[i].type === 'Assignments')
+						assignments.push(results[i]);
+					if (results[i].type === 'PCCIA')
+						pccia.push(results[i]);
+				}
 			}
-			results = pages;
+		}			
+		
+		pccia.sort(function(a,b) {
+			return parseInt(a.data.week) - parseInt(b.data.week);
+		});
+		
+		assignments.sort(function(a,b) {
+			return new Date(a.data.dueDate) - new Date(b.data.dueDate);
+		});
+		
+		homework.sort(function(a, b) {
+			var dateA = a.data;
+			var dateB = b.data;
+			
+			if (dateA !== undefined) {
+				dateA = dateA.date;
+				
+				if (isArray(a.data.date)) {
+					dateA = a.data.date[0];
+					if (typeof dateA === 'object')
+						dateA = dateA.date;
+				}				
+			}
+			if (dateB !== undefined) {
+				dateB = dateB.date;
+				
+				if (isArray(b.data.date)) {
+					dateB = b.data.date[0];
+					if (typeof dateB === 'object')
+						dateB = dateB.date;
+				}				
+			}			
+			return new Date(dateA) - new Date(dateB);
+		})
+		
+		for (var i = 0; i < pccia.length; i++) {
+			var content = pccia[i];			
+			parsedHTML('<div style="padding: 2px 8px 8px 8px; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
+			content.data.objectives+' '+content.data.resources+'</div>').appendTo("#fakepccia")
 		}
 		
-// 		fs.writeFileSync('temp.json', JSON.stringify(pages, null, 4));
-		for (var i = 0; i < results.length; i++) {
-			var content = results[i];
+		for (var i = 0; i < assignments.length; i++) {
+			var content = assignments[i];						
+			parsedHTML('<div style="padding: 2px 8px 8px 8px; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>'+content.data.title+'</h4>'+
+			'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(new Date(content.data.dueDate), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
+		}
+		
+		for (var i = 0; i < homework.length; i++) {
+			var content = homework[i];
+			var output = '<div style="padding: 2px 8px 8px 8px; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>';
+			var output2 = '<div style="padding: 2px 8px 8px 8px; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>';			
+			var multipleOutput = false;
 			
-			if (content.data === undefined || Object.keys(content.data).length < 2)
+			if (Object.keys(content.data).length < 4)
 				continue;
 			
-			if (content.type === 'PCCIA') {
-				parsedHTML('<div><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
-							content.data.objectives+'    '+content.data.resources+'<hr></div>').appendTo("#fakepccia")
-			} else if (content.type === 'Assignments') {
-				parsedHTML('<div><h4>'+content.data.title+'</h4>'+
-							'<strong>Status</strong>: '+content.data.status+'     <strong>Due</strong>: '+content.data.dueDate+'<hr></div>').appendTo("#fakeassignments")				
+			if (isArray(content.data.date)) {
+				if (typeof content.data.date[0] === 'object') {
+					multipleOutput = true;
+					output += df(content.data.date[0].date, 'mmm dd')+' ('+ content.data.date[0].location+' only)';
+					output2 += df(content.data.date[1].date, 'mmm dd')+' ('+ content.data.date[1].location+' only)';					
+				} else {
+					output += df(content.data.date[0].date, 'mmm dd');
+				}								
 			} else {
-				parsedHTML('<div><h4>'+content.data.date+'- '+content.data.topic+' ('+content.data.lecturer+')</h4>'+
-							content.data.objectives+'    '+content.data.resources+'<hr></div>').appendTo("#fakeweek")
+				output += df(content.data.date, 'mmm dd');
 			}
+			
+			output += ' - '+content.data.topic;
+			output2 += ' - '+content.data.topic;			
+			if (content.data.lecturer) {
+				output += ' ('+content.data.lecturer+')';
+				output2 += ' ('+content.data.lecturer+')';	
+			}	
+			output += '</h4>';		
+			output2 += '</h4>';			
+			if (content.data.objectives) {
+				output += content.data.objectives;
+				output2 += content.data.objectives;	
+			}		
+			if (content.data.resources) {
+				output += ' '+content.data.resources;
+				output2 += ' '+content.data.resources;				
+			}
+			output += '</div>';
+			output2 += '</div>';			
+			
+			parsedHTML(output).appendTo('#fakeweek');
+			if (multipleOutput)
+				parsedHTML(output2).appendTo('#fakeweek');			
 		}
 
 		callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
 	});
 }
 
+function flattenArray(array) {
+	var out = [];
+	
+	for (var i = 0; i < array.length; i++) {
+		if (isArray(array[i])) {
+			flattenArray(array[i]).forEach(function(item) {
+				out.push(item);
+			});
+		} else {
+			out.push(array[i]);
+		}
+	}
+	return out;
+}
+
+function colourForCourse(course) {
+	var seed = parseInt(/(\d+)/.exec(course))
+	
+	var x = Math.sin(seed++) * 10000;
+	var random = x - Math.floor(x);
+
+	var h = Math.floor(random * 360);
+	
+	return 'hsl('+h+', 100%, 92%)';
+}
+
+function dropShadowForCourse(course) {
+	var seed = parseInt(/(\d+)/.exec(course))
+	
+	var x = Math.sin(seed++) * 10000;
+	var random = x - Math.floor(x);
+
+	var h = Math.floor(random * 360);
+	
+	return '-webkit-box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px;'
+}
+
 function isArray(a) {
     return (!!a) && (a.constructor === Array);
-};
+}
 
 function addDays(date, days) {
     var result = new Date(date);
     result.setDate(result.getDate() + days);
     return result;
+}
+
+// dates before the start of the school year should be next year
+function changeYearIfNeeded(date) {
+	if (date.getMonth() < 8)
+		date.setFullYear(new Date().getFullYear()+1)
 }
 
 var domain = '';
