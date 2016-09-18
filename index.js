@@ -592,35 +592,44 @@ function processDashboard(html, module, session, callback) {
 		
 		for (var i = 0; i < pccia.length; i++) {
 			var content = pccia[i];			
-			parsedHTML('<div style="padding: 2px 8px 8px 8px; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
+			parsedHTML('<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
 			content.data.objectives+' '+content.data.resources+'</div>').appendTo("#fakepccia")
 		}
 		
 		for (var i = 0; i < assignments.length; i++) {
 			var content = assignments[i];						
-			parsedHTML('<div style="padding: 2px 8px 8px 8px; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>'+content.data.title+'</h4>'+
+			parsedHTML('<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>'+content.data.title+'</h4>'+
 			'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(new Date(content.data.dueDate), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
 		}
 		
 		for (var i = 0; i < homework.length; i++) {
 			var content = homework[i];
-			var output = '<div style="padding: 2px 8px 8px 8px; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>';
-			var output2 = '<div style="padding: 2px 8px 8px 8px; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>';			
+			var output = '<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>%DATE%';
+			var output2 = '<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>%DATE%';			
 			var multipleOutput = false;
 			
 			if (Object.keys(content.data).length < 4)
 				continue;
 			
+			var dates;
+			var dateStr1, dateStr2;
+			
 			if (isArray(content.data.date)) {
 				if (typeof content.data.date[0] === 'object') {
 					multipleOutput = true;
-					output += df(content.data.date[0].date, 'mmm dd')+' ('+ content.data.date[0].location+' only)';
-					output2 += df(content.data.date[1].date, 'mmm dd')+' ('+ content.data.date[1].location+' only)';					
+					dates = [new Date(content.data.date[0].date), new Date(content.data.date[1].date)]
+					dateStr1 = df(content.data.date[0].date, 'mmm dd')+' ('+ content.data.date[0].location+' only)';
+					dateStr2 = df(content.data.date[1].date, 'mmm dd')+' ('+ content.data.date[1].location+' only)';					
 				} else {
-					output += df(content.data.date[0].date, 'mmm dd');
+					dates = [];
+					for (var j = 0; j < content.data.date.length; j++) {
+						dates.push(new Date(content.data.date[j].date));
+					}
+					dateStr1 = df(content.data.date[0].date, 'mmm dd');
 				}								
 			} else {
-				output += df(content.data.date, 'mmm dd');
+				dates = [new Date(content.data.date)];
+				dateStr1 = df(content.data.date, 'mmm dd');
 			}
 			
 			output += ' - '+content.data.topic;
@@ -642,9 +651,36 @@ function processDashboard(html, module, session, callback) {
 			output += '</div>';
 			output2 += '</div>';			
 			
-			parsedHTML(output).appendTo('#fakeweek');
-			if (multipleOutput)
-				parsedHTML(output2).appendTo('#fakeweek');			
+			
+			var today = new Date();
+			var yesterday = addDays(today, -1)
+			var nextweek = addDays(today, 6)		
+			var upcoming = false;
+			var passed = false;			
+			var withinWeek = false;			
+			for (var j = 0; j < dates.length; j++) {
+				if (dates[j] >= yesterday) {
+					passed = true;
+				}
+				if (dates[j] >= today) {
+					passed = false;
+					upcoming = true;
+				}				
+				if (dates[j] < nextweek) {
+					withinWeek = true;
+				}
+			}
+			
+			if ((passed || upcoming) && withinWeek) {
+				if (passed) {
+					output = output.replace('opacity: 1.0;', 'opacity: 0.3;');
+					output2 = output2.replace('opacity: 1.0;', 'opacity: 0.3;');					
+				}
+				
+				parsedHTML(output.replace('%DATE%', dateStr1)).appendTo('#fakeweek');
+				if (multipleOutput)
+					parsedHTML(output2.replace('%DATE%', dateStr1)).appendTo('#fakeweek');			
+			}
 		}
 
 		callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
