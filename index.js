@@ -241,6 +241,9 @@ function processPageInner(href, module, pageType, course, session, callback) {
 function processPageTableSync(input, type, course) {
 	var startRow = -1;
 	var week, topic, objectives, resources, date, module, lecturer		// keeps track of which columns are which data
+	
+	if (!input)
+		return {};
 	var parsedHTML = $.load(input.html());
 	var firstDate		// keeps track of when each block starts (to replace 'prior to Week N' dates)
 	var endDate			// keeps track of when each block ends (to replace 'prior to end of X' dates)
