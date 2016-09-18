@@ -18,7 +18,7 @@ function replaceAll (find, replace, str) {
   return str.replace(new RegExp(find, 'g'), replace);
 }
 
-function processRequest(req, module, response, pathname, session) {
+function processRequest(req, module, response, pathname, session, cookiejar) {
     if (req.method == 'POST') {
         var body = '';
 
@@ -35,6 +35,10 @@ function processRequest(req, module, response, pathname, session) {
             var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
             
 			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[session]?userInfo[session]['cookie']:''}, form:post}, function(err, resp, html) {          	
+				if (!err) {
+					cookiejar.set('eid', post['eid']);
+					cookiejar.set('pw', post['pw']);
+				}
 				processDashboard(html, module, session, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
@@ -271,12 +275,12 @@ function processPageTableSync(input, type, course) {
 
 			if (title.length === 1) {
 				title = title.first();
-				title = '<a target="_blank" href="'+$(title).attr('href')+'">"'+$(title).text().trim()+'</a>'				
+				title = '<a target="_blank" href="'+$(title).attr('href')+'">'+$(title).text().trim()+'</a>'				
 			} else if (title.length >= 1) {
 				title = Object.keys(title).map(function (key) {return title[key]}) 	// converts title into an array
 				title = title.map(function(title) {
 					if ($(title).attr('href'))
-						return '<a target="_blank" href="'+$(title).attr('href')+'">"'+$(title).text().trim()+'</a>'
+						return '<a target="_blank" href="'+$(title).attr('href')+'">'+$(title).text().trim()+'</a>'
 					else
 						return undefined
 				}, '')
@@ -385,12 +389,6 @@ function processPageTableSync(input, type, course) {
 		});	
 		
 		return {'type':type, 'data':temp, 'course':course};
-/*
-		else {
-			deferredObj = {data:temp, row:i}
-			return {'type':type, 'course':course};	
-		}
-*/
 	}).get();
 	
 	var deferred = true;
@@ -595,8 +593,21 @@ function processDashboard(html, module, session, callback) {
 		
 		for (var i = 0; i < pccia.length; i++) {
 			var content = pccia[i];			
-			parsedHTML('<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
-			content.data.objectives+' '+content.data.resources+'</div>').appendTo("#fakepccia")
+			var output = '<div style="padding: 2px 8px 8px 8px; opacity: 1.0; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
+			content.data.objectives+' ';
+			if (isArray(content.data.resources)) {
+				 for (var j = 0; j < content.data.resources.length; j++) {
+				 	var item = content.data.resources[j];
+				    if (j == 0) {
+				    	output += '<span style="position:absolute; right:8px;">'+item+'</span><br><h5>Additional Resources</h5><ul>'
+				    } else if (item !== undefined) {
+					  	output += '<li>'+item+'</li>'
+				    }
+				 }
+				 output += '</ul>'
+			} else 
+				output += '<span style="position:absolute; right:8px;">'+content.data.resources+'</span></div>'
+			parsedHTML(output).appendTo("#fakepccia")
 		}
 		
 		for (var i = 0; i < assignments.length; i++) {
@@ -751,6 +762,8 @@ http.createServer(function(req, response) {
 	var pathname = url.parse(req.url).pathname;
 	
 	var session = cookiejar.get('JSESSIONID');
+	var username = cookiejar.get('eid');
+	var password = cookiejar.get('pw');		
 	
 	if (!session || !userInfo[session] || !userInfo[session]['cookie']) {
 		request('http://owl.uwo.ca/portal', function(err, resp, html) {
@@ -776,6 +789,6 @@ http.createServer(function(req, response) {
 	} else {
 		if (pathname.match('/portal/logout'))
 			delete userInfo[session] 
-		processRequest(req, request, response, pathname, session);
+		processRequest(req, request, response, pathname, session, cookiejar);
 	}
 }).listen(config.port);
