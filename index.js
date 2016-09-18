@@ -273,8 +273,17 @@ function processPageTableSync(input, type, course) {
 			var header = $(col).attr('headers');
 			
 			var findStr = 'a';
-			if (type.match('Homework'))
+			
+
+			var tempJ = j;
+			if (columnOffset > 0 && i !== offendingRow) {
+				tempJ++;
+			} 
+			
+			if (type.match('Homework') && tempJ === topic)
 				findStr = 'a, strong'
+				
+			var foundLink = !type.match('Homework') || tempJ !== topic;	// we only want extra elements on Homework
 			var title = $(col).find(findStr);			
 
 			if (title.length === 1) {
@@ -283,12 +292,14 @@ function processPageTableSync(input, type, course) {
 			} else if (title.length >= 1) {
 				title = Object.keys(title).map(function (key) {return title[key]}) 	// converts title into an array
 				title = title.map(function(title) {
-					if ($(title).attr('href'))
+					if ($(title).attr('href')) {
+						foundLink = true;
 						return '<a target="_blank" href="'+$(title).attr('href')+'">'+$(title).text().trim()+'</a>'
-					else
+					} else if ($(title).text().trim().length > 0 && type.match("Homework"))
 						return '<strong>'+$(title).text().trim()+'</strong>'
 				}, '')
-			} else {
+			} 
+			if (title.length === 0 || !foundLink) {
 				title = $(col).find('span');
 			
 				if (title.length === 1)
@@ -415,7 +426,6 @@ function processPageTableSync(input, type, course) {
 }
 
 function processPageDates(obj, firstDate, lastDate) {
-	console.log(obj);
 	if (obj.date === undefined)
 		return {data: obj, firstDate:firstDate, endDate:lastDate};
 	if (obj.dateProcessed)
@@ -623,10 +633,11 @@ function processDashboard(html, module, session, callback) {
 			'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(new Date(content.data.dueDate), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
 		}
 		
+		var futureHomeworkExists = false;		// used to toggle 'Show All' button
 		for (var i = 0; i < homework.length; i++) {
 			var content = homework[i];
-			var output = '<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>%DATE%';
-			var output2 = '<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>%DATE%';			
+			var output = '<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';
+			var output2 = '<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';			
 			var multipleOutput = false;
 			
 			if (Object.keys(content.data).length < 4)
@@ -653,22 +664,120 @@ function processDashboard(html, module, session, callback) {
 				dateStr1 = df(content.data.date, 'mmm dd');
 			}
 			
-			output += ' - '+content.data.topic;
-			output2 += ' - '+content.data.topic;			
+			if (isArray(content.data.topic)) {
+				output += ' - '+content.data.topic[0];
+				output2 += ' - '+content.data.topic[0];	
+			} else {
+				output += ' - '+content.data.topic;
+				output2 += ' - '+content.data.topic;	
+			}
 			if (content.data.lecturer) {
 				output += ' ('+content.data.lecturer+')';
 				output2 += ' ('+content.data.lecturer+')';	
 			}	
 			output += '</h4>';		
 			output2 += '</h4>';			
-			if (content.data.objectives) {
-				output += content.data.objectives;
-				output2 += content.data.objectives;	
-			}		
-			if (content.data.resources) {
-				output += ' '+content.data.resources;
-				output2 += ' '+content.data.resources;				
+		
+			if (isArray(content.data.objectives)) {
+				for (var j = 0; j < content.data.objectives.length; j++) {
+				 	var item = content.data.objectives[j];
+				    if (j == 0) {
+				    	output += '<br><span style="position:absolute; right:8px;"><strong style="color: #555;">Objectives</strong><ul>'
+				    	output2 += '<br><span style="position:absolute; right:8px;"><strong style="color: #555;">Objectives</strong><ul>'				    	
+				    } 
+				    if (item !== undefined) {
+					    if (item.indexOf('<a') !== -1) {
+						  	output += '<li>'+item+'</li>'
+						  	output2 += '<li>'+item+'</li>'						  	
+						} else {
+							output += item+"<br>";
+							output2 += item+"<br>";	
+						}						
+				    } else
+					    break;		// hacky way to deal with last row full of the same text, just unstyled
+				}
+				output += '</ul></span>'
+		    	output2 += '</ul></span>'	
 			}
+			
+			if (isArray(content.data.topic)) {
+				for (var j = 0; j < content.data.topic.length; j++) {
+				 	var item = content.data.topic[j];
+				    if (j == 0) {
+					    if (!isArray(content.data.objectives)) {
+						    output += '<br>'
+					    	output2 += '<br>'
+					    }
+					    
+				    	output += '<strong style="color: #555;">Independant Learning</strong>'
+				    	output2 += '<strong style="color: #555;">Independant Learning</strong>'				    	
+				    	
+				    	if (content.data.objectives && !isArray(content.data.objectives)) {
+						    if (content.data.objectives.indexOf('<a') !== -1) {
+								output += '<br><span style="position:absolute; right:8px;"><strong>'+content.data.objectives+'</strong></span>';
+								output2 += '<br><span style="position:absolute; right:8px;"><strong>'+content.data.objectives+'</strong></span>';
+							} else {
+								output += '<br><span style="position:absolute; right:8px;"><strong style="color: #555;">Objectives '+content.data.objectives+'</strong></span>';
+								output2 += '<br><span style="position:absolute; right:8px;"><strong style="color: #555;">Objectives '+content.data.objectives+'</strong></span>';
+							}
+						}
+				    	
+				    	output += '<ul>'
+				    	output2 += '<ul>'
+				    } else if (item !== undefined) {
+					    if (item.indexOf('<a') !== -1) {
+						  	output += '<li>'+item+'</li>'
+						  	output2 += '<li>'+item+'</li>'						  	
+						} else {
+							output += item+"<br>";
+							output2 += item+"<br>";	
+						}						
+				    } else
+					    break;		// hacky way to deal with last row full of the same text, just unstyled
+				}
+				output += '</ul>'
+		    	output2 += '</ul>'				    					 
+			} else if (content.data.objectives && !isArray(content.data.objectives)) {
+			    if (content.data.objectives.indexOf('<a') !== -1) {
+					output += '<br><span style="position:absolute; right:8px;"><strong>'+content.data.objectives+'</strong></span>';
+					output2 += '<br><span style="position:absolute; right:8px;"><strong>'+content.data.objectives+'</strong></span>';
+				} else {
+					output += '<br><span style="position:absolute; right:8px;"><strong style="color: #555;">Objectives '+content.data.objectives+'</strong></span>';
+					output2 += '<br><span style="position:absolute; right:8px;"><strong style="color: #555;">Objectives '+content.data.objectives+'</strong></span>';
+				}
+			}
+
+			if (isArray(content.data.resources)) {
+				for (var j = 0; j < content.data.resources.length; j++) {
+				 	var item = content.data.resources[j];
+				    if (j == 0) {
+				    	output += '<strong style="color: #555;">Additional Resources</strong><ul>'
+				    	output2 += '<strong style="color: #555;">Additional Resources</strong><ul>'				    	
+				    } 
+				    if (item !== undefined) {
+					    if (item.indexOf('<a') !== -1) {
+						  	output += '<li>'+item+'</li>'
+						  	output2 += '<li>'+item+'</li>'						  	
+						} else {
+							output += item+"<br>";
+							output2 += item+"<br>";	
+						}						
+				    } else
+					    break;		// hacky way to deal with last row full of the same text, just unstyled
+				}
+				output += '</ul>'
+		    	output2 += '</ul>'	
+		    } else if (content.data.resources) {
+			    var item = content.data.resources;
+			    if (item.indexOf('<a') !== -1) {			    
+				    output += '<br><strong style="color: #555;">Additional Resources</strong><ul><li>'+item+'</li></ul>'
+			    	output2 += '<br><strong style="color: #555;">Additional Resources</strong><ul><li>'+item+'</li></ul>'
+			    } else {
+				    output += '<br><strong style="color: #555;">Additional Resources</strong><ul>'+item+'<br></ul>'
+			    	output2 += '<br><strong style="color: #555;">Additional Resources</strong><ul>'+item+'<br></ul>'				    
+			    }
+		    }					 
+		    	
 			output += '</div>';
 			output2 += '</div>';			
 			
@@ -700,9 +809,30 @@ function processDashboard(html, module, session, callback) {
 				
 				parsedHTML(output.replace('%DATE%', dateStr1)).appendTo('#fakeweek');
 				if (multipleOutput)
-					parsedHTML(output2.replace('%DATE%', dateStr1)).appendTo('#fakeweek');			
+					parsedHTML(output2.replace('%DATE%', dateStr2)).appendTo('#fakeweek');			
+			} else if (!withinWeek) {
+				futureHomeworkExists = true;
+				output = output.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');
+				output2 = output2.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');	
+							
+				parsedHTML(output.replace('%DATE%', dateStr1)).appendTo('#fakeweek');
+				if (multipleOutput)
+					parsedHTML(output2.replace('%DATE%', dateStr2)).appendTo('#fakeweek');									
 			}
 		}
+		
+/*
+		Not working yet - just add external JS and CSS!!!
+		if (futureHomeworkExists) {
+			console.log("HWLLO");
+			parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-right: 20%; margin-left: 20%; text-align: center; cursor: pointer; background-color: hsl(0, 0%, 96%);" onmouseover="function() {'+
+				'this.style.backgroundColor = "hsl(0, 0%, 90%);";'+
+			'}" onmouseout="function() {'+
+				'this.style.backgroundColor = "hsl(0, 0%, 96%);";'+
+			'}><h4>Show All</h4></div>').appendTo('#fakeweek');	
+		}
+*/
+		
 
 		callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
 	});
