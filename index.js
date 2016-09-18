@@ -271,7 +271,11 @@ function processPageTableSync(input, type, course) {
 		
 		$.load(row)('td, th').each(function(j, col) {
 			var header = $(col).attr('headers');
-			var title = $(col).find('a');			
+			
+			var findStr = 'a';
+			if (type.match('Homework'))
+				findStr = 'a, strong'
+			var title = $(col).find(findStr);			
 
 			if (title.length === 1) {
 				title = title.first();
@@ -282,7 +286,7 @@ function processPageTableSync(input, type, course) {
 					if ($(title).attr('href'))
 						return '<a target="_blank" href="'+$(title).attr('href')+'">'+$(title).text().trim()+'</a>'
 					else
-						return undefined
+						return '<strong>'+$(title).text().trim()+'</strong>'
 				}, '')
 			} else {
 				title = $(col).find('span');
@@ -411,6 +415,7 @@ function processPageTableSync(input, type, course) {
 }
 
 function processPageDates(obj, firstDate, lastDate) {
+	console.log(obj);
 	if (obj.date === undefined)
 		return {data: obj, firstDate:firstDate, endDate:lastDate};
 	if (obj.dateProcessed)
@@ -590,6 +595,8 @@ function processDashboard(html, module, session, callback) {
 			}			
 			return new Date(dateA) - new Date(dateB);
 		})
+		
+		fs.writeFileSync('temphw.json', JSON.stringify(homework, null, 4))
 		
 		for (var i = 0; i < pccia.length; i++) {
 			var content = pccia[i];			
