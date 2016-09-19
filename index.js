@@ -4,7 +4,8 @@ var async = require('async');
 var fs = require('fs');
 var http = require("http");
 var request = require('request');
-var http = require("http"); 
+var http = require("http");
+var https = require("https");
 var url = require("url");
 var qs = require('querystring');
 var Cookies = require('cookies');
@@ -113,6 +114,7 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 		temp = replaceAll('https://owl.uwo.ca'+href.substring(18),'http://owl.uwo.ca'+href.substring(18), temp);	
 	});	
 	
+	temp = replaceAll('http://owl.uwo.ca', 'https://owl.uwo.ca', temp);
 	temp = replaceAll('OWL', 'FOWL', temp);
 	temp = replaceAll('Welcome to FOWL', 'Welcome to Fake OWL', temp);	
 	
@@ -632,6 +634,7 @@ function processDashboard(html, module, session, callback) {
 		}
 		
 		var futureHomeworkExists = false;		// used to toggle 'Show All' button
+		var logErrors = false;
 		for (var i = 0; i < homework.length; i++) {
 			var content = homework[i];
 			var output = '<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';
@@ -659,7 +662,13 @@ function processDashboard(html, module, session, callback) {
 				}								
 			} else {
 				dates = [new Date(content.data.date)];
-				dateStr1 = df(content.data.date, 'mmm dd');
+				if (!isNaN(Date.parse(content.data.date)))
+					dateStr1 = df(content.data.date, 'mmm dd');
+				else {
+					console.log(content.data.date);
+					dateStr1 = "Invalid Date"
+					logErrors = true;
+				}
 			}
 			
 			if (isArray(content.data.topic)) {
@@ -819,6 +828,14 @@ function processDashboard(html, module, session, callback) {
 			}
 		}
 		
+		
+/*
+		if (logErrors) {
+			fs.writeFileSync('chkhw.json', JSON.parse(homework, null, 4));
+			fs.writeFileSync('chkpc.json', JSON.parse(pccia, null, 4));
+			fs.writeFileSync('chkas.json', JSON.parse(assignments, null, 4));						
+		}
+*/
 /*
 		Not working yet - just add external JS and CSS!!!
 		if (futureHomeworkExists) {
@@ -892,7 +909,8 @@ function changeYearIfNeeded(date) {
 var domain = '';
 var userInfo = {};
 
-http.createServer(function(req, response) { 
+
+serverFunc = function(req, response) { 
 	var cookiejar = new Cookies(req, response);
 	var pathname = url.parse(req.url).pathname;
 	
@@ -926,4 +944,24 @@ http.createServer(function(req, response) {
 			delete userInfo[session] 
 		processRequest(req, request, response, pathname, session, cookiejar);
 	}
-}).listen(config.port);
+}
+
+insecureFunc = function(req, response) {
+	response.setHeader('Location', 'https://' + req.headers.host.replace(/:\d+/, ':' + config.securePort) + req.url);
+	response.statusCode = 302;
+	response.end();
+}
+
+fs.lstat('/etc/letsencrypt/live/fowl.rocks/', function(err, stats) {
+    if (!err && stats.isDirectory()) {
+		var options = {
+			key: fs.readFileSync('/etc/letsencrypt/live/fowl.rocks/privkey.pem'),
+			cert: fs.readFileSync('/etc/letsencrypt/live/fowl.rocks/cert.pem')
+		}
+		
+		https.createServer(options, serverFunc).listen(config.securePort);		
+		http.createServer(insecureFunc).listen(config.port);
+    } else {
+	    http.createServer(serverFunc).listen(config.port);
+    }
+});
