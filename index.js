@@ -413,7 +413,7 @@ function processPageTableSync(input, type, course) {
 	while (deferred) {
 		deferred = false;
 		for (var i = 0; i < output.length; i++) {
-			var dateData = processPageDates(output[i].data, firstDate, endDate)
+			var dateData = processPageDates(output[i].data, firstDate, endDate, course)
 			firstDate = dateData.firstDate;
 			endDate = dateData.endDate;	
 			
@@ -427,7 +427,7 @@ function processPageTableSync(input, type, course) {
 	return output
 }
 
-function processPageDates(obj, firstDate, lastDate) {
+function processPageDates(obj, firstDate, lastDate, course) {	
 	if (obj.date === undefined)
 		return {data: obj, firstDate:firstDate, endDate:lastDate};
 	if (obj.dateProcessed)
@@ -455,6 +455,8 @@ function processPageDates(obj, firstDate, lastDate) {
 		} while (date <= endDate)
 		
 		obj.date = out;
+		
+		obj.displayDate = obj.textDate.substring(obj.textDate.toLowerCase().indexOf('week'));
 	} else if (obj.date.toLowerCase().indexOf('session') !== -1 && obj.date.indexOf('(') !== -1 && obj.date.indexOf(')') !== -1) {
 		var dateString = obj.textDate.substring(obj.textDate.indexOf('(')+1,obj.textDate.indexOf(')'));
 		var string1 = dateString.substring(0, dateString.indexOf('-'))
@@ -473,6 +475,8 @@ function processPageDates(obj, firstDate, lastDate) {
 		} while (date <= endDate)
 		
 		obj.date = out;
+		
+		obj.displayDate = course + ' Session'		
 	} else if (obj.date.indexOf('(W)') !== -1 && obj.date.indexOf('(L)') !== -1) {
 		var windsorFirst = obj.date.indexOf('(W)') < obj.date.indexOf('(L)');
 		var string1 = obj.textDate.substring(0, obj.textDate.indexOf('('));
@@ -608,6 +612,8 @@ function processDashboard(html, module, session, callback) {
 			return new Date(dateA) - new Date(dateB);
 		})
 		
+		fs.writeFileSync('temphw.json', JSON.stringify(homework, null, 4))
+		
 		for (var i = 0; i < pccia.length; i++) {
 			var content = pccia[i];			
 			var output = '<div style="padding: 2px 8px 8px 8px; opacity: 1.0; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
@@ -640,6 +646,7 @@ function processDashboard(html, module, session, callback) {
 			var output = '<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';
 			var output2 = '<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';			
 			var multipleOutput = false;
+			var replaceDate = true;		// whether a date should be replaced by a relative date (today, tomorrow, etc)
 			
 			if (Object.keys(content.data).length < 4)
 				continue;
@@ -654,9 +661,9 @@ function processDashboard(html, module, session, callback) {
 					dateStr1 = df(content.data.date[0].date, 'mmm dd')+' ('+ content.data.date[0].location+' only)';
 					dateStr2 = df(content.data.date[1].date, 'mmm dd')+' ('+ content.data.date[1].location+' only)';					
 				} else {
-					dates = [];
+					dates = [];	
 					for (var j = 0; j < content.data.date.length; j++) {
-						dates.push(new Date(content.data.date[j].date));
+						dates.push(new Date(content.data.date[j]));
 					}
 					dateStr1 = df(content.data.date[0].date, 'mmm dd');
 				}								
@@ -670,6 +677,12 @@ function processDashboard(html, module, session, callback) {
 					logErrors = true;
 				}
 			}
+			
+			if (content.data.displayDate) {
+				dateStr1 = 'Prior to your ' + content.data.displayDate;
+				dateStr2 = 'Prior to your ' + content.data.displayDate;
+				replaceDate = false;				
+			} 
 			
 			if (isArray(content.data.topic)) {
 				output += ' - '+content.data.topic[0];
@@ -788,7 +801,6 @@ function processDashboard(html, module, session, callback) {
 			output += '</div>';
 			output2 += '</div>';			
 			
-			
 			var today = new Date();
 			today = addDays(today, 0.25);	// adjusts for time zones
 			var tomorrow = addDays(today, 1);
@@ -826,19 +838,19 @@ function processDashboard(html, module, session, callback) {
 					output = output.replace('opacity: 1.0;', 'opacity: 0.4;');
 					output2 = output2.replace('opacity: 1.0;', 'opacity: 0.4;');					
 				}
-				
-				if (passed) {
+								
+				if (passed && replaceDate) {
 					output = output.replace('%DATE%', 'Yesterday');
-				output2 = output.replace('%DATE%', 'Yesterday');
-				} else if (upcomingSoon) {
+					output2 = output.replace('%DATE%', 'Yesterday');
+				} else if (upcomingSoon && replaceDate) {
 					output = output.replace('%DATE%', 'Tonight');
-				output2 = output.replace('%DATE%', 'Tonight');
-				} else if (upcoming) {
+					output2 = output.replace('%DATE%', 'Tonight');
+				} else if (upcoming && replaceDate) {
 					output = output.replace('%DATE%', 'Tomorrow');
-				output2 = output.replace('%DATE%', 'Tomorrow');
+					output2 = output.replace('%DATE%', 'Tomorrow');
 				} else {
 					output = output.replace('%DATE%', dateStr1);
-				output2 = output.replace('%DATE%', dateStr2);
+					output2 = output.replace('%DATE%', dateStr2);
 				}
 				parsedHTML(output).appendTo('#fakeweek');
 				if (multipleOutput)
