@@ -790,9 +790,14 @@ function processDashboard(html, module, session, callback) {
 			
 			
 			var today = new Date();
+			today = addDays(today, 0.25);	// adjusts for time zones
+			var tomorrow = addDays(today, 1);
+			var twodays = addDays(today, 2);
 			var yesterday = addDays(today, -1)
 			var nextweek = addDays(today, 6)		
 			var upcoming = false;
+			var upcomingLater = false;
+			var upcomingSoon = false;
 			var passed = false;			
 			var withinWeek = false;			
 			for (var j = 0; j < dates.length; j++) {
@@ -801,22 +806,43 @@ function processDashboard(html, module, session, callback) {
 				}
 				if (dates[j] >= today) {
 					passed = false;
+					upcomingSoon = true;
+				}
+				if (dates[j] >= tomorrow) {
+					upcomingSoon = false;
 					upcoming = true;
 				}				
+				if (dates[j] >= twodays) {
+					upcoming = false;
+					upcomingLater = true;
+				}
 				if (dates[j] < nextweek) {
 					withinWeek = true;
 				}
 			}
 			
-			if ((passed || upcoming) && withinWeek) {
+			if ((passed || upcoming || upcomingSoon || upcomingLater) && withinWeek) {
 				if (passed) {
 					output = output.replace('opacity: 1.0;', 'opacity: 0.4;');
 					output2 = output2.replace('opacity: 1.0;', 'opacity: 0.4;');					
 				}
 				
-				parsedHTML(output.replace('%DATE%', dateStr1)).appendTo('#fakeweek');
+				if (passed) {
+					output = output.replace('%DATE%', 'Yesterday');
+				output2 = output.replace('%DATE%', 'Yesterday');
+				} else if (upcomingSoon) {
+					output = output.replace('%DATE%', 'Tonight');
+				output2 = output.replace('%DATE%', 'Tonight');
+				} else if (upcoming) {
+					output = output.replace('%DATE%', 'Tomorrow');
+				output2 = output.replace('%DATE%', 'Tomorrow');
+				} else {
+					output = output.replace('%DATE%', dateStr1);
+				output2 = output.replace('%DATE%', dateStr2);
+				}
+				parsedHTML(output).appendTo('#fakeweek');
 				if (multipleOutput)
-					parsedHTML(output2.replace('%DATE%', dateStr2)).appendTo('#fakeweek');			
+					parsedHTML(output2).appendTo('#fakeweek');			
 			} else if (!withinWeek) {
 				futureHomeworkExists = true;
 				output = output.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');
