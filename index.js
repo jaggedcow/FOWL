@@ -443,7 +443,7 @@ function processPageDates(obj, firstDate, lastDate, course) {
 		if (firstDate == undefined) {
 			return {deferred: true, firstDate:firstDate, endDate:lastDate}
 		}	
-		var date = addDays(firstDate,-1)
+		var date = addDays(firstDate,-1.05)
 		var endDate = addDays(date, 4)
 		var out = []
 		
@@ -465,6 +465,8 @@ function processPageDates(obj, firstDate, lastDate, course) {
 		var date = new Date(string1+' '+new Date().getFullYear()+' UTC')
 		var endDate = new Date(string2+' '+new Date().getFullYear()+' UTC')
 		
+		date = addDays(date, -0.05)
+		
 		var out = []
 		
 		do {
@@ -484,8 +486,12 @@ function processPageDates(obj, firstDate, lastDate, course) {
 		var date1 = new Date(string1+' '+new Date().getFullYear()+' UTC')
 		var date2 = new Date(string2+' '+new Date().getFullYear()+' UTC')
 		
+		date1 = addDays(date1, -0.05)
+		date2 = addDays(date2, -0.05)
+		
 		changeYearIfNeeded(date1);
 		changeYearIfNeeded(date2);
+		
 		var out = [	{location:windsorFirst?'Windsor':'London' ,date:date1.toString()},
 					{location:windsorFirst?'London':'Windsor' ,date:date2.toString()}]
 					
@@ -504,7 +510,10 @@ function processPageDates(obj, firstDate, lastDate, course) {
 			obj.date = obj.date.substring(0, obj.date.indexOf('test')-1);
 		}		
 		var date = new Date(obj.date+' '+new Date().getFullYear()+' UTC')
-		changeYearIfNeeded(date);
+		
+		date = addDays(date, -0.05)
+		changeYearIfNeeded(date);		
+		
 		obj.date = date.toString();
 		temp.push(date);
 	}
@@ -713,7 +722,7 @@ function processDashboard(html, module, session, callback) {
 							output += item+"<br>";
 							output2 += item+"<br>";	
 						}						
-				    } else
+				    } else if (j == content.data.objectives.length-1 || content.data.objectives[j+1] === undefined)
 					    break;		// hacky way to deal with last row full of the same text, just unstyled
 				}
 				output += '</ul></span>'
@@ -752,7 +761,7 @@ function processDashboard(html, module, session, callback) {
 							output += item+"<br>";
 							output2 += item+"<br>";	
 						}						
-				    } else
+				    } else if (j == content.data.topic.length-1 || content.data.topic[j+1] === undefined)
 					    break;		// hacky way to deal with last row full of the same text, just unstyled
 				}
 				output += '</ul>'
@@ -782,7 +791,7 @@ function processDashboard(html, module, session, callback) {
 							output += item+"<br>";
 							output2 += item+"<br>";	
 						}						
-				    } else
+				    } else if (j == content.data.resources.length-1 || content.data.resources[j+1] === undefined)
 					    break;		// hacky way to deal with last row full of the same text, just unstyled
 				}
 				output += '</ul>'
@@ -802,7 +811,7 @@ function processDashboard(html, module, session, callback) {
 			output2 += '</div>';			
 			
 			var today = new Date();
-			today = addDays(today, 0.25);	// adjusts for time zones
+			today = addDays(today, -0.25);	// adjusts for time zones
 			var tomorrow = addDays(today, 1);
 			var twodays = addDays(today, 2);
 			var yesterday = addDays(today, -1)
@@ -934,7 +943,7 @@ function isArray(a) {
 
 function addDays(date, days) {
     var result = new Date(date);
-    result.setDate(result.getDate() + days);
+    result.setTime(result.getTime() + days * 86400000);
     return result;
 }
 
