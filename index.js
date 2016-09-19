@@ -707,8 +707,8 @@ function processDashboard(html, module, session, callback) {
 					    	output2 += '<br>'
 					    }
 					    
-				    	output += '<strong style="color: #555;">Independant Learning</strong>'
-				    	output2 += '<strong style="color: #555;">Independant Learning</strong>'				    	
+				    	output += '<strong style="color: #555;">Independent Learning</strong>'
+				    	output2 += '<strong style="color: #555;">Independent Learning</strong>'				    	
 				    	
 				    	if (content.data.objectives && !isArray(content.data.objectives)) {
 						    if (content.data.objectives.indexOf('<a') !== -1) {
