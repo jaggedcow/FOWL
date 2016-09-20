@@ -254,10 +254,10 @@ function processPageInner(href, module, pageType, course, session, callback) {
 
 function processPageLectureSync(parsedHTML, course, href) {
 	var output = [];
+	var lastDate = []
+	var lastDateStr;
 
 	parsedHTML('table').each(function(i, table) {
-		var lastDate = []
-		var lastDateStr;
 		
 		$.load(table)('td, th').each(function(j, col) {
 			var text = $(col).text().trim();
@@ -279,8 +279,8 @@ function processPageLectureSync(parsedHTML, course, href) {
 					lastDate = [date1.toString(), date2.toString()]					
 					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
 
-					output.push({'type':'Lecture', 'data':{date:date1.toString(), html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
-					output.push({'type':'Lecture', 'data':{date:date2.toString(), html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})					
+					output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+					output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})					
 				} else {
 					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
 					
@@ -294,14 +294,26 @@ function processPageLectureSync(parsedHTML, course, href) {
 					
 					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
 				}
+			} else {
+				var keep = false;
+				var text = $(col).find('a').each(function(i, a) {
+					if ($(a).text().trim().indexOf("Objective") !== -1 || $(a).text().trim().indexOf("Slide") !== -1)
+						keep = true;
+				});
+				
+				if (keep) {
+					if (isArray(lastDate)) {
+						output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+						output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+					} else {
+						output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+					}
+				}
 			}
 		});
 	});
 	
 	parsedHTML('div.textbox').each(function(i, table) {
-		var lastDate = []
-		var lastDateStr;
-
 		// removes duplicates
 		if ($(table).find('table').length > 0)
 			return;
@@ -326,7 +338,8 @@ function processPageLectureSync(parsedHTML, course, href) {
 					lastDate = [date1.toString(), date2.toString()]					
 					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
 					
-					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+					output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+					output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
 				} else {
 					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
 					
@@ -339,6 +352,21 @@ function processPageLectureSync(parsedHTML, course, href) {
 					lastDateStr = dateStr;
 					
 					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+				}
+			} else {
+				var keep = false;
+				var text = $(col).find('a').each(function(i, a) {
+					if ($(a).text().trim().indexOf("Objective") !== -1 || $(a).text().trim().indexOf("Slide") !== -1)
+						keep = true;
+				});
+				
+				if (keep) {
+					if (isArray(lastDate)) {
+						output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+						output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+					} else {
+						output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+					}
 				}
 			}
 		});
@@ -706,6 +734,8 @@ function processDashboard(html, module, session, callback) {
 		lectures.sort(function(a,b) {
 			return new Date(a.data.date) - new Date(b.data.date);
 		});		
+		
+		fs.writeFileSync('templc.json',JSON.stringify(lectures, null, 4))
 		
 		homework.sort(function(a, b) {
 			var dateA = a.data;
