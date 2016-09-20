@@ -735,8 +735,6 @@ function processDashboard(html, module, session, callback) {
 			return new Date(a.data.date) - new Date(b.data.date);
 		});		
 		
-		fs.writeFileSync('templc.json',JSON.stringify(lectures, null, 4))
-		
 		homework.sort(function(a, b) {
 			var dateA = a.data;
 			var dateB = b.data;
