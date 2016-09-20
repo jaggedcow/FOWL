@@ -148,7 +148,7 @@ function processPage(href, module, course, session, callback) {
 
 // grabs the sidebar links from a page and picks out the relevant parts for a dashboard
 function processPageSidebar(html, module, course, session, callback) {
-	var options = ['PCCIA', 'Homework', 'Assignments'];
+	var options = ['PCCIA', 'Homework', 'Assignments', 'Lecture'];
 	var blacklist = new Set(['Assignments Course Map']);
 	
 	var temp = {}
@@ -213,6 +213,7 @@ function processPageInner(href, module, pageType, course, session, callback) {
 					var parsedHTML = $.load(html);
 					var homework = [];
 					
+					// for ITM ILs, which are split up over multiple weeks
 					parsedHTML('.itemlink').map(function(i, link) {
 						var href = $(link).attr('href');
 						
@@ -220,9 +221,13 @@ function processPageInner(href, module, pageType, course, session, callback) {
 					});
 					
 					if (homework.length === 0) {
-						var out = parsedHTML('table');
-						
-						_callback(err, processPageTableSync(out, pageType, course))//'<table style="width:400px">'+out.html()+'</table>');
+						if (pageType.match('Lecture')) {
+							__callback(err, processPageLectureSync(parsedHTML, course))						
+						} else {
+							var out = parsedHTML('table');
+							
+							_callback(err, processPageTableSync(out, pageType, course))
+						}
 					} else {
 						async.map(homework, function(href, __callback) {	
 							module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
@@ -230,9 +235,13 @@ function processPageInner(href, module, pageType, course, session, callback) {
 									__callback(err, null);
 								else {
 									var parsedHTML = $.load(html);	
-									var out = parsedHTML('table');
-									
-									__callback(err, processPageTableSync(out, pageType, course))//'<table style="width:400px">'+out.html()+'</table>');									
+									if (pageType.match('Lecture')) {
+										__callback(err, processPageLectureSync(parsedHTML, course, href))						
+									} else {									
+										var out = parsedHTML('table');
+										
+										__callback(err, processPageTableSync(out, pageType, course))
+									}
 								}
 							});						
 						}, _callback);
@@ -243,12 +252,107 @@ function processPageInner(href, module, pageType, course, session, callback) {
 	], callback)
 }
 
+function processPageLectureSync(parsedHTML, course, href) {
+	var output = [];
+
+	parsedHTML('table').each(function(i, table) {
+		var lastDate = []
+		var lastDateStr;
+		
+		$.load(table)('td, th').each(function(j, col) {
+			var text = $(col).text().trim();
+			if (text.search(/^(\w{3,5} +\d{1,2})/) !== -1) {
+					// deal with lectures!!
+				if (text.search(/^(\w{3,5} +\d{1,2} +& +\d{1,2})/) !== -1) {
+					// dealing with multiple dates
+					var dateStr1 = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(& +\d{1,2})/)[0].substring(1).trim()+' '+new Date().getFullYear()+' UTC';			
+
+					var date1 = new Date(dateStr1);
+					var date2 = new Date(dateStr2);					
+					
+					date1 = addDays(date1, +0.95)
+					date2 = addDays(date2, +0.95)					
+					changeYearIfNeeded(date1);
+					changeYearIfNeeded(date2);					
+					
+					lastDate = [date1.toString(), date2.toString()]					
+					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+
+					output.push({'type':'Lecture', 'data':{date:date1.toString(), html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+					output.push({'type':'Lecture', 'data':{date:date2.toString(), html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})					
+				} else {
+					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					
+					var date = new Date(dateStr);
+					
+					date = addDays(date, +0.95)
+					changeYearIfNeeded(date);	
+					
+					lastDate = date.toString()
+					lastDateStr = dateStr;
+					
+					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+				}
+			}
+		});
+	});
+	
+	parsedHTML('div.textbox').each(function(i, table) {
+		var lastDate = []
+		var lastDateStr;
+
+		// removes duplicates
+		if ($(table).find('table').length > 0)
+			return;
+		
+		$.load(table)('p').each(function(j, col) {
+			var text = $(col).text().trim();
+			if (text.search(/^(\w{3,5} +\d{1,2})/) !== -1) {
+					// deal with lectures!!
+				if (text.search(/^(\w{3,5} +\d{1,2} +& +\d{1,2})/) !== -1) {
+					// dealing with multiple dates
+					var dateStr1 = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(& +\d{1,2})/)[0].substring(1).trim()+' '+new Date().getFullYear()+' UTC';			
+
+					var date1 = new Date(dateStr1);
+					var date2 = new Date(dateStr2);					
+					
+					date1 = addDays(date1, +0.95)
+					date2 = addDays(date2, +0.95)					
+					changeYearIfNeeded(date1);
+					changeYearIfNeeded(date2);					
+					
+					lastDate = [date1.toString(), date2.toString()]					
+					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					
+					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+				} else {
+					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					
+					var date = new Date(dateStr);
+					
+					date = addDays(date, +0.95)
+					changeYearIfNeeded(date);	
+					
+					lastDate = date.toString()
+					lastDateStr = dateStr;
+					
+					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, dateProcessed:true}, 'course':course})
+				}
+			}
+		});
+	});
+	
+	return output;
+}
+
 // converts a table containing homework or assignment info and converts it to JSON
 function processPageTableSync(input, type, course) {
 	var startRow = -1;
 	var week, topic, objectives, resources, date, module, lecturer		// keeps track of which columns are which data
 	
-	if (!input)
+	if (input === undefined)
 		return {};
 	var parsedHTML = $.load(input.html());
 	var firstDate		// keeps track of when each block starts (to replace 'prior to Week N' dates)
@@ -286,7 +390,7 @@ function processPageTableSync(input, type, course) {
 				findStr = 'a, strong'
 				
 			var foundLink = !type.match('Homework') || tempJ !== topic;	// we only want extra elements on Homework
-			var title = $(col).find(findStr);			
+			var title = $(col).find(findStr);	
 
 			if (title.length === 1) {
 				title = title.first();
@@ -545,7 +649,7 @@ function processDashboard(html, module, session, callback) {
 	
 	var found = false;	
 	
-	parsedHTML('<h1 style="padding-left:2.5%; margin-bottom: -30px;">Homework</h1><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
+	parsedHTML('<h1 style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><h1 style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
 	
 	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left;"><h2>This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
 	
@@ -574,6 +678,7 @@ function processDashboard(html, module, session, callback) {
 		var homework = [];
 		var assignments = [];
 		var pccia = [];
+		var lectures = [];
 		
 		for (var i = 0; i < results.length; i++) {
 			if (results !== null && results[i] !== undefined && results[i].data !== undefined) {
@@ -584,6 +689,8 @@ function processDashboard(html, module, session, callback) {
 						assignments.push(results[i]);
 					if (results[i].type === 'PCCIA')
 						pccia.push(results[i]);
+					if (results[i].type === 'Lecture')
+						lectures.push(results[i]);						
 				}
 			}
 		}			
@@ -595,6 +702,10 @@ function processDashboard(html, module, session, callback) {
 		assignments.sort(function(a,b) {
 			return new Date(a.data.dueDate) - new Date(b.data.dueDate);
 		});
+		
+		lectures.sort(function(a,b) {
+			return new Date(a.data.date) - new Date(b.data.date);
+		});		
 		
 		homework.sort(function(a, b) {
 			var dateA = a.data;
@@ -619,9 +730,112 @@ function processDashboard(html, module, session, callback) {
 				}				
 			}			
 			return new Date(dateA) - new Date(dateB);
-		})
+		})		
+				
+		var todayLecture = false
+		var tomorrowLecture = false
+		for (var i = 0; i < lectures.length; i++) {
+			var content = lectures[i];						
+			var today = new Date();
+			today = addDays(today, -0.25);	// adjusts for time zones
+			var tomorrow = addDays(today, 1);
+			var twodays = addDays(today, 2);			
+			var yesterday = addDays(today, -1)			
+			
+			var dates = []
+			if (isArray(content.data.date)) {
+				for (var j = 0; j < content.data.date.length; j++)
+					dates.push(new Date(content.data.date[j]));
+			} else {
+				dates = [new Date(content.data.date)];
+			}
+			
+			var passed = false;
+			var isToday = false;
+			var isTomorrow = false;
+			
+			for (var j = 0; j < dates.length; j++) {
+				if (dates[j] >= yesterday) {
+					passed = true;
+				}
+				if (dates[j] >= today) {
+					passed = false;
+					isToday = true;
+				}
+				if (dates[j] >= tomorrow) {
+					isToday = false;
+					isTomorrow = true;
+				}
+				if (dates[j] >= twodays) {
+					isTomorrow = false;
+					passed = true;
+				}				
+			}
+			
+			if (isToday)
+				todayLecture = true;
+			
+			if (isTomorrow)
+				tomorrowLecture = true;
+		}
 		
-		fs.writeFileSync('temphw.json', JSON.stringify(homework, null, 4))
+		if (todayLecture || tomorrowLecture)
+			parsedHTML('<div id="faketodaylecture" style="padding:1%; width:48%; display:inline-block; position:relative;"><h2>Today</h2></div><div id="faketomorrowlecture" style="padding:1%; width:48%; display:inline-block; float:right;"><h2>Tomorrow</h2></div>').appendTo('#fakelecturenav')
+		else
+			parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>No Immediate Lectures!</h4></div>').appendTo('#fakelecturenav');
+			
+		if (!todayLecture) {
+			parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>None Today!</h4></div>').appendTo('#faketodaylecture');
+		}
+		if (!tomorrowLecture) {
+			parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>None Tomorrow!</h4></div>').appendTo('#faketomorrowlecture');
+		}
+			
+		for (var i = 0; i < lectures.length; i++) {
+			var content = lectures[i];						
+			var today = new Date();
+			today = addDays(today, -0.25);	// adjusts for time zones
+			var tomorrow = addDays(today, 1);
+			var twodays = addDays(today, 2);			
+			var yesterday = addDays(today, -1)			
+			
+			var dates = []
+			if (isArray(content.data.date)) {
+				for (var j = 0; j < content.data.date.length; j++)
+					dates.push(new Date(content.data.date[j]));
+			} else {
+				dates = [new Date(content.data.date)];
+			}
+			
+			var passed = false;
+			var isToday = false;
+			var isTomorrow = false;
+			
+			for (var j = 0; j < dates.length; j++) {
+				if (dates[j] >= yesterday) {
+					passed = true;
+				}
+				if (dates[j] >= today) {
+					passed = false;
+					isToday = true;
+				}
+				if (dates[j] >= tomorrow) {
+					isToday = false;
+					isTomorrow = true;
+				}
+				if (dates[j] >= twodays) {
+					isTomorrow = false;
+					passed = true;
+				}				
+			}
+				
+			if (isToday) {
+				parsedHTML('<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; margin-left: 1%; margin-right: 1%; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;">'+content.data.html+'</div>').appendTo('#faketodaylecture')
+			}	
+			if (isTomorrow) {
+				parsedHTML('<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; margin-left: 1%; margin-right: 1%; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;">'+content.data.html+'</div>').appendTo('#faketomorrowlecture')				
+			}			
+		}
 		
 		for (var i = 0; i < pccia.length; i++) {
 			var content = pccia[i];			
@@ -655,7 +869,7 @@ function processDashboard(html, module, session, callback) {
 			var output = '<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';
 			var output2 = '<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';			
 			var multipleOutput = false;
-			var replaceDate = true;		// whether a date should be replaced by a relative date (today, tomorrow, etc)
+			var replaceDate = true;		// whether a date should be replaced by a relative date (tonight, tomorrow, etc)
 			
 			if (Object.keys(content.data).length < 4)
 				continue;
@@ -687,7 +901,7 @@ function processDashboard(html, module, session, callback) {
 				}
 			}
 			
-			if (content.data.displayDate) {
+			if (content.data.displayDate && !multipleOutput) {
 				dateStr1 = 'Prior to your ' + content.data.displayDate;
 				dateStr2 = 'Prior to your ' + content.data.displayDate;
 				replaceDate = false;				
@@ -850,16 +1064,16 @@ function processDashboard(html, module, session, callback) {
 								
 				if (passed && replaceDate) {
 					output = output.replace('%DATE%', 'Yesterday');
-					output2 = output.replace('%DATE%', 'Yesterday');
+					output2 = output2.replace('%DATE%', 'Yesterday');
 				} else if (upcomingSoon && replaceDate) {
 					output = output.replace('%DATE%', 'Tonight');
-					output2 = output.replace('%DATE%', 'Tonight');
+					output2 = output2.replace('%DATE%', 'Tonight');
 				} else if (upcoming && replaceDate) {
 					output = output.replace('%DATE%', 'Tomorrow');
-					output2 = output.replace('%DATE%', 'Tomorrow');
+					output2 = output2.replace('%DATE%', 'Tomorrow');
 				} else {
 					output = output.replace('%DATE%', dateStr1);
-					output2 = output.replace('%DATE%', dateStr2);
+					output2 = output2.replace('%DATE%', dateStr2);
 				}
 				parsedHTML(output).appendTo('#fakeweek');
 				if (multipleOutput)
