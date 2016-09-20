@@ -49,9 +49,17 @@ function processRequest(req, module, response, pathname, session, cookiejar) {
         });
     } else {
 		module({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {'Cookie': userInfo[session]?userInfo[session]['cookie']:''}}, function(err, resp, html) {          
-			response.writeHead(200, {"Content-Type": "text/html"});  		
-			response.write(cleanHTML(html));		
-			response.end();		
+			if (pathname.match('/')) {
+				processDashboard(html, module, session, function(res) {
+					response.writeHead(200, {"Content-Type": "text/html"});  							
+					response.write(res);
+					response.end();							
+				});	
+			} else {
+				response.writeHead(200, {"Content-Type": "text/html"});  		
+				response.write(cleanHTML(html));		
+				response.end();	
+			}
 		});	    
     }
 }
@@ -227,14 +235,18 @@ function processPageInner(href, module, pageType, course, session, callback) {
 					
 					if (homework.length === 0) {
 						if (pageType.match('Lecture')) {
-							_callback(err, processPageLectureSync(parsedHTML, course))						
+							console.log("NO LECTURE")
+							_callback(err, undefined)						
 						} else {
 							var out = parsedHTML('table');
 							
 							if (out.length > 0)
 								_callback(err, processPageTableSync(out, pageType, course))
-							else
+							else {
+								console.log("NO HOMEWORK")								
 								_callback(err, undefined)
+// 									fail = true;
+							}
 						}
 					} else {
 						async.map(homework, function(href, __callback) {	
@@ -255,7 +267,7 @@ function processPageInner(href, module, pageType, course, session, callback) {
 						}, _callback);
 					}
 				}
-			})			
+			})	
 		}
 	], callback)
 }
