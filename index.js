@@ -808,7 +808,7 @@ function processDashboard(html, module, session, callback) {
 		}
 		
 		if (todayLecture || tomorrowLecture)
-			parsedHTML('<div id="faketodaylecture" style="padding:1%; width:48%; display:inline-block; position:relative;"><h2>Today</h2></div><div id="faketomorrowlecture" style="padding:1%; width:48%; display:inline-block; float:right;"><h2>Tomorrow</h2></div>').appendTo('#fakelecturenav')
+			parsedHTML('<div id="faketodaylecture" style="padding:1%; width:48%; display:inline-block; position:relative; vertical-align:top;"><h2>Today</h2></div><div id="faketomorrowlecture" style="padding:1%; width:48%; display:inline-block; position:relative; vertical-align:top;"><h2>Tomorrow</h2></div>').appendTo('#fakelecturenav')
 		else
 			parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>No Immediate Lectures!</h4></div>').appendTo('#fakelecturenav');
 			
@@ -857,11 +857,22 @@ function processDashboard(html, module, session, callback) {
 				}				
 			}
 				
+			var hash = crypto.createHash('md5').update(content.course).digest('hex');
+	
+				
 			if (isToday) {
-				parsedHTML('<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; margin-left: 1%; margin-right: 1%; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;">'+content.data.html+'</div>').appendTo('#faketodaylecture')
+				var prev = parsedHTML('#faketodaylecture').find('.today_'+hash)
+				if (prev.length > 0)
+					$(prev).append('<br><br>'+content.data.html)
+				else
+					parsedHTML('<div class="today_'+hash+'" style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; margin-left: 1%; margin-right: 1%; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;">'+content.data.html+'</div>').appendTo('#faketodaylecture')
 			}	
 			if (isTomorrow) {
-				parsedHTML('<div style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; margin-left: 1%; margin-right: 1%; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;">'+content.data.html+'</div>').appendTo('#faketomorrowlecture')				
+				var prev = parsedHTML('#faketomorrowlecture').find('.tomorrow_'+hash)
+				if (prev.length > 0)
+					$(prev).append('<br><br>'+content.data.html)
+				else				
+					parsedHTML('<div class="tomorrow_'+hash+'" style="padding: 2px 8px 8px 8px; position:relative; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; margin-left: 1%; margin-right: 1%; background-color:'+colourForCourse(content.course)+'; opacity: 1.0;">'+content.data.html+'</div>').appendTo('#faketomorrowlecture')				
 			}			
 		}
 		
