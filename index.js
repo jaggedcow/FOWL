@@ -195,9 +195,10 @@ function processPageInner(href, module, pageType, course, session, callback) {
 	async.waterfall([
 		function(_callback) {
 			module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
-				if (err)
+				if (err) {
+					console.log(err);
 					_callback(err, null);
-				else {
+				} else {
 					var parsedHTML = $.load(html);
 					
 					parsedHTML('iframe').map(function(i, frame) {
@@ -210,14 +211,15 @@ function processPageInner(href, module, pageType, course, session, callback) {
 		},
 		function(src, _callback) {
 			module({followAllRedirects: true, url: src, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
-				if (err)
+				if (err) {
+					console.log(err);
 					_callback(err, null);
-				else {
+				} else {
 					var parsedHTML = $.load(html);
 					var homework = [];
 					
 					// for ITM ILs, which are split up over multiple weeks
-					parsedHTML('.itemlink').map(function(i, link) {
+					parsedHTML('.itemlink').each(function(i, link) {
 						var href = $(link).attr('href');
 						
 						homework.push(href);
@@ -225,11 +227,14 @@ function processPageInner(href, module, pageType, course, session, callback) {
 					
 					if (homework.length === 0) {
 						if (pageType.match('Lecture')) {
-// 							_callback(err, processPageLectureSync(parsedHTML, course))						
+							_callback(err, processPageLectureSync(parsedHTML, course))						
 						} else {
 							var out = parsedHTML('table');
 							
-							_callback(err, processPageTableSync(out, pageType, course))
+							if (out.length > 0)
+								_callback(err, processPageTableSync(out, pageType, course))
+							else
+								_callback(err, undefined)
 						}
 					} else {
 						async.map(homework, function(href, __callback) {	
@@ -383,8 +388,6 @@ function processPageTableSync(input, type, course) {
 	var startRow = -1;
 	var week, topic, objectives, resources, date, module, lecturer		// keeps track of which columns are which data
 	
-	if (input === undefined)
-		return {};
 	var parsedHTML = $.load(input.html());
 	var firstDate		// keeps track of when each block starts (to replace 'prior to Week N' dates)
 	var endDate			// keeps track of when each block ends (to replace 'prior to end of X' dates)
