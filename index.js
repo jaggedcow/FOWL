@@ -225,7 +225,7 @@ function processPageInner(href, module, pageType, course, session, callback) {
 					
 					if (homework.length === 0) {
 						if (pageType.match('Lecture')) {
-							__callback(err, processPageLectureSync(parsedHTML, course))						
+// 							_callback(err, processPageLectureSync(parsedHTML, course))						
 						} else {
 							var out = parsedHTML('table');
 							
