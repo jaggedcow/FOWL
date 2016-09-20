@@ -110,7 +110,8 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	
 		
 	replaceSet.get().forEach(function(href) {
-		temp = replaceAll(''+href,'http://owl.uwo.ca'+href, temp);	
+		if (href.lastIndexOf('/', 0) === 0)
+			temp = replaceAll(''+href,'http://owl.uwo.ca'+href, temp);	
 	});
 	redirectSet.get().forEach(function(href) {
 		if (href.lastIndexOf('http://owl.uwo.ca', 0) === 0)
@@ -697,7 +698,7 @@ function processDashboard(html, module, session, callback) {
 	
 	parsedHTML('<h1 style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><h1 style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
 	
-	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left;"><h2>This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
+	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
 	
 	parsedHTML('ul[class=otherSitesCategorList]').children().map(function(i, li) {
 		found = true;
@@ -1087,13 +1088,19 @@ function processDashboard(html, module, session, callback) {
 			var twodays = addDays(today, 2);
 			var yesterday = addDays(today, -1)
 			var nextweek = addDays(today, 6)		
+			var pastweek = addDays(today, -7)					
 			var upcoming = false;
 			var upcomingLater = false;
 			var upcomingSoon = false;
 			var passed = false;			
-			var withinWeek = false;			
+			var withinWeek = false;	
+			var prevWeek = false;						
 			for (var j = 0; j < dates.length; j++) {
+				if (dates[j] >= pastweek) {
+					prevWeek = true;
+				}				
 				if (dates[j] >= yesterday) {
+					prevWeek = false;
 					passed = true;
 				}
 				if (dates[j] >= today) {
@@ -1135,10 +1142,16 @@ function processDashboard(html, module, session, callback) {
 				parsedHTML(output).appendTo('#fakeweek');
 				if (multipleOutput)
 					parsedHTML(output2).appendTo('#fakeweek');			
-			} else if (!withinWeek) {
-				futureHomeworkExists = true;
-				output = output.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');
-				output2 = output2.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');	
+			} else if (!withinWeek || prevWeek) {
+				futureHomeworkExists = !withinWeek;
+				
+				if (prevWeek) {
+					output = output.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="pastweek"');
+					output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="pastweek"');	
+				} else {
+					output = output.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');
+					output2 = output2.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');						
+				}
 							
 				parsedHTML(output.replace('%DATE%', dateStr1)).appendTo('#fakeweek');
 				if (multipleOutput)
@@ -1146,26 +1159,14 @@ function processDashboard(html, module, session, callback) {
 			}
 		}
 		
-		
-/*
-		if (logErrors) {
-			fs.writeFileSync('chkhw.json', JSON.parse(homework, null, 4));
-			fs.writeFileSync('chkpc.json', JSON.parse(pccia, null, 4));
-			fs.writeFileSync('chkas.json', JSON.parse(assignments, null, 4));						
-		}
-*/
-/*
-		Not working yet - just add external JS and CSS!!!
 		if (futureHomeworkExists) {
-			console.log("HWLLO");
-			parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-right: 20%; margin-left: 20%; text-align: center; cursor: pointer; background-color: hsl(0, 0%, 96%);" onmouseover="function() {'+
-				'this.style.backgroundColor = "hsl(0, 0%, 90%);";'+
-			'}" onmouseout="function() {'+
-				'this.style.backgroundColor = "hsl(0, 0%, 96%);";'+
-			'}><h4>Show All</h4></div>').appendTo('#fakeweek');	
+			parsedHTML('<div id="showAllButton" class="hoverButton" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-right: 20%; margin-left: 20%; text-align: center; cursor: pointer;"><h4>Show All</h4></div>').appendTo('#fakeweek');	
+			parsedHTML('<font small><div id="showPrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 30px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');				
 		}
-*/
-		
+			
+		parsedHTML('body').append('<style>#showAllButton { background-color: hsl(0, 0%, 96%); } #showAllButton:hover {background-color: hsl(0, 0%, 93%);}#showPrevButton { color: #9776C1; } #showPrevButton:hover {color: #623f8d;}</style>')
+		parsedHTML('body').append('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>')
+		parsedHTML('body').append('<script type="text/javascript">$(document).ready(function() {$("#showAllButton").on("click", function(){$("#showAllButton").fadeOut();$(".comingsoon").fadeIn()});$("#showPrevButton").on("click", function(){$("#showPrevButton").fadeOut();$(".pastweek").fadeIn()});});</script>')		
 
 		callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
 	});
