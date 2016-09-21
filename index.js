@@ -744,7 +744,7 @@ function processDashboard(html, module, session, callback) {
 			}
 		}			
 		
-				fs.writeFileSync('templc.json', JSON.stringify(lectures, null, 4))
+// 				fs.writeFileSync('templc.json', JSON.stringify(lectures, null, 4))
 		
 		pccia.sort(function(a,b) {
 			return parseInt(a.data.week) - parseInt(b.data.week);
