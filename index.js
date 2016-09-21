@@ -21,7 +21,6 @@ function replaceAll (find, replace, str) {
 
 function processRequest(req, module, response, pathname, session, cookiejar) {
     if (req.method == 'POST') {
-	    console.log('POST', pathname)
         var body = '';
 
         req.on('data', function (data) {
@@ -50,10 +49,8 @@ function processRequest(req, module, response, pathname, session, cookiejar) {
         });
     } else {
 		module({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {'Cookie': userInfo[session]?userInfo[session]['cookie']:''}}, function(err, resp, html) {          
-	    console.log('GET', pathname)			
 			if (pathname.match('/')) {
 				processDashboard(html, module, session, function(res) {
-				console.log("MATCH", res)					
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
 					response.end();							
