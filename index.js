@@ -924,7 +924,7 @@ function processDashboard(html, module, session, callback) {
 		for (var i = 0; i < assignments.length; i++) {
 			var content = assignments[i];						
 			parsedHTML('<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>'+content.data.title+'</h4>'+
-			'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(new Date(content.data.dueDate), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
+			'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(addDays(new Date(content.data.dueDate),-0.05), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
 		}
 		
 		var maxPreviousDate = 0;
