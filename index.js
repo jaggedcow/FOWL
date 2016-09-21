@@ -21,6 +21,7 @@ function replaceAll (find, replace, str) {
 
 function processRequest(req, module, response, pathname, session, cookiejar) {
     if (req.method == 'POST') {
+	    console.log('POST', pathname)
         var body = '';
 
         req.on('data', function (data) {
@@ -49,8 +50,10 @@ function processRequest(req, module, response, pathname, session, cookiejar) {
         });
     } else {
 		module({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {'Cookie': userInfo[session]?userInfo[session]['cookie']:''}}, function(err, resp, html) {          
+	    console.log('GET', pathname)			
 			if (pathname.match('/')) {
 				processDashboard(html, module, session, function(res) {
+				console.log("MATCH", res)					
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
 					response.end();							
@@ -75,7 +78,7 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 		
 	var replaceSet = new Set();
 	var redirectSet = new Set();
-	var downgradeSet = new Set();	
+	var downgradeSet = new Set();
 
 	parsedHTML('img').map(function(i, img) {
 		var href = $(img).attr('src')
@@ -125,6 +128,8 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	temp = replaceAll('http://owl.uwo.ca', 'https://owl.uwo.ca', temp);
 	temp = replaceAll('OWL', 'FOWL', temp);
 	temp = replaceAll('Welcome to FOWL', 'Welcome to Fake OWL', temp);	
+	temp = replaceAll("window.location='https://owl.uwo.ca/portal'", "window.location='/portal'", temp);
+	temp = replaceAll('<a href="https://owl.uwo.ca/portal">','<a href="/portal">',temp)
 	
 	return replaceClasses(temp);
 }
