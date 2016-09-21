@@ -43,7 +43,8 @@ function processRequest(req, module, response, pathname, session, cookiejar) {
 				processDashboard(html, module, session, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
-					response.end();							
+					response.end();	
+					delete userInfo[session]	// logs out user											
 				});		
 			});	            
         });
@@ -53,7 +54,8 @@ function processRequest(req, module, response, pathname, session, cookiejar) {
 				processDashboard(html, module, session, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
-					response.end();							
+					response.end();	
+					delete userInfo[session]	// logs out user											
 				});	
 			} else {
 				response.writeHead(200, {"Content-Type": "text/html"});  		
@@ -126,7 +128,8 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	temp = replaceAll('OWL', 'FOWL', temp);
 	temp = replaceAll('Welcome to FOWL', 'Welcome to Fake OWL', temp);	
 	temp = replaceAll("window.location='https://owl.uwo.ca/portal'", "window.location='/portal'", temp);
-	temp = replaceAll('<a href="https://owl.uwo.ca/portal">','<a href="/portal">',temp)
+	temp = replaceAll('<a href="https://owl.uwo.ca/portal">','<a href="/portal">',temp)		// requires full tag to prevent removing other portal links
+	temp = replaceAll('href="https://owl.uwo.ca/portal/logout"','href="/portal/logout"',temp)	
 	temp = replaceAll('<meta http-equiv="Refresh" content="0:URL=https://owl.uwo.ca/portal">','<meta http-equiv="Refresh" content="0:URL=/portal">',temp)
 	
 	return replaceClasses(temp);
