@@ -920,6 +920,7 @@ function processDashboard(html, module, session, callback) {
 			'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(new Date(content.data.dueDate), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
 		}
 		
+		var maxPreviousDate = 0;
 		var futureHomeworkExists = false;		// used to toggle 'Show All' button
 		var logErrors = false;
 		for (var i = 0; i < homework.length; i++) {
@@ -1088,19 +1089,30 @@ function processDashboard(html, module, session, callback) {
 			var twodays = addDays(today, 2);
 			var yesterday = addDays(today, -1)
 			var nextweek = addDays(today, 6)		
-			var pastweek = addDays(today, -7)					
+			var pastweek = addDays(today, -7)
+			var pastweek2 = addDays(today, -14)
+			var pastweek3 = addDays(today, -21)											
+			var pastweek4 = addDays(today, -28)
+			var pastweek5 = addDays(today, -35)						
 			var upcoming = false;
 			var upcomingLater = false;
 			var upcomingSoon = false;
 			var passed = false;			
 			var withinWeek = false;	
-			var prevWeek = false;						
+			var prevWeek = -1;						
 			for (var j = 0; j < dates.length; j++) {
-				if (dates[j] >= pastweek) {
-					prevWeek = true;
-				}				
+				if (dates[j] >= pastweek5)
+					prevWeek = 5;
+				if (dates[j] >= pastweek4)
+					prevWeek = 4;
+				if (dates[j] >= pastweek3)
+					prevWeek = 3;
+				if (dates[j] >= pastweek2)
+					prevWeek = 2;
+				if (dates[j] >= pastweek)
+					prevWeek = 1;																		
 				if (dates[j] >= yesterday) {
-					prevWeek = false;
+					prevWeek = 0;
 					passed = true;
 				}
 				if (dates[j] >= today) {
@@ -1142,12 +1154,14 @@ function processDashboard(html, module, session, callback) {
 				parsedHTML(output).appendTo('#fakeweek');
 				if (multipleOutput)
 					parsedHTML(output2).appendTo('#fakeweek');			
-			} else if (!withinWeek || prevWeek) {
+			} else if (!withinWeek || prevWeek > 0) {
 				futureHomeworkExists = !withinWeek;
 				
-				if (prevWeek) {
-					output = output.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="pastweek"');
-					output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="pastweek"');	
+				if (prevWeek > 0) {
+					if (prevWeek > maxPreviousDate)
+						maxPreviousDate = prevWeek
+					output = output.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="pastweek'+prevWeek+'"');
+					output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="pastweek'+prevWeek+'"');	
 				} else {
 					output = output.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');
 					output2 = output2.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');						
@@ -1166,7 +1180,7 @@ function processDashboard(html, module, session, callback) {
 			
 		parsedHTML('body').append('<style>#showAllButton { background-color: hsl(0, 0%, 96%); } #showAllButton:hover {background-color: hsl(0, 0%, 93%);}#showPrevButton { color: #9776C1; } #showPrevButton:hover {color: #623f8d;}</style>')
 		parsedHTML('body').append('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>')
-		parsedHTML('body').append('<script type="text/javascript">$(document).ready(function() {$("#showAllButton").on("click", function(){$("#showAllButton").fadeOut();$(".comingsoon").fadeIn()});$("#showPrevButton").on("click", function(){$("#showPrevButton").fadeOut();$(".pastweek").fadeIn()});});</script>')		
+		parsedHTML('body').append('<script type="text/javascript">$(document).ready(function() {var count = 1;$("#showAllButton").on("click", function(){$("#showAllButton").fadeOut();$(".comingsoon").fadeIn()});$("#showPrevButton").on("click", function(){if (count === '+maxPreviousDate+')$("#showPrevButton").fadeOut();$(".pastweek"+count).fadeIn();count++;});});</script>')		
 
 		callback(_cleanHTML(parsedHTML, found?parsedHTML.html():html, ignoredURLs));		
 	});
