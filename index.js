@@ -93,9 +93,8 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	
 	parsedHTML('a').map(function(i, img) {
 		var href = $(img).attr('href')
-		var target = $(img).attr('target')		
-		if (!target && !ignoredURLs.contains(href))		// ignores external links
-			redirectSet.add(href);
+		if (!ignoredURLs.contains(href))
+			replaceSet.add(href);
 	})	
 	parsedHTML('form').map(function(i, img) {
 		var href = $(img).attr('action')
