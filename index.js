@@ -127,6 +127,7 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	temp = replaceAll('Welcome to FOWL', 'Welcome to Fake OWL', temp);	
 	temp = replaceAll("window.location='https://owl.uwo.ca/portal'", "window.location='/portal'", temp);
 	temp = replaceAll('<a href="https://owl.uwo.ca/portal">','<a href="/portal">',temp)
+	temp = replaceAll('<meta http-equiv="Refresh" content="0:URL=https://owl.uwo.ca/portal">','<meta http-equiv="Refresh" content="0:URL=/portal">',temp)
 	
 	return replaceClasses(temp);
 }
@@ -742,6 +743,8 @@ function processDashboard(html, module, session, callback) {
 				}
 			}
 		}			
+		
+				fs.writeFileSync('templc.json', JSON.stringify(lectures, null, 4))
 		
 		pccia.sort(function(a,b) {
 			return parseInt(a.data.week) - parseInt(b.data.week);
