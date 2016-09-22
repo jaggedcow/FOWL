@@ -703,7 +703,7 @@ function processDashboard(html, module, session, callback) {
 	
 	parsedHTML('<h1 style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><h1 style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
 	
-	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
+	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Pending Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
 	
 	parsedHTML('ul[class=otherSitesCategorList]').children().map(function(i, li) {
 		found = true;
@@ -922,9 +922,11 @@ function processDashboard(html, module, session, callback) {
 		}
 		
 		for (var i = 0; i < assignments.length; i++) {
-			var content = assignments[i];						
-			parsedHTML('<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>'+content.data.title+'</h4>'+
-			'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(addDays(new Date(content.data.dueDate),-0.05), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
+			var content = assignments[i];	
+			
+			if (content.data.status.indexOf("Submitted") === -1)					
+				parsedHTML('<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+colourForCourse(content.course)+';"><h4>'+content.data.title+'</h4>'+
+				'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(addDays(new Date(content.data.dueDate),-0.05), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
 		}
 		
 		var maxPreviousDate = 0;
