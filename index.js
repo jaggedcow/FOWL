@@ -716,6 +716,9 @@ function processDashboard(html, module, session, callback) {
 				sites[hash] = {'href':href, 'course':title};
 				ignoredURLs.add(href);
 				parsedHTML('<div style="padding: 2px 8px 2px 8px; margin-bottom: 8px; '+dropShadowForCourse(title)+' background-color:'+colourForCourse(title)+';"><h3><a id="'+hash+'" target="_blank" href="'+href+'" title="'+title+'"><span>'+title+'</span></a><h3></div>').appendTo('#fakehomework');
+				if (title.indexOf('5139') !== -1) {
+					parsedHTML('<div style="padding: 1px 8px 1px 8px; margin-top: -7px; margin-left: 24px; margin-bottom: 8px; font-size: 10px; -webkit-box-shadow: hsla(133, 20%, 55%, 0.5) 0px 1px 1px; box-shadow: hsla(133, 20%, 55%, 0.5) 0px 1px 1px; background-color: hsl(133, 100%, 96%);"><h3><a id="'+hash+'_hanbook" target="_blank" href="https://owl.uwo.ca/access/content/group/9ed134dc-0872-476b-a56e-1bfe1d80bb29/Introduction%20to%20Interviewing/pcm1_16_17_interviewing_student_syllabus_FINAL%20REVISED.pdf#page=8" title="Interviewing Handbook"><span>Interviewing Handbook</span></a><h3></div>').appendTo('#fakehomework');
+				}
 			}
 		})
 	});
