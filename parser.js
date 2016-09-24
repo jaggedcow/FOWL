@@ -5,23 +5,22 @@ var df = require('dateformat')
 var Set = require('set') 
 
 var formatter = require('./formatter')
-var index = require('./index')
 var util = require('./util')
 
-function _processPage(href, module, course, session, callback) {
+function _processPage(href, module, course, session, userInfo, callback) {
 	href = href.replace('https','http');
-	module({followAllRedirects: true, url: href, headers: {'Cookie': index.userInfo[session]['cookie']}}, function(err, resp, html) {  
+	module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
 		if (err) {
 			console.log(err);
 			callback(err, null);
 		} else {
-			_processPageSidebar(html, module, course, session, callback);
+			_processPageSidebar(html, module, course, session, userInfo, callback);
 		}
 	});	 	
 }
 
 // grabs the sidebar links from a page and picks out the relevant parts for a dashboard
-function _processPageSidebar(html, module, course, session, callback) {
+function _processPageSidebar(html, module, course, session, userInfo, callback) {
 	var options = ['PCCIA', 'Homework', 'Assignments', 'Lecture'];
 	var blacklist = new Set(['Assignments Course Map']);
 	
@@ -50,12 +49,12 @@ function _processPageSidebar(html, module, course, session, callback) {
 	}
 	
 	async.map(output, function(site, _callback) {
-		_processPageInner(site, module, itemp[site], course, session, _callback);
+		_processPageInner(site, module, itemp[site], course, session, userInfo, _callback);
 	}, callback);
 }
 
 // finds the frame holding the homework or assignments list and grabs the table
-function _processPageInner(href, module, pageType, course, session, callback) {
+function _processPageInner(href, module, pageType, course, session, userInfo, callback) {
 	if (!href) {
 		callback(null, undefined);
 		return;
@@ -65,7 +64,7 @@ function _processPageInner(href, module, pageType, course, session, callback) {
 	
 	async.waterfall([
 		function(_callback) {
-			module({followAllRedirects: true, url: href, headers: {'Cookie': index.userInfo[session]['cookie']}}, function(err, resp, html) {  
+			module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
 				if (err) {
 					console.log(err);
 					_callback(err, null);
@@ -81,7 +80,7 @@ function _processPageInner(href, module, pageType, course, session, callback) {
 			})			
 		},
 		function(src, _callback) {
-			module({followAllRedirects: true, url: src, headers: {'Cookie': index.userInfo[session]['cookie']}}, function(err, resp, html) {  
+			module({followAllRedirects: true, url: src, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
 				if (err) {
 					console.log(err);
 					_callback(err, null);
@@ -113,7 +112,7 @@ function _processPageInner(href, module, pageType, course, session, callback) {
 						}
 					} else {
 						async.map(homework, function(href, __callback) {	
-							module({followAllRedirects: true, url: href, headers: {'Cookie': index.userInfo[session]['cookie']}}, function(err, resp, html) {  
+							module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
 								if (err)
 									__callback(err, null);
 								else {
@@ -543,7 +542,7 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 	return {data: obj, firstDate:firstDate, endDate:lastDate};
 }
 
-function processJSON(html, module, session, JSONoutput, callback) {
+function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, callback) {
 	var ignoredURLs = new Set();	
 	var sites = {}	
 	var classes = []
@@ -566,7 +565,7 @@ function processJSON(html, module, session, JSONoutput, callback) {
 	});		
 
 	async.map(Object.keys(sites), function(site, _callback) {
-		_processPage(sites[site]['href'], module, sites[site]['course'], session, _callback)
+		_processPage(sites[site]['href'], module, sites[site]['course'], session, userInfo, _callback)
 	}, function(err, results) {
 		if (err) console.log(err);
 				
@@ -629,16 +628,19 @@ function processJSON(html, module, session, JSONoutput, callback) {
 			return new Date(dateA) - new Date(dateB);
 		})
 		
-		if (JSONoutput)
-			callback(JSON.stringify({classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}));
-		else
+		if (JSONoutput) {
+			if (prettyOutput)
+				callback(JSON.stringify({classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}, null, 4))
+			else
+				callback(JSON.stringify({classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}));
+		} else
 			callback({ignoredURLs:ignoredURLs, formatObj:formatObj, classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia});
 	});	
 }
 
 // finds the class pages wanted on the dashboard
-function processDashboard(html, module, session, callback) {	
-	processJSON(html, module, session, false, function(out) {
+function processDashboard(html, module, session, userInfo, callback) {	
+	processJSON(html, module, session, userInfo, false, undefined, function(out) {
 		var classes = out.classes
 		var homework = out.homework;
 		var assignments = out.assignments;
@@ -784,4 +786,5 @@ function processDashboard(html, module, session, callback) {
 	});
 }
 
-exports.processDashboard = processDashboard;
+exports.processDashboard 	= processDashboard;
+exports.processJSON 		= processJSON;
