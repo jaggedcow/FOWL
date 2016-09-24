@@ -559,7 +559,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 				sites[hash] = {'href':href, 'course':title};
 				ignoredURLs.add(href);
 				
-				classes.push({title:title, href:href, hash:hash})
+				classes.push({title:title, href:href, hash:hash, displayTitle:util.replaceClasses(title)})
 			}
 		})
 	});		
