@@ -126,7 +126,9 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
 					response.end();	
-					delete userInfo[username].cookie	// logs out user	
+					
+					if (username)
+						delete userInfo[username].cookie	// logs out user	
 					
 					if (!err) {
 						userInfo[username].pass = util.encrypt(""+post['pw']);

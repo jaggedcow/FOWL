@@ -36,6 +36,9 @@ function encrypt(string) {
 }
 
 function decrypt(string) {
+	if (!string)
+		return undefined
+		
 	var configKey = new Buffer(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
 	
 /*
