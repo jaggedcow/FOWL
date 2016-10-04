@@ -46,7 +46,8 @@ function processLogin(module, response, pathname, username, cookiejar) {
 		request.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 			if (!err) {
 				cookiejar.set('eid', post['eid'], {expires:util.addDays(new Date(), 7)});
-// 				cookiejar.set('pw', post['pw'], {expires:util.addDays(new Date(), 7)});
+				cookiejar.set('pw', util.encrypt(post['pw']), {expires:util.addDays(new Date(), 7)});
+				cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), 7)});								
 			}
 					
 			parser.processDashboard(html, module, username, userInfo, function(res) {
@@ -87,7 +88,8 @@ function processJSON(module, response, query, username, cookiejar) {
 		request.post({followAllRedirects: true, url: 'http://owl.uwo.ca/portal/xlogin', headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 			if (!err) {
 				cookiejar.set('eid', post['eid'], {expires:util.addDays(new Date(), 7)});
-// 				cookiejar.set('pw', post['pw'], {expires:util.addDays(new Date(), 7)});
+				cookiejar.set('pw', util.encrypt(post['pw']), {expires:util.addDays(new Date(), 7)});
+				cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), 7)});				
 			} 
 			
 			parser.processJSON(html, request, username, userInfo, true, query.pretty, function(res) {
@@ -122,7 +124,8 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 				if (!err) {
 					cookiejar.set('eid', post['eid'], {expires:util.addDays(new Date(), 7)});
-// 					cookiejar.set('pw', post['pw'], {expires:util.addDays(new Date(), 7)});				
+					cookiejar.set('pw', util.encrypt(post['pw']), {expires:util.addDays(new Date(), 7)});	
+					cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), 7)});												
 				}
 				parser.processDashboard(html, module, username, userInfo, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
@@ -165,19 +168,27 @@ serverFunc = function(req, response) {
 	var cookiejar = new Cookies(req, response);
 	var pathname = url.parse(req.url).pathname;
 		
-	var username = cookiejar.get('eid');
-// 	var password = cookiejar.get('pw');		
+	var username = cookiejar.get('eid')
+	var key = cookiejar.get('key')
 	
-	if (username && !userInfo[username])
+	if (key) {
+		password = util.decrypt(cookiejar.get('pw'), new Buffer(key,'hex')) 	
+	}
+	
+	if (username && !password && !userInfo[username])
 		username = undefined
 	
-// 	if (username && !userInfo[username])
-// 		userInfo[username] = {pass: util.encrypt(""+password)}
+	if (username && !userInfo[username])
+		userInfo[username] = {pass: util.encrypt(""+password)}
 	
     var query = url.parse(unescape(req.url), true).query; 
 
-	if (pathname.match('/portal/logout'))
+	if (pathname.match('/portal/logout')) {
 		delete userInfo[username] 
+		cookiejar.set('eid')
+		cookiejar.set('pw')
+		cookiejar.set('key')		
+	}
 
 	if (pathname.match('/json')) {
 		if (query.user !== undefined && query.pw !== undefined)		
