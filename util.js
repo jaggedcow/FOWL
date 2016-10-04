@@ -6,24 +6,26 @@ var Set = require('set')
 var sys = require('systeminformation')
 var xor = require('buffer-xor')
 
-var sourceKey = Buffer.from('900f29b4e6564518c09ef4c3adb44fb233a43ad77eae1b4be5cbefe3b35539d42a1feec4','hex')
+var sourceKey = new Buffer('900f29b4e6564518c09ef4c3adb44fb233a43ad77eae1b4be5cbefe3b35539d42a1feec4','hex')
 var memoryKey = undefined
 
 function encrypt(string) {
 	if (memoryKey === undefined)
 		memoryKey = crypto.randomBytes(36)
-	var configKey = Buffer.from(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
+	var configKey = new Buffer(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
 	
+/*
 	var done = false
 	var uuidKey = undefined
 	sys.system(function(data) {
-		uuidKey = Buffer.from(data.uuid,'utf-8')
+		uuidKey = new Buffer(data.uuid,'utf-8')
 		done = true
 	})
 	require('deasync').loopWhile(function(){return !done;});
+*/
 	
-	var key = xor(sourceKey, uuidKey)
-	var key = xor(key, configKey)	
+// 	var key = xor(sourceKey, uuidKey)
+	var key = xor(sourceKey, configKey)	
 	var key = xor(key, memoryKey)	
 	
 	var cipher = crypto.createCipher('aes256', key.toString('hex'))
@@ -34,18 +36,20 @@ function encrypt(string) {
 }
 
 function decrypt(string) {
-	var configKey = Buffer.from(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
+	var configKey = new Buffer(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
 	
+/*
 	var done = false
 	var uuidKey = undefined
 	sys.system(function(data) {
-		uuidKey = Buffer.from(data.uuid,'utf-8')
+		uuidKey = new Buffer(data.uuid,'utf-8')
 		done = true
 	})
 	require('deasync').loopWhile(function(){return !done;});
+*/
 	
-	var key = xor(sourceKey, uuidKey)
-	var key = xor(key, configKey)	
+// 	var key = xor(sourceKey, uuidKey)
+	var key = xor(sourceKey, configKey)	
 	var key = xor(key, memoryKey)	
 	
 	var decipher = crypto.createDecipher('aes256', key.toString('hex'))
