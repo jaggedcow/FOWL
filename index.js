@@ -45,8 +45,8 @@ function processLogin(module, response, pathname, username, cookiejar) {
 		
 		request.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 			if (!err) {
-				cookiejar.set('eid', post['eid']);
-				cookiejar.set('pw', post['pw']);
+				cookiejar.set('eid', post['eid'], {expires:util.addDays(new Date(), 7)});
+				cookiejar.set('pw', post['pw'], {expires:util.addDays(new Date(), 7)});
 			}
 					
 			parser.processDashboard(html, module, username, userInfo, function(res) {
@@ -85,8 +85,8 @@ function processJSON(module, response, query, username, cookiejar) {
 		
 		request.post({followAllRedirects: true, url: 'http://owl.uwo.ca/portal/xlogin', headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 			if (!err) {
-				cookiejar.set('eid', post['eid']);
-				cookiejar.set('pw', post['pw']);
+				cookiejar.set('eid', post['eid'], {expires:util.addDays(new Date(), 7)});
+				cookiejar.set('pw', post['pw'], {expires:util.addDays(new Date(), 7)});
 			} 
 			
 			parser.processJSON(html, request, username, userInfo, true, query.pretty, function(res) {
@@ -119,8 +119,8 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
             
 			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 				if (!err) {
-					cookiejar.set('eid', post['eid']);
-					cookiejar.set('pw', post['pw']);				
+					cookiejar.set('eid', post['eid'], {expires:util.addDays(new Date(), 7)});
+						cookiejar.set('pw', post['pw'], {expires:util.addDays(new Date(), 7)});				
 				}
 				parser.processDashboard(html, module, username, userInfo, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
