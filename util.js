@@ -1,6 +1,60 @@
 var $ = require('cheerio')
+var crypto = require('crypto')
+var deasync = require('deasync')
+var fs = require('fs')
 var Set = require('set') 
+var sys = require('systeminformation')
+var xor = require('buffer-xor')
 
+var sourceKey = Buffer.from('900f29b4e6564518c09ef4c3adb44fb233a43ad77eae1b4be5cbefe3b35539d42a1feec4','hex')
+var memoryKey = undefined
+
+function encrypt(string) {
+	if (memoryKey === undefined)
+		memoryKey = crypto.randomBytes(36)
+	var configKey = Buffer.from(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
+	
+	var done = false
+	var uuidKey = undefined
+	sys.system(function(data) {
+		uuidKey = Buffer.from(data.uuid,'utf-8')
+		done = true
+	})
+	require('deasync').loopWhile(function(){return !done;});
+	
+	var key = xor(sourceKey, uuidKey)
+	var key = xor(key, configKey)	
+	var key = xor(key, memoryKey)	
+	
+	var cipher = crypto.createCipher('aes256', key.toString('hex'))
+	var output = cipher.update(string, 'utf-8', 'hex')
+	output += cipher.final('hex');
+	
+	return output.toString('hex');	
+}
+
+function decrypt(string) {
+	var configKey = Buffer.from(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
+	
+	var done = false
+	var uuidKey = undefined
+	sys.system(function(data) {
+		uuidKey = Buffer.from(data.uuid,'utf-8')
+		done = true
+	})
+	require('deasync').loopWhile(function(){return !done;});
+	
+	var key = xor(sourceKey, uuidKey)
+	var key = xor(key, configKey)	
+	var key = xor(key, memoryKey)	
+	
+	var decipher = crypto.createDecipher('aes256', key.toString('hex'))
+	var output = decipher.update(string, 'hex', 'utf-8')
+	output += decipher.final('utf-8');
+	
+	return output;	
+	
+}
 
 function replaceAll (find, replace, str) {
   var find = find.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -146,6 +200,8 @@ exports.cleanHTML 			= cleanHTML
 exports._cleanHTML			= _cleanHTML
 exports.colourForCourse 	= colourForCourse
 exports.dropShadowForCourse = dropShadowForCourse
+exports.decrypt 			= decrypt
+exports.encrypt 			= encrypt
 exports.flattenArray 		= flattenArray
 exports.isArray 			= isArray
 exports.replaceAll 			= replaceAll

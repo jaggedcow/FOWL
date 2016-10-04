@@ -7,6 +7,7 @@ var request = require('request')
 var url = require("url")
 
 var config = require('./config.json')
+delete config.key	// so it's not kept in memory
 
 var util = require('./util')
 var parser = require('./parser')
@@ -14,8 +15,91 @@ var parser = require('./parser')
 // logged in user sessions
 var userInfo = {};
 
+function processLogin(module, response, pathname, username, cookiejar) {	
+	if (pathname.match('/'))
+		pathname = '/portal/xlogin'
+	
+	var query = {}
+	
+	query.user = username
+	query.pw = util.decrypt(userInfo[username].pass)	
+	
+	var post = {eid:query.user, pw:query.pw}
+    var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
+	
+	module('http://owl.uwo.ca/portal', function(err, resp, html) {
+		if (err)
+			console.log(err)
+		if (resp) {
+			cookieIn = resp.headers['set-cookie']		
+			for (var i = 0; i < cookieIn.length; i++) {
+				cookieIn[i] = cookieIn[i].replace('Secure;','')
+				cookieIn[i] = cookieIn[i].replace('secure','')						
+			}
+			
+			session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
+			userInfo[username].cookie = cookieIn
+			userInfo[username].session = session
+		}
+		
+		request.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
+			if (!err) {
+				cookiejar.set('eid', post['eid']);
+				cookiejar.set('pw', post['pw']);
+			}
+					
+			parser.processDashboard(html, module, username, userInfo, function(res) {
+				response.writeHead(200, {"Content-Type": "text/html"});  							
+				response.write(res);
+				response.end();	
+				delete userInfo[username].cookie	// logs out user											
+			});			
+		});	 
+		
+	});
+}
 
-function processRequest(req, module, response, pathname, session, cookiejar) {
+
+function processJSON(module, response, query, username, cookiejar) {			
+	var post = {eid:query.user, pw:query.pw}
+    var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
+	
+	module('http://owl.uwo.ca/portal', function(err, resp, html) {
+		if (err)
+			console.log(err)
+		if (resp) {
+			cookieIn = resp.headers['set-cookie']		
+			for (var i = 0; i < cookieIn.length; i++) {
+				cookieIn[i] = cookieIn[i].replace('Secure;','')
+				cookieIn[i] = cookieIn[i].replace('secure','')						
+			}
+			
+			session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
+			
+			if (userInfo[username])
+				userInfo[username].cookie = cookieIn
+			else
+				userInfo[username] = {cookie: cookieIn, session: session}
+		}
+		
+		request.post({followAllRedirects: true, url: 'http://owl.uwo.ca/portal/xlogin', headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
+			if (!err) {
+				cookiejar.set('eid', post['eid']);
+				cookiejar.set('pw', post['pw']);
+			} 
+			
+			parser.processJSON(html, request, username, userInfo, true, query.pretty, function(res) {
+				response.writeHead(200, {"Content-Type": "application/json"});  							
+				response.write(res);
+				response.end();	
+				delete userInfo[username].cookie	// logs out user															
+			});		
+		});	 
+		
+	});
+}
+
+function processRequest(req, module, response, pathname, username, cookiejar) {
     if (req.method == 'POST') {
         var body = '';
 
@@ -28,30 +112,35 @@ function processRequest(req, module, response, pathname, session, cookiejar) {
         });
 
         req.on('end', function () {
+
             var post = qs.parse(body);
             var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
             
-			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[session]?userInfo[session]['cookie']:''}, form:post}, function(err, resp, html) {          	
+			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 				if (!err) {
 					cookiejar.set('eid', post['eid']);
-					cookiejar.set('pw', post['pw']);
+					cookiejar.set('pw', post['pw']);				
 				}
-				parser.processDashboard(html, module, session, userInfo, function(res) {
+				parser.processDashboard(html, module, username, userInfo, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
 					response.end();	
-					delete userInfo[session]	// logs out user											
+					delete userInfo[username].cookie	// logs out user	
+					
+					if (!err) {
+						userInfo[username].pass = util.encrypt(""+post['pw']);
+					}										
 				});		
 			});	            
         });
     } else {
-		module({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {'Cookie': userInfo[session]?userInfo[session]['cookie']:''}}, function(err, resp, html) {          
+		module({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {'Cookie': userInfo[username]?userInfo[username].cookie:''}}, function(err, resp, html) {          
 			if (pathname.match('/')) {
-				parser.processDashboard(html, module, session, userInfo, function(res) {
+				parser.processDashboard(html, module, username, userInfo, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
 					response.end();	
-					delete userInfo[session]	// logs out user											
+					delete userInfo[username].cookie	// logs out user											
 				});	
 			} else {
 				response.writeHead(200, {"Content-Type": "text/html"});  		
@@ -66,73 +155,46 @@ serverFunc = function(req, response) {
 	var cookiejar = new Cookies(req, response);
 	var pathname = url.parse(req.url).pathname;
 	
-	var session = cookiejar.get('JSESSIONID');
 	var username = cookiejar.get('eid');
 	var password = cookiejar.get('pw');		
 	
-    var query = url.parse(unescape(req.url), true).query;
-    
+    var query = url.parse(unescape(req.url), true).query; 
 
-	if (pathname.match('/json') && query.user !== undefined && query.pw !== undefined) {
-		var post = {eid:query.user, pw:query.pw}
-        var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
-		
-		request('http://owl.uwo.ca/portal', function(err, resp, html) {
-			
-			if (err)
-				console.log(err)
-			if (resp) {
-				cookieIn = resp.headers['set-cookie']		
-				for (var i = 0; i < cookieIn.length; i++) {
-					cookieIn[i] = cookieIn[i].replace('Secure;','')
-					cookieIn[i] = cookieIn[i].replace('secure','')						
-				}
-				
-				session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
-				userInfo[session] = {'cookie': cookieIn};
-				cookiejar.set('JSESSIONID', session);
-			}
-			
-			request.post({followAllRedirects: true, url: 'http://owl.uwo.ca/portal/xlogin', headers: {"Authorization": auth, 'Cookie': userInfo[session]?userInfo[session]['cookie']:''}, form:post}, function(err, resp, html) {          	
-				if (!err) {
-					cookiejar.set('eid', post['eid']);
-					cookiejar.set('pw', post['pw']);
-				} 
-				
-				parser.processJSON(html, request, session, userInfo, true, query.pretty, function(res) {
-					response.writeHead(200, {"Content-Type": "application/json"});  							
-					response.write(res);
+	if (pathname.match('/portal/logout'))
+		delete userInfo[username] 
+
+	if (pathname.match('/json')) {
+		if (query.user !== undefined && query.pw !== undefined)		
+			processJSON(request, response, query, username, cookiejar);
+		else {
+			response.writeHead(403, {"Content-Type": "text/html"}); 		
+			response.end();	
+		}
+	} else if (!pathname.match('/portal/relogin') && (!userInfo[username] || !userInfo[username].cookie)) {	
+		if (!userInfo[username]) {			
+			request('http://owl.uwo.ca/portal', function(err, resp, html) {
+				if (err)
+					console.log(err)
+				if (resp) {
+					cookieIn = resp.headers['set-cookie']		
+					for (var i = 0; i < cookieIn.length; i++) {
+						cookieIn[i] = cookieIn[i].replace('Secure;','')
+						cookieIn[i] = cookieIn[i].replace('secure','')						
+					}
+					
+					session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
+					userInfo[username] = {cookie: cookieIn, session: session};
+	
+					response.writeHead(200, {"Content-Type": "text/html"}); 		
+					response.write(util.cleanHTML(html));		
 					response.end();	
-					delete userInfo[session]	// logs out user											
-				});		
-			});	 
-			
-		});
-	} else if (!session || !userInfo[session] || !userInfo[session]['cookie']) {
-		request('http://owl.uwo.ca/portal', function(err, resp, html) {
-			
-			if (err)
-				console.log(err)
-			if (resp) {
-				cookieIn = resp.headers['set-cookie']		
-				for (var i = 0; i < cookieIn.length; i++) {
-					cookieIn[i] = cookieIn[i].replace('Secure;','')
-					cookieIn[i] = cookieIn[i].replace('secure','')						
 				}
-				
-				session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
-				userInfo[session] = {'cookie': cookieIn};
-				cookiejar.set('JSESSIONID', session);
-
-				response.writeHead(200, {"Content-Type": "text/html"}); 		
-				response.write(util.cleanHTML(html));		
-				response.end();	
-			}
-		});
+			});
+		} else {
+			processLogin(request, response, pathname, username, cookiejar);
+		}
 	} else {
-		if (pathname.match('/portal/logout'))
-			delete userInfo[session] 
-		processRequest(req, request, response, pathname, session, cookiejar);
+		processRequest(req, request, response, pathname, username, cookiejar);
 	}
 }
 

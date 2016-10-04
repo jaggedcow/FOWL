@@ -9,7 +9,7 @@ var util = require('./util')
 
 function _processPage(href, module, course, session, userInfo, callback) {
 	href = href.replace('https','http');
-	module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
+	module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session].cookie}}, function(err, resp, html) {  
 		if (err) {
 			console.log(err);
 			callback(err, null);
