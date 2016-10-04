@@ -53,7 +53,8 @@ function processLogin(module, response, pathname, username, cookiejar) {
 				response.writeHead(200, {"Content-Type": "text/html"});  							
 				response.write(res);
 				response.end();	
-				delete userInfo[username].cookie	// logs out user											
+				delete userInfo[username].cookie	// logs out user
+				delete userInfo[username].session														
 			});			
 		});	 
 		
@@ -94,6 +95,7 @@ function processJSON(module, response, query, username, cookiejar) {
 				response.write(res);
 				response.end();	
 				delete userInfo[username].cookie	// logs out user															
+				delete userInfo[username].session				
 			});		
 		});	 
 		
@@ -120,7 +122,7 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 				if (!err) {
 					cookiejar.set('eid', post['eid'], {expires:util.addDays(new Date(), 7)});
-						cookiejar.set('pw', post['pw'], {expires:util.addDays(new Date(), 7)});				
+					cookiejar.set('pw', post['pw'], {expires:util.addDays(new Date(), 7)});				
 				}
 				parser.processDashboard(html, module, username, userInfo, function(res) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
@@ -129,6 +131,7 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 					
 					if (username) {
 						delete userInfo[username].cookie	// logs out user	
+						delete userInfo[username].session
 					
 						if (!err) {
 							userInfo[username].pass = util.encrypt(""+post['pw']);
@@ -144,7 +147,10 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 					response.writeHead(200, {"Content-Type": "text/html"});  							
 					response.write(res);
 					response.end();	
-					delete userInfo[username].cookie	// logs out user											
+					if (username) {
+						delete userInfo[username].cookie	// logs out user
+						delete userInfo[username].session
+					}											
 				});	
 			} else {
 				response.writeHead(200, {"Content-Type": "text/html"});  		
@@ -158,9 +164,15 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 serverFunc = function(req, response) { 
 	var cookiejar = new Cookies(req, response);
 	var pathname = url.parse(req.url).pathname;
-	
+		
 	var username = cookiejar.get('eid');
 	var password = cookiejar.get('pw');		
+	
+	if (username && !password)
+		username = undefined
+	
+	if (username)
+		userInfo[username] = {pass: util.encrypt(""+password)}
 	
     var query = url.parse(unescape(req.url), true).query; 
 
@@ -187,7 +199,7 @@ serverFunc = function(req, response) {
 					}
 					
 					session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
-					userInfo[username] = {cookie: cookieIn, session: session};
+					userInfo[username] = {cookie: cookieIn, session: session}					
 	
 					response.writeHead(200, {"Content-Type": "text/html"}); 		
 					response.write(util.cleanHTML(html));		
