@@ -4,6 +4,7 @@ var http = require("http")
 var https = require("https")
 var qs = require('querystring')
 var request = require('request')
+var sys = require('systeminformation')
 var url = require("url")
 
 var config = require('./config.json')
@@ -209,7 +210,8 @@ fs.lstat('/etc/letsencrypt/live/fowl.rocks/', function(err, stats) {
     if (!err && stats.isDirectory()) {
 		var options = {
 			key: fs.readFileSync('/etc/letsencrypt/live/fowl.rocks/privkey.pem'),
-			cert: fs.readFileSync('/etc/letsencrypt/live/fowl.rocks/cert.pem')
+			cert: fs.readFileSync('/etc/letsencrypt/live/fowl.rocks/fullchain.pem'),
+			ca: fs.readFileSync('/etc/letsencrypt/live/fowl.rocks/chain.pem'),			
 		}
 		
 		https.createServer(options, serverFunc).listen(config.securePort);		

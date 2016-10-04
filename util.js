@@ -187,9 +187,11 @@ function replaceClasses(temp) {
 	temp = temp.replace(/MEDICINE 5151 001 FW16/g, 'Social Medicine');
 	temp = temp.replace(/MEDICINE 5140 001 FW16/g, 'Professional Portfolio');
 	temp = temp.replace(/MEDICINE 5139 001 FW16/g, 'PCCM');		
+	temp = temp.replace(/MEDICINE 5121 001 FW16/g, 'Blood + PCCIA');
+		
 	temp = temp.replace(/MEDICINE 5250 001 FW16/g, 'Professional Identity');		
 	temp = temp.replace(/MEDICINE 5246 001 FW16/g, 'PCCM 2');		
-	temp = temp.replace(/MEDICINE 5203 001 FW16/g, 'Digestion');						
+	temp = temp.replace(/MEDICINE 5203 001 FW16/g, 'Digestion');							
 	
 	return temp
 }
