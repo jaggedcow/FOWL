@@ -170,6 +170,7 @@ serverFunc = function(req, response) {
 		
 	var username = cookiejar.get('eid')
 	var key = cookiejar.get('key')
+	var password = undefined
 	
 	if (key) {
 		password = util.decrypt(cookiejar.get('pw'), new Buffer(key,'hex')) 	
