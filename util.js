@@ -54,6 +54,18 @@ function replaceAll (find, replace, str) {
   return str.replace(new RegExp(find, 'g'), replace);
 }
 
+String.prototype.regexIndexOf = function(regex, startpos) {
+    var indexOf = this.substring(startpos || 0).search(regex);
+    return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
+}
+
+// WARNING: Not generalizable!
+String.prototype.regexLastIndexOf = function(regex, startpos) {
+	var string = this.split('').reverse().join('');
+	var indexOf = string.substring(startpos || 0).search(regex);
+    return (indexOf >= 0) ? this.length - (indexOf + (startpos || 0)) : indexOf;
+}
+
 function cleanHTML(html) {
 	return _cleanHTML($.load(html), html);
 }

@@ -439,6 +439,12 @@ function _processPageTableSync(input, type, course) {
 	return output
 }
 
+var _dates = [
+	'<a target="_blank" href="https://owl.uwo.ca/access/content/group/9ed134dc-0872-476b-a56e-1bfe1d80bb29/Primary%20Physical%20Exam%20Skills/pcm1_16_17_PPES_message_to_students.pdf">Message to Students from Course Co-Chairs</a>',
+	'Note: An asterisk (*) beside a posting means the item will be selectively released at a later date.'	
+] 
+var silentDates = new Set(_dates)
+
 function _processPageDates(obj, firstDate, lastDate, course) {	
 	if (obj.date === undefined)
 		return {data: obj, firstDate:firstDate, endDate:lastDate};
@@ -512,22 +518,24 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		
 		obj.date = out;
 	} else {
-		obj.date = obj.textDate;
+		obj.date = util.replaceAll('*','', obj.textDate);
 		
-		// todo: replace this with proper regex for numbers
-		if (obj.date.indexOf('lecture') !== -1) {
-			obj.date = obj.date.substring(0, obj.date.indexOf('lecture')-1);
+		var start = obj.date.regexIndexOf('[0-9]')
+		var end = obj.date.regexLastIndexOf('[0-9]')
+		
+		if (end-start <= 2 && end-start >= 1) {			
+			var date = new Date(obj.date.substring(0, end)+' '+new Date().getFullYear()+' UTC')
+		
+			date = util.addDays(date, -0.05)
+			util.changeYearIfNeeded(date);		
+			
+			obj.date = date.toString();
+			temp.push(date);
+		} else {
+			if (!silentDates.contains(obj.textDate))
+				console.log("Could not process date:", obj.textDate)
+			return {data: obj, firstDate:firstDate, endDate:lastDate};	
 		}
-		if (obj.date.indexOf('test') !== -1) {
-			obj.date = obj.date.substring(0, obj.date.indexOf('test')-1);
-		}		
-		var date = new Date(obj.date+' '+new Date().getFullYear()+' UTC')
-		
-		date = util.addDays(date, -0.05)
-		util.changeYearIfNeeded(date);		
-		
-		obj.date = date.toString();
-		temp.push(date);
 	}
 	
 	for (var i = 0; i < temp.length; i++) {
