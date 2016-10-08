@@ -300,9 +300,6 @@ function _processPageTableSync(input, type, course) {
 			var foundLink = !type.match('Homework') || tempJ !== topic;	// we only want extra elements on Homework
 			var title = $(col).find(findStr);	
 
-		if (course.match('MEDICINE 5121 001 FW16'))
-			console.log(findStr)
-
 			if (title.length === 1) {
 				title = title.first();
 				if ($(title).attr('href')) {
@@ -605,11 +602,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 				}
 			}
 		}			
-				
-		pccia.sort(function(a,b) {
-			return parseInt(a.data.week) - parseInt(b.data.week);
-		});
-		
+						
 		assignments.sort(function(a,b) {
 			return new Date(a.data.dueDate) - new Date(b.data.dueDate);
 		});
@@ -643,6 +636,63 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			return new Date(dateA) - new Date(dateB);
 		})
 		
+		for (var i = 0; i < classes.length; i++) {			
+			var startDate = undefined;
+			var endDate = undefined;			
+			
+			// convert relative PCCIA weeks into absolute dates
+			for (var j = 0; j < homework.length; j++) {
+				if (classes[i].title.match(homework[j].course)) {
+					startDate = new Date(homework[j].data.date);
+					if (!isNaN(startDate.getTime()))
+						break;
+				}
+			}
+			
+			if (startDate) {
+				startDate = util.addDays(startDate, -startDate.getDay())	// clever way to reset all the dates to prior Sunday
+				
+			
+				for (var j = 0; j < pccia.length; j++) {
+					if (classes[i].title.match(pccia[j].course)) {
+						var displayDate = util.addDays(startDate, 7*pccia[j].data.week)		// figures when PCCIA sesh is done
+						pccia[j].data.displayUntil = displayDate.toString();
+					}
+				}
+			}
+			
+			// determine when course ends
+			for (var j = homework.length-1; j >= 0; j--) {
+				if (classes[i].title.match(homework[j].course)) {
+					endDate = new Date(homework[j].data.date);
+					if (!isNaN(endDate.getTime()))
+						break;
+				}
+			}
+			
+			for (var j = assignments.length-1; j >= 0; j--) {
+				if (classes[i].title.match(assignments[j].course)) {
+					var temp = new Date(assignments[j].data.dueDate);
+					
+					if (!isNaN(temp.getTime())) {
+						if (endDate < temp)
+							endDate = temp;
+						break;
+					}
+				}
+			}			
+			
+			if (endDate) {
+				if (endDate.getDay() !== 0)			
+					endDate = util.addDays(endDate, 7-endDate.getDay())	// clever way to reset all the dates to next Sunday				
+				classes[i].displayUntil = endDate.toString();
+			}
+		}
+				
+		pccia.sort(function(a,b) {
+			return new Date(a.data.displayUntil) - new Date(b.data.displayUntil);
+		});
+				
 		if (JSONoutput) {
 			if (prettyOutput)
 				callback(JSON.stringify({classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}, null, 4))
@@ -715,18 +765,25 @@ function processDashboard(html, module, session, userInfo, callback) {
 		formatter.addHeaders(formatObj, session, userInfo);
 
 		for (var i = 0; i < classes.length; i++) {
-			formatter.addClass(formatObj, classes[i])
+			if (yesterday < new Date(classes[i].displayUntil))
+				formatter.addClass(formatObj, classes[i])
 		}
 		
+		for (var i = 0; i < classes.length; i++) {
+			if (yesterday >= new Date(classes[i].displayUntil))
+				formatter.addClass(formatObj, classes[i], true)
+		}		
+		
 		formatter.addLectureHeader(formatObj, todayLecture, tomorrowLecture)
+				
+		var today = new Date();
+		today = util.addDays(today, -0.25);	// adjusts for time zones
+		var tomorrow = util.addDays(today, 1);
+		var twodays = util.addDays(today, 2);			
+		var yesterday = util.addDays(today, -1)	
 			
 		for (var i = 0; i < lectures.length; i++) {
-			var content = lectures[i];						
-			var today = new Date();
-			today = util.addDays(today, -0.25);	// adjusts for time zones
-			var tomorrow = util.addDays(today, 1);
-			var twodays = util.addDays(today, 2);			
-			var yesterday = util.addDays(today, -1)			
+			var content = lectures[i];								
 			
 			var dates = []
 			if (util.isArray(content.data.date)) {
@@ -767,11 +824,13 @@ function processDashboard(html, module, session, userInfo, callback) {
 		}
 		
 		for (var i = 0; i < pccia.length; i++) {
-			formatter.addPCCIA(formatObj, pccia[i])
+			if (today < new Date(pccia[i].data.displayUntil))
+				formatter.addPCCIA(formatObj, pccia[i])
 		}
 		
 		for (var i = 0; i < assignments.length; i++) {
-			formatter.addAssignment(formatObj, assignments[i])
+			if (yesterday < new Date(assignments[i].data.dueDate))
+				formatter.addAssignment(formatObj, assignments[i])
 		}
 		
 		var maxPreviousDate = 0;

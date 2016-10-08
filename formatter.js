@@ -25,8 +25,11 @@ function addHeaders(parsedHTML, session, userInfo) {
 	parsedHTML('<form id="fakeloginform" method="post" target="fakeloginframe" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="'+session+'" type="hidden"><input name="pw" id="pw" value="'+util.decrypt(userInfo[session].pass)+'" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('#innercontent')
 }
 
-function addClass(parsedHTML, content) {
-	parsedHTML('<div style="padding: 2px 8px 2px 8px; margin-bottom: 8px; '+util.dropShadowForCourse(content.title)+' background-color:'+util.colourForCourse(content.title)+';"><h3><a id="'+content.hash+'" target="_blank" href="'+content.href+'" title="'+content.title+'"><span>'+content.title+'</span></a><h3></div>').appendTo('#fakehomework');
+function addClass(parsedHTML, content, expired) {
+	var opacity = '1.0'
+	if (expired)
+		opacity = '0.4'
+	parsedHTML('<div style="padding: 2px 8px 2px 8px; margin-bottom: 8px; opacity:'+opacity+'; '+util.dropShadowForCourse(content.title)+' background-color:'+util.colourForCourse(content.title)+';"><h3><a id="'+content.hash+'" target="_blank" href="'+content.href+'" title="'+content.title+'"><span>'+content.title+'</span></a><h3></div>').appendTo('#fakehomework');
 	if (content.title.indexOf('5139') !== -1) {
 		parsedHTML('<div style="padding: 1px 8px 1px 8px; margin-top: -7px; margin-left: 24px; margin-bottom: 8px; font-size: 10px; -webkit-box-shadow: hsla(133, 20%, 55%, 0.5) 0px 1px 1px; box-shadow: hsla(133, 20%, 55%, 0.5) 0px 1px 1px; background-color: hsl(133, 100%, 96%);"><h3><a id="'+content.hash+'_hanbook" target="_blank" href="https://owl.uwo.ca/access/content/group/9ed134dc-0872-476b-a56e-1bfe1d80bb29/Introduction%20to%20Interviewing/pcm1_16_17_interviewing_student_syllabus_FINAL%20REVISED.pdf#page=8" title="Interviewing Handbook"><span>Interviewing Handbook</span></a><h3></div>').appendTo('#fakehomework');
 	}
