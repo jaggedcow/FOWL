@@ -9,6 +9,12 @@ var xor = require('buffer-xor')
 var sourceKey = new Buffer('900f29b4e6564518c09ef4c3adb44fb233a43ad77eae1b4be5cbefe3b35539d42a1feec4','hex')
 var memoryKey = undefined
 
+function getKey() {
+	if (memoryKey === undefined)
+		memoryKey = crypto.randomBytes(36)	
+	return memoryKey.toString('hex')
+}
+
 function encrypt(string) {
 	if (memoryKey === undefined)
 		memoryKey = crypto.randomBytes(36)
@@ -35,7 +41,7 @@ function encrypt(string) {
 	return output.toString('hex');	
 }
 
-function decrypt(string) {
+function decrypt(string, tempKey) {
 	if (!string)
 		return undefined
 		
@@ -52,15 +58,18 @@ function decrypt(string) {
 */
 	
 // 	var key = xor(sourceKey, uuidKey)
+
+	if (!tempKey)
+		tempKey = memoryKey
+		
 	var key = xor(sourceKey, configKey)	
-	var key = xor(key, memoryKey)	
+	var key = xor(key, tempKey)	
 	
 	var decipher = crypto.createDecipher('aes256', key.toString('hex'))
 	var output = decipher.update(string, 'hex', 'utf-8')
 	output += decipher.final('utf-8');
 	
 	return output;	
-	
 }
 
 function replaceAll (find, replace, str) {
@@ -212,6 +221,7 @@ exports.dropShadowForCourse = dropShadowForCourse
 exports.decrypt 			= decrypt
 exports.encrypt 			= encrypt
 exports.flattenArray 		= flattenArray
+exports.getKey				= getKey
 exports.isArray 			= isArray
 exports.replaceAll 			= replaceAll
 exports.replaceClasses 		= replaceClasses
