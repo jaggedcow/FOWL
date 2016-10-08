@@ -147,29 +147,29 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					// deal with lectures!!
 				if (text.search(/^(\w{3,5} +\d{1,2} +& +\d{1,2})/) !== -1) {
 					// dealing with multiple dates
-					var dateStr1 = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
-					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(& +\d{1,2})/)[0].substring(1).trim()+' '+new Date().getFullYear()+' UTC';			
+					var dateStr1 = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(& +\d{1,2})/)[0].substring(1).trim()+' 20'+course.substring(course.length-2)+' UTC';			
 
 					var date1 = new Date(dateStr1);
 					var date2 = new Date(dateStr2);					
 					
 					date1 = util.addDays(date1, +0.95)
 					date2 = util.addDays(date2, +0.95)					
-					util.changeYearIfNeeded(date1);
-					util.changeYearIfNeeded(date2);					
+					util.changeYearIfNeeded(date1, course);
+					util.changeYearIfNeeded(date2, course);					
 					
 					lastDate = [date1.toString(), date2.toString()]					
-					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 
 					output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 					output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})					
 				} else {
-					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 					
 					var date = new Date(dateStr);
 					
 					date = util.addDays(date, +0.95)
-					util.changeYearIfNeeded(date);	
+					util.changeYearIfNeeded(date, course);	
 					
 					lastDate = date.toString()
 					lastDateStr = dateStr;
@@ -206,29 +206,29 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					// deal with lectures!!
 				if (text.search(/^(\w{3,5} +\d{1,2} +& +\d{1,2})/) !== -1) {
 					// dealing with multiple dates
-					var dateStr1 = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
-					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(& +\d{1,2})/)[0].substring(1).trim()+' '+new Date().getFullYear()+' UTC';			
+					var dateStr1 = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(& +\d{1,2})/)[0].substring(1).trim()+' 20'+course.substring(course.length-2)+' UTC';			
 
 					var date1 = new Date(dateStr1);
 					var date2 = new Date(dateStr2);					
 					
 					date1 = util.addDays(date1, +0.95)
 					date2 = util.addDays(date2, +0.95)					
-					util.changeYearIfNeeded(date1);
-					util.changeYearIfNeeded(date2);					
+					util.changeYearIfNeeded(date1, course);
+					util.changeYearIfNeeded(date2, course);					
 					
 					lastDate = [date1.toString(), date2.toString()]					
-					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 					
 					output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 					output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 				} else {
-					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' '+new Date().getFullYear()+' UTC';
+					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 					
 					var date = new Date(dateStr);
 					
 					date = util.addDays(date, +0.95)
-					util.changeYearIfNeeded(date);	
+					util.changeYearIfNeeded(date, course);	
 					
 					lastDate = date.toString()
 					lastDateStr = dateStr;
@@ -459,7 +459,7 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 	obj.textDate = obj.date;	// saves the original
 	
 	if (obj.date.toLowerCase().indexOf('end') !== -1) {
-		util.changeYearIfNeeded(lastDate);
+		util.changeYearIfNeeded(lastDate, course);
 		obj.date = util.addDays(lastDate,1).toString();
 	} else if (obj.date.toLowerCase().indexOf('week') !== -1) {		
 		if (firstDate == undefined) {
@@ -470,7 +470,7 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		var out = []
 		
 		do {
-			util.changeYearIfNeeded(date);
+			util.changeYearIfNeeded(date, course);
 			out.push(date.toString())
 			temp.push(date);			
 			date = util.addDays(date, 1)
@@ -484,15 +484,15 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		var string1 = dateString.substring(0, dateString.indexOf('-'))
 		var string2 = dateString.substring(0, dateString.indexOf(' '))+ ' '+dateString.substring(dateString.indexOf('-')+1)
 		
-		var date = new Date(string1+' '+new Date().getFullYear()+' UTC')
-		var endDate = new Date(string2+' '+new Date().getFullYear()+' UTC')
+		var date = new Date(string1+' 20'+course.substring(course.length-2)+' UTC')
+		var endDate = new Date(string2+' 20'+course.substring(course.length-2)+' UTC')
 		
 		date = util.addDays(date, -0.05)
 		
 		var out = []
 		
 		do {
-			util.changeYearIfNeeded(date);
+			util.changeYearIfNeeded(date, course);
 			out.push(date.toString())
 			temp.push(date);			
 			date = util.addDays(date, 1)
@@ -505,14 +505,14 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		var windsorFirst = obj.date.indexOf('(W)') < obj.date.indexOf('(L)');
 		var string1 = obj.textDate.substring(0, obj.textDate.indexOf('('));
 		var string2 = obj.textDate.substring(0, obj.textDate.indexOf('(')-2) + ' '+ obj.textDate.substring(obj.textDate.lastIndexOf('(')-2,obj.textDate.lastIndexOf('('));		
-		var date1 = new Date(string1+' '+new Date().getFullYear()+' UTC')
-		var date2 = new Date(string2+' '+new Date().getFullYear()+' UTC')
+		var date1 = new Date(string1+' 20'+course.substring(course.length-2)+' UTC')
+		var date2 = new Date(string2+' 20'+course.substring(course.length-2)+' UTC')
 		
 		date1 = util.addDays(date1, -0.05)
 		date2 = util.addDays(date2, -0.05)
 		
-		util.changeYearIfNeeded(date1);
-		util.changeYearIfNeeded(date2);
+		util.changeYearIfNeeded(date1, course);
+		util.changeYearIfNeeded(date2, course);
 		
 		var out = [	{location:windsorFirst?'Windsor':'London' ,date:date1.toString()},
 					{location:windsorFirst?'London':'Windsor' ,date:date2.toString()}]
@@ -528,10 +528,10 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		var end = obj.date.regexLastIndexOf('[0-9]')
 		
 		if (end-start <= 2 && end-start >= 1) {			
-			var date = new Date(obj.date.substring(0, end)+' '+new Date().getFullYear()+' UTC')
+			var date = new Date(obj.date.substring(0, end)+' 20'+course.substring(course.length-2)+' UTC')
 		
 			date = util.addDays(date, -0.05)
-			util.changeYearIfNeeded(date);		
+			util.changeYearIfNeeded(date, course);		
 			
 			obj.date = date.toString();
 			temp.push(date);

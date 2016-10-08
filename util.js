@@ -183,9 +183,9 @@ function addDays(date, days) {
 }
 
 // dates before the start of the school year should be next year
-function changeYearIfNeeded(date) {
+function changeYearIfNeeded(date, course) {
 	if (date.getMonth() < 8)
-		date.setFullYear(new Date().getFullYear()+1)
+		date.setFullYear(parseInt('20'+course.substring(course.length-2))+1)
 }
 
 function replaceClasses(temp) {
