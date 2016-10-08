@@ -19,18 +19,7 @@ function encrypt(string) {
 	if (memoryKey === undefined)
 		memoryKey = crypto.randomBytes(36)
 	var configKey = new Buffer(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
-	
-/*
-	var done = false
-	var uuidKey = undefined
-	sys.system(function(data) {
-		uuidKey = new Buffer(data.uuid,'utf-8')
-		done = true
-	})
-	require('deasync').loopWhile(function(){return !done;});
-*/
-	
-// 	var key = xor(sourceKey, uuidKey)
+
 	var key = xor(sourceKey, configKey)	
 	var key = xor(key, memoryKey)	
 	
@@ -46,18 +35,6 @@ function decrypt(string, tempKey) {
 		return undefined
 		
 	var configKey = new Buffer(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
-	
-/*
-	var done = false
-	var uuidKey = undefined
-	sys.system(function(data) {
-		uuidKey = new Buffer(data.uuid,'utf-8')
-		done = true
-	})
-	require('deasync').loopWhile(function(){return !done;});
-*/
-	
-// 	var key = xor(sourceKey, uuidKey)
 
 	if (!tempKey)
 		tempKey = memoryKey

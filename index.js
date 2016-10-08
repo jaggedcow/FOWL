@@ -117,7 +117,6 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
         });
 
         req.on('end', function () {
-
             var post = qs.parse(body);
             var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
             
