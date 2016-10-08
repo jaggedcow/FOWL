@@ -189,15 +189,24 @@ function changeYearIfNeeded(date) {
 }
 
 function replaceClasses(temp) {
-	temp = temp.replace(/MEDICINE 5115 001 FW16/g, 'ITM + PCCIA');
-	temp = temp.replace(/MEDICINE 5151 001 FW16/g, 'Social Medicine');
-	temp = temp.replace(/MEDICINE 5140 001 FW16/g, 'Professional Portfolio');
-	temp = temp.replace(/MEDICINE 5139 001 FW16/g, 'PCCM');		
-	temp = temp.replace(/MEDICINE 5121 001 FW16/g, 'Blood + PCCIA');
+	temp = temp.replace(/MEDICINE 5115\w? 001 FW(\d){2}/g, 'ITM + PCCIA');
+	temp = temp.replace(/MEDICINE 5151\w? 001 FW(\d){2}/g, 'Social Medicine');
+	temp = temp.replace(/MEDICINE 5140\w? 001 FW(\d){2}/g, 'Professional Portfolio');
+	temp = temp.replace(/MEDICINE 5139\w? 001 FW(\d){2}/g, 'PCCM');		
+	temp = temp.replace(/MEDICINE 5121\w? 001 FW(\d){2}/g, 'Blood + PCCIA');
+	temp = temp.replace(/MEDICINE 5116\w? 001 FW(\d){2}/g, 'Infection & Immunity + PCCIA');
+	temp = temp.replace(/MEDICINE 5104\w? 001 FW(\d){2}/g, 'Genitourinary + PCCIA');
+	temp = temp.replace(/MEDICINE 5105\w? 001 FW(\d){2}/g, 'Population Health');
+	temp = temp.replace(/MEDICINE 5117\w? 001 FW(\d){2}/g, 'Skin + PCCIA');
+	temp = temp.replace(/MEDICINE 5130\w? 001 FW(\d){2}/g, 'Medical Ethics');
+	temp = temp.replace(/MEDICINE 5107\w? 001 FW(\d){2}/g, 'Epidemiology & CrAp');						
+	temp = temp.replace(/MEDICINE 5119\w? 001 FW(\d){2}/g, 'Respiration & Airways + PCCIA');
+	temp = temp.replace(/MEDICINE 5120\w? 001 FW(\d){2}/g, 'Heart & Circulation + PCCIA');		
 		
-	temp = temp.replace(/MEDICINE 5250 001 FW16/g, 'Professional Identity');		
-	temp = temp.replace(/MEDICINE 5246 001 FW16/g, 'PCCM 2');		
-	temp = temp.replace(/MEDICINE 5203 001 FW16/g, 'Digestion');							
+	temp = temp.replace(/MEDICINE 5250\w? 001 FW(\d){2}/g, 'Professional Identity');		
+	temp = temp.replace(/MEDICINE 5246\w? 001 FW(\d){2}/g, 'PCCM 2');		
+	temp = temp.replace(/MEDICINE 5203\w? 001 FW(\d){2}/g, 'Digestion + PCCIA');							
+	temp = temp.replace(/MEDICINE 5202\w? 001 FW(\d){2}/g, 'Endocrine & Metabolism + PCCIA');	
 	
 	return temp
 }
