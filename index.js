@@ -184,6 +184,21 @@ serverFunc = function(req, response) {
 	
     var query = url.parse(unescape(req.url), true).query; 
 
+	if (req.method === 'OPTIONS') {
+		console.log('!OPTIONS', req.headers.origin);
+		var headers = {};
+		// IE8 does not allow domains to be specified, just the *
+		// headers["Access-Control-Allow-Origin"] = req.headers.origin;
+		headers["Access-Control-Allow-Origin"] = "*";
+		headers["Access-Control-Allow-Methods"] = "POST, GET, PUT, DELETE, OPTIONS";
+		headers["Access-Control-Allow-Credentials"] = false;
+		headers["Access-Control-Max-Age"] = '86400'; // 24 hours
+		headers["Access-Control-Allow-Headers"] = "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept";
+		response.writeHead(200, headers);
+		response.end();
+		return;
+	}
+
 	if (pathname.match('/portal/logout')) {
 		delete userInfo[username] 
 		cookiejar.set('eid')

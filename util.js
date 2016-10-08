@@ -110,7 +110,8 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	})	
 	parsedHTML('form').map(function(i, img) {
 		var href = $(img).attr('action')
-		redirectSet.add(href);
+		if (href.lastIndexOf('/access/login') !== 17 && href.lastIndexOf('/access/login') !== 18)
+			redirectSet.add(href);
 	})			
 	
 	parsedHTML('frame').map(function(i, img) {

