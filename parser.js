@@ -295,14 +295,21 @@ function _processPageTableSync(input, type, course) {
 			} 
 			
 			if (type.match('Homework') && tempJ === topic)
-				findStr = 'a, strong'
+				findStr = 'a, strong, b'
 				
 			var foundLink = !type.match('Homework') || tempJ !== topic;	// we only want extra elements on Homework
 			var title = $(col).find(findStr);	
 
+		if (course.match('MEDICINE 5121 001 FW16'))
+			console.log(findStr)
+
 			if (title.length === 1) {
 				title = title.first();
-				title = '<a target="_blank" href="'+$(title).attr('href')+'">'+$(title).text().trim()+'</a>'				
+				if ($(title).attr('href')) {
+					foundLink = true;
+					title = '<a target="_blank" href="'+$(title).attr('href')+'">'+$(title).text().trim()+'</a>'
+				} else if ($(title).text().trim().length > 0 && type.match("Homework"))
+					title = '<strong>'+$(title).text().trim()+'</strong>'
 			} else if (title.length >= 1) {
 				title = Object.keys(title).map(function (key) {return title[key]}) 	// converts title into an array
 				title = title.map(function(title) {
