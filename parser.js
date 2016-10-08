@@ -697,7 +697,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 		}
 		
 		
-		formatter.addHeaders(formatObj);
+		formatter.addHeaders(formatObj, session, userInfo);
 
 		for (var i = 0; i < classes.length; i++) {
 			formatter.addClass(formatObj, classes[i])
