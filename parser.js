@@ -765,7 +765,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 		formatter.addHeaders(formatObj, session, userInfo);
 
 		for (var i = 0; i < classes.length; i++) {
-			if (yesterday < new Date(classes[i].displayUntil))
+			if (classes[i].displayUntil === undefined || yesterday < new Date(classes[i].displayUntil))
 				formatter.addClass(formatObj, classes[i])
 		}
 		
