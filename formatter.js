@@ -1,7 +1,7 @@
 var $ = require('cheerio')
 var crypto = require('crypto')
 var df = require('dateformat')
-
+var fs = require('fs')
 var util = require('./util')
 
 // must be called first, returns an opaque object that should be passed on all subsequent calls
@@ -21,8 +21,8 @@ function addHeaders(parsedHTML, session, userInfo) {
 	
 	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Pending Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
 	
-	parsedHTML('<iframe name="fakeloginframe" style="width:0px; height:0px; border:none;"></iframe>').appendTo('#innercontent')
-	parsedHTML('<form id="fakeloginform" method="post" target="fakeloginframe" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="'+session+'" type="hidden"><input name="pw" id="pw" value="'+util.decrypt(userInfo[session].pass)+'" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('#innercontent')
+	parsedHTML('<iframe id="fakeloginframe" name="fakeloginframe" style="margin-left:-900px; width:900px; height:0px; border:none;" src=""></iframe>').appendTo('body')
+	parsedHTML('<form id="fakeloginform" method="post" target="fakeloginframe" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="'+session+'" type="hidden"><input name="pw" id="pw" value="'+util.decrypt(userInfo[session].pass)+'" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('body')
 }
 
 function addClass(parsedHTML, content, expired) {
@@ -345,10 +345,15 @@ function addShowPrevButton(parsedHTML) {
 	parsedHTML('<font small><div id="showPrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');					
 }
 
+var clientsideJS = undefined;
 function addFooters(parsedHTML, maxPreviousDate) {
+	if (!clientsideJS) {
+		clientsideJS = fs.readFileSync('./clientside.js', 'utf8')
+	}
+	
 	parsedHTML('body').append('<style>#showAllButton { background-color: hsl(0, 0%, 96%); } #showAllButton:hover {background-color: hsl(0, 0%, 93%);}#showPrevButton { color: #9776C1; } #showPrevButton:hover {color: #623f8d;}</style>')
 	parsedHTML('body').append('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>')
-	parsedHTML('body').append('<script type="text/javascript">$(document).ready(function() {var count = 1;$("#showAllButton").on("click", function(){$("#showAllButton").fadeOut();$(".comingsoon").fadeIn()});$("#showPrevButton").on("click", function(){if (count === '+maxPreviousDate+')$("#showPrevButton").fadeOut();$(".pastweek"+count).fadeIn();count++;});$("#fakeloginform").submit();setInterval(function(){$("#fakeloginform").submit();},3600000)});</script>')	
+	parsedHTML('body').append('<script type="text/javascript">'+clientsideJS.replace('%MAX_DATE%',maxPreviousDate)+'</script>')	
 }
 
 exports.addAssignment 		= addAssignment
