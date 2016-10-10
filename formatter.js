@@ -21,7 +21,7 @@ function addHeaders(parsedHTML, session, userInfo) {
 	
 	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Pending Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
 	
-	parsedHTML('<iframe id="fakeloginframe" name="fakeloginframe" style="margin-left:-900px; width:900px; height:0px; border:none;" src=""></iframe>').appendTo('body')
+	parsedHTML('<iframe id="fakeloginframe" name="fakeloginframe" style="position:fixed; top:-900px; width:900px; height:0px; border:none;" src=""></iframe>').appendTo('body')
 	parsedHTML('<form id="fakeloginform" method="post" target="fakeloginframe" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="'+session+'" type="hidden"><input name="pw" id="pw" value="'+util.decrypt(userInfo[session].pass)+'" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('body')
 }
 
