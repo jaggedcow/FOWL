@@ -40,6 +40,11 @@ function _processPageSidebar(html, module, course, session, userInfo, callback) 
 				itemp[href] = options[i];				
 				break;
 			}
+			if (title.match('Course Map') && options[i].match('Lecture')) {
+				temp[options[i]] = href;
+				itemp[href] = options[i];				
+				break;
+			}
 		}
 	})   
 	
@@ -91,8 +96,11 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 					// for ITM ILs, which are split up over multiple weeks
 					parsedHTML('.itemlink').each(function(i, link) {
 						var href = $(link).attr('href');
+						var title = $(link).text()
 						
-						homework.push(href);
+						// added to remove multiple lecture links in Blood, valid pages have Week 1, etc
+						if (!pageType.match('Lecture') || title.regexIndexOf('[0-9]') !== -1)
+							homework.push(href);
 					});
 					
 					if (homework.length === 0) {
@@ -107,7 +115,6 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 							else {
 								console.log("NO HOMEWORK")								
 								_callback(err, undefined)
-// 									fail = true;
 							}
 						}
 					} else {
