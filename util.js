@@ -16,6 +16,9 @@ function getKey() {
 }
 
 function encrypt(string) {
+	if (!string)
+		return undefined
+	
 	if (memoryKey === undefined)
 		memoryKey = crypto.randomBytes(36)
 	var configKey = new Buffer(JSON.parse(fs.readFileSync('./config.json', 'utf8')).key,'hex');
