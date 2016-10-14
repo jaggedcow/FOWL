@@ -539,13 +539,10 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		var dateRegex = '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|&)'
 		
 		var tempDate = obj.date
-		var pastMonth = undefined
+		var pastMonth = undefined		// NB: assumes that every date is on the same month
 		while (tempDate.length > 0) {
-// 			console.log("TEMP: ",tempDate)
 			var end = tempDate.regexIndexOf('[0-9]{1,2}') + 2
 			var start = tempDate.substring(0, end).regexIndexOf(dateRegex)			
-			
-// 			console.log(tempDate, '|', tempDate.substring(start, end), '|', start, '|', end)
 			
 			if (end === 1 || start === -1)
 				break;
@@ -557,22 +554,17 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 					
 					date = util.addDays(date, -0.05)
 					util.changeYearIfNeeded(date, course);		
-					
-// 					console.log(obj.date, '|', pastMonth+tempDate.substring(end-2, end), '|', date)					
 				} else {
 					date = new Date(tempDate.substring(start, end)+' 20'+course.substring(course.length-2)+' UTC')
 					
 					date = util.addDays(date, -0.05)
 					util.changeYearIfNeeded(date, course);		
-					
-// 					console.log(obj.date, '|', tempDate.substring(start, end), '|', date)
 				}
 				out.push(date.toString())
 				temp.push(date);
 
 				if (!pastMonth && start !== -1) {
 					pastMonth = tempDate.substring(start, end-2)
-// 					console.log("PAST MONTH:", pastMonth)
 				}
 
 				tempDate = tempDate.substring(end)
