@@ -11,19 +11,23 @@ $(document).ready(function() {
 		count++;
 	});
 	
+/*
 	$('#fakeloginframe').on('load', function(){
         if ($(this).attr('src').indexOf('/portal/logout') !== -1) {
     		$("#fakeloginframe").attr('src','')
-			$("#fakeloginform").submit();		
-			window.lastFakeLoginCheck = new Date();
+
         }
     });
+*/
 	
-	$("#fakeloginframe").attr('src','https://owl.uwo.ca/portal/logout')
+// 	$("#fakeloginframe").attr('src','https://owl.uwo.ca/portal/logout')
+	$("#fakeloginform").submit();		
+	window.lastFakeLoginCheck = new Date();
 	
 	setInterval(function() {
 		console.log("Timed login")
-		$("#fakeloginframe").attr('src','https://owl.uwo.ca/portal/logout')			
+		$("#fakeloginform").submit();		
+		window.lastFakeLoginCheck = new Date();		
 	}, 3600000)
 });
 
