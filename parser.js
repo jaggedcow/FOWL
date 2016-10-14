@@ -452,7 +452,11 @@ function _processPageTableSync(input, type, course) {
 
 var _dates = [
 	'<a target="_blank" href="https://owl.uwo.ca/access/content/group/9ed134dc-0872-476b-a56e-1bfe1d80bb29/Primary%20Physical%20Exam%20Skills/pcm1_16_17_PPES_message_to_students.pdf">Message to Students from Course Co-Chairs</a>',
-	'Note: An asterisk (*) beside a posting means the item will be selectively released at a later date.'	
+	'Note: An asterisk (*) beside a posting means the item will be selectively released at a later date.',
+	'<a target="_blank" href="https://owl.uwo.ca/portal/site/4be60fd6-855f-4499-90aa-ac4efc4853d8/page-reset/2a661295-3fd8-4ec3-9b18-2e42e12a30cb">Assessment</a>',
+	'Could not process date: <a target="_blank" href="https://owl.uwo.ca/portal/site/1180d000-6090-44fd-9cc9-6723b53e59a1/page/2757366c-1873-4239-baa4-42750442d2c3">Course Map</a>',
+	'TBA',
+	'N/A'
 ] 
 var silentDates = new Set(_dates)
 
@@ -529,23 +533,60 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		
 		obj.date = out;
 	} else {
+		var out = []
+		
 		obj.date = util.replaceAll('*','', obj.textDate);
+		var dateRegex = '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|&)'
 		
-		var start = obj.date.regexIndexOf('[0-9]')
-		var end = obj.date.regexLastIndexOf('[0-9]')
-		
-		if (end-start <= 2 && end-start >= 1) {			
-			var date = new Date(obj.date.substring(0, end)+' 20'+course.substring(course.length-2)+' UTC')
-		
-			date = util.addDays(date, -0.05)
-			util.changeYearIfNeeded(date, course);		
+		var tempDate = obj.date
+		var pastMonth = undefined
+		while (tempDate.length > 0) {
+// 			console.log("TEMP: ",tempDate)
+			var end = tempDate.regexIndexOf('[0-9]{1,2}') + 2
+			var start = tempDate.substring(0, end).regexIndexOf(dateRegex)			
 			
-			obj.date = date.toString();
-			temp.push(date);
-		} else {
+// 			console.log(tempDate, '|', tempDate.substring(start, end), '|', start, '|', end)
+			
+			if (end === 1 || start === -1)
+				break;
+			else {
+				foundDate = true
+				var date = undefined
+				if (pastMonth) {
+					date = new Date(pastMonth+tempDate.substring(end-2, end)+' 20'+course.substring(course.length-2)+' UTC')
+					
+					date = util.addDays(date, -0.05)
+					util.changeYearIfNeeded(date, course);		
+					
+// 					console.log(obj.date, '|', pastMonth+tempDate.substring(end-2, end), '|', date)					
+				} else {
+					date = new Date(tempDate.substring(start, end)+' 20'+course.substring(course.length-2)+' UTC')
+					
+					date = util.addDays(date, -0.05)
+					util.changeYearIfNeeded(date, course);		
+					
+// 					console.log(obj.date, '|', tempDate.substring(start, end), '|', date)
+				}
+				out.push(date.toString())
+				temp.push(date);
+
+				if (!pastMonth && start !== -1) {
+					pastMonth = tempDate.substring(start, end-2)
+// 					console.log("PAST MONTH:", pastMonth)
+				}
+
+				tempDate = tempDate.substring(end)
+			}	
+		}
+		
+		if (out.length === 0) {
 			if (!silentDates.contains(obj.textDate))
 				console.log("Could not process date:", obj.textDate)
 			return {data: obj, firstDate:firstDate, endDate:lastDate};	
+		} else if (out.length === 1) {
+			obj.date = out[0]
+		} else {
+			obj.date = out;
 		}
 	}
 	
