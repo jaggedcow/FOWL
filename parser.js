@@ -277,9 +277,13 @@ function _processPageTableSync(input, type, course) {
 	var offendingRow = -1;	// row that caused the last column offset 
 	var lastDate = undefined;	// date of the row that caused the last column offset
 	
+	var rowLength = -1
+	var setRowLength = false
+	
 	var output = parsedHTML('tr').map(function(i, row) {
 		var temp = {}
 		var skipRow = false;
+		var skipLastDate = false;		
 		
 		if (columnOffset > 0) {
 			columnOffset--;
@@ -290,7 +294,7 @@ function _processPageTableSync(input, type, course) {
 			}
 		}
 		
-		$.load(row)('td, th').each(function(j, col) {
+		$.load(row)('td, th').each(function(j, col) {			
 			var header = $(col).attr('headers');
 			
 			var findStr = 'a';
@@ -299,7 +303,7 @@ function _processPageTableSync(input, type, course) {
 			var tempJ = j;
 			if (columnOffset > 0 && i !== offendingRow) {
 				tempJ++;
-			} 
+			}
 			
 			if (type.match('Homework') && tempJ === topic)
 				findStr = 'a, strong, b'
@@ -374,11 +378,11 @@ function _processPageTableSync(input, type, course) {
 						}
 					}
 				}
-			} else if (type.match('Homework')) {			
+			} else if (type.match('Homework')) {		
 				if (date === undefined || i === startRow) {
 					if (title.indexOf('Date') !== -1) {
 						date = j;
-						startRow = i;						
+						startRow = i;		
 					}
 					if (title.indexOf('Topic') !== -1) {
 						topic = j;
@@ -396,14 +400,22 @@ function _processPageTableSync(input, type, course) {
 					}					
 				} else {	
 					if (columnOffset > 0 && i !== offendingRow) {
+						if (j === date && temp['date'] === undefined) {
+							skipRow = false;							
+							temp['date'] = lastDate;
+						} else {
+							skipRow = false;														
+							skipLastDate = true;
+						}
 						j++;
-						skipRow = false;
-						temp['date'] = lastDate;
-					} else if (j === date) {
+					}
+					
+					if (j === date && (columnOffset <= 0 || i === offendingRow || skipLastDate)) {
 						skipRow = title.length === 0;
 						if (!skipRow) {
 							temp['date'] = title;
-							if (i === offendingRow) {
+							
+							if (i === offendingRow && !skipLastDate) {
 								lastDate = title
 							}
 						}
@@ -427,6 +439,10 @@ function _processPageTableSync(input, type, course) {
 				}			
 			}
 		});	
+		
+		setRowLength = true;
+		
+		console.log(temp)
 		
 		return {'type':type, 'data':temp, 'course':course};
 	}).get();
