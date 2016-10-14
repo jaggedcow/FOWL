@@ -454,7 +454,7 @@ var _dates = [
 	'<a target="_blank" href="https://owl.uwo.ca/access/content/group/9ed134dc-0872-476b-a56e-1bfe1d80bb29/Primary%20Physical%20Exam%20Skills/pcm1_16_17_PPES_message_to_students.pdf">Message to Students from Course Co-Chairs</a>',
 	'Note: An asterisk (*) beside a posting means the item will be selectively released at a later date.',
 	'<a target="_blank" href="https://owl.uwo.ca/portal/site/4be60fd6-855f-4499-90aa-ac4efc4853d8/page-reset/2a661295-3fd8-4ec3-9b18-2e42e12a30cb">Assessment</a>',
-	'Could not process date: <a target="_blank" href="https://owl.uwo.ca/portal/site/1180d000-6090-44fd-9cc9-6723b53e59a1/page/2757366c-1873-4239-baa4-42750442d2c3">Course Map</a>',
+	'<a target="_blank" href="https://owl.uwo.ca/portal/site/1180d000-6090-44fd-9cc9-6723b53e59a1/page/2757366c-1873-4239-baa4-42750442d2c3">Course Map</a>',
 	'TBA',
 	'N/A'
 ] 
