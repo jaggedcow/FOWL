@@ -442,8 +442,6 @@ function _processPageTableSync(input, type, course) {
 		
 		setRowLength = true;
 		
-		console.log(temp)
-		
 		return {'type':type, 'data':temp, 'course':course};
 	}).get();
 	

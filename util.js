@@ -112,6 +112,7 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 			downgradeSet.add(href);
 	})			
 	
+	
 		
 	replaceSet.get().forEach(function(href) {
 		if (href.lastIndexOf('/', 0) === 0)
@@ -135,7 +136,17 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	temp = replaceAll('href="https://owl.uwo.ca/portal/logout"','href="/portal/logout"',temp)	
 	temp = replaceAll('<meta http-equiv="Refresh" content="0:URL=https://owl.uwo.ca/portal">','<meta http-equiv="Refresh" content="0:URL=/portal">',temp)
 	
-	return replaceClasses(temp);
+	
+	parsedHTML = $.load(temp)
+	
+	parsedHTML('form').map(function(i, img) {
+		var id = $(img).attr('id');
+		if (id && id.match('loginForm')) {
+			$(img).prepend('<label for="fakesave">Remember Me:</label><input name="fakesave" id="fakesave" type="checkbox">')
+		}
+	})	
+	
+	return replaceClasses(parsedHTML.html());
 }
 
 function flattenArray(array) {
