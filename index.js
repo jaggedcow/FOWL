@@ -28,7 +28,7 @@ function processLogin(module, response, pathname, username, cookiejar) {
 	query.pw = util.decrypt(userInfo[username].pass)	
 	
 	var post = {eid:query.user, pw:query.pw}
-    var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
+    var auth = "Basic " + new Buffer(post.eid + ":" + post.pw).toString("base64");
 	
 	module('http://owl.uwo.ca/portal', function(err, resp, html) {
 		if (err)
@@ -47,7 +47,7 @@ function processLogin(module, response, pathname, username, cookiejar) {
 		
 		request.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 			if (!err && userInfo[username].saveInfo) {
-				cookiejar.set('eid', post.eid, {expires:util.addDays(new Date(), 7)});
+				cookiejar.set('user', post.eid, {expires:util.addDays(new Date(), 7)});
 				cookiejar.set('pw', util.encrypt(post.pw), {expires:util.addDays(new Date(), 7)});
 				cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), 7)});				
 				cookiejar.set('saveInfo', true, {expires:util.addDays(new Date(), 7)});								
@@ -71,7 +71,7 @@ function processJSON(module, response, query, username, cookiejar) {
 	if (config.debug) console.log("JSON")	
 			
 	var post = {eid:query.user, pw:query.pw}
-    var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
+    var auth = "Basic " + new Buffer(post.eid + ":" + post.pw).toString("base64");
 	
 	module('http://owl.uwo.ca/portal', function(err, resp, html) {
 		if (err)
@@ -93,7 +93,7 @@ function processJSON(module, response, query, username, cookiejar) {
 		
 		request.post({followAllRedirects: true, url: 'http://owl.uwo.ca/portal/xlogin', headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 			if (!err && userInfo[username].saveInfo) {
-				cookiejar.set('eid', post.eid, {expires:util.addDays(new Date(), 7)});
+				cookiejar.set('user', post.eid, {expires:util.addDays(new Date(), 7)});
 				cookiejar.set('pw', util.encrypt(post.pw), {expires:util.addDays(new Date(), 7)});
 				cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), 7)});
 				cookiejar.set('saveInfo', true, {expires:util.addDays(new Date(), 7)});															
@@ -128,11 +128,11 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 
         req.on('end', function () {
             var post = qs.parse(body);
-            var auth = "Basic " + new Buffer(post['eid'] + ":" + post['pw']).toString("base64");
+            var auth = "Basic " + new Buffer(post.eid + ":" + post.pw).toString("base64");
             
 			module.post({followAllRedirects: true, url: 'http://owl.uwo.ca'+pathname, headers: {"Authorization": auth, 'Cookie': userInfo[username]?userInfo[username].cookie:''}, form:post}, function(err, resp, html) {          	
 				if (!err && post.fakesave !== undefined) {
-					cookiejar.set('eid', post.eid, {expires:util.addDays(new Date(), 7)});
+					cookiejar.set('user', post.eid, {expires:util.addDays(new Date(), 7)});
 					cookiejar.set('pw', util.encrypt(post.pw), {expires:util.addDays(new Date(), 7)});	
 					cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), 7)});												
 					cookiejar.set('saveInfo', true, {expires:util.addDays(new Date(), 7)});							
@@ -195,7 +195,7 @@ serverFunc = function(req, response) {
 	var cookiejar = new Cookies(req, response);
 	var pathname = url.parse(req.url).pathname;
 		
-	var username = cookiejar.get('eid')
+	var username = cookiejar.get('user')
 	var key = cookiejar.get('key')
 	var password = undefined
 	var saveInfo = cookiejar.get('saveInfo')	
@@ -214,7 +214,7 @@ serverFunc = function(req, response) {
 
 	if (pathname.match('/portal/logout')) {
 		delete userInfo[username] 
-		cookiejar.set('eid')
+		cookiejar.set('user')
 		cookiejar.set('pw')
 		cookiejar.set('key')		
 		cookiejar.set('saveInfo')		
