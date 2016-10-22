@@ -5,11 +5,23 @@ $(document).ready(function() {
 		$(".comingsoon").fadeIn()
 	});
 	$("#showPrevButton").on("click", function() {
-		if (count === %MAX_DATE%)
+		if (count === %MAX_DATE%) {
 			$("#showPrevButton").fadeOut();
+			$("#hidePrevButton").delay(400).fadeIn();			
+		}
 		$(".pastweek"+count).fadeIn();
 		count++;
 	});
+	$("#hidePrevButton").on("click", function() {
+		$("#hidePrevButton").fadeOut();			
+		$("#showPrevButton").delay(400).fadeIn();			
+		
+		while (count > 0) {
+			$(".pastweek"+count).fadeOut();
+			count--;
+		}
+		count = 1;
+	});	
 	
 /*
 	$('#fakeloginframe').on('load', function(){

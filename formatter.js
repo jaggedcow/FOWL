@@ -342,7 +342,8 @@ function addShowNextButton(parsedHTML) {
 }
 
 function addShowPrevButton(parsedHTML) {
-	parsedHTML('<font small><div id="showPrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');					
+	parsedHTML('<font small><div id="hidePrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small; display:none;">Hide Previous Weeks</div></font>').appendTo('#fakeweeklabel');		
+	parsedHTML('<font small><div id="showPrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');						
 }
 
 var clientsideJS = undefined;
@@ -351,7 +352,7 @@ function addFooters(parsedHTML, maxPreviousDate) {
 		clientsideJS = fs.readFileSync('./clientside.js', 'utf8')
 	}
 	
-	parsedHTML('body').append('<style>#showAllButton { background-color: hsl(0, 0%, 96%); } #showAllButton:hover {background-color: hsl(0, 0%, 93%);}#showPrevButton { color: #9776C1; } #showPrevButton:hover {color: #623f8d;}</style>')
+	parsedHTML('body').append('<style>#showAllButton { background-color: hsl(0, 0%, 96%); } #showAllButton:hover {background-color: hsl(0, 0%, 93%);}#showPrevButton, #hidePrevButton { color: #9776C1; } #showPrevButton:hover, #hidePrevButton:hover {color: #623f8d;}</style>')
 	parsedHTML('body').append('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>')
 	parsedHTML('body').append('<script type="text/javascript">'+clientsideJS.replace('%MAX_DATE%',maxPreviousDate)+'</script>')	
 }
