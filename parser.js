@@ -908,7 +908,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 		}
 		
 		formatter.addShowPrevButton(formatObj)
-		formatter.addFooters(formatObj)
+		formatter.addFooters(formatObj, maxPreviousDate)
 
 		callback(util._cleanHTML(formatObj, classes.length > 0?formatObj.html():html, out.ignoredURLs));		
 	});
