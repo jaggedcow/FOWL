@@ -850,6 +850,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 			var passed = false;
 			var isToday = false;
 			var isTomorrow = false;
+			var isFuture = false;
 			
 			for (var j = 0; j < dates.length; j++) {
 				if (dates[j] >= yesterday) {
@@ -865,16 +866,15 @@ function processDashboard(html, module, session, userInfo, callback) {
 				}
 				if (dates[j] >= twodays) {
 					isTomorrow = false;
-					passed = true;
+					isFuture = true;
 				}				
 			}	
 				
-			if (isToday) {
-				formatter.addLecture(formatObj, content, false)
+			if (isToday || isTomorrow) {
+				formatter.addLecture(formatObj, content, isTomorrow)			
+			} else {
+				formatter.addLecture(formatObj, content, null, isFuture)
 			}	
-			if (isTomorrow) {
-				formatter.addLecture(formatObj, content, true)			
-			}			
 		}
 		
 		for (var i = 0; i < pccia.length; i++) {
