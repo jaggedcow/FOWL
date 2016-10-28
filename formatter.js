@@ -94,8 +94,8 @@ function addAssignment(parsedHTML, content) {
 function addHomework(parsedHTML, content, maxPreviousDate) {
 	var futureHomeworkExists = false;
 	
-	var output = '<div class="fakebox" style="padding: 2px 8px 8px 8px; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';
-	var output2 = '<div class="fakebox" style="padding: 2px 8px 8px 8px; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';			
+	var output = '<div style="padding: 2px 8px 8px 8px; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';
+	var output2 = '<div style="padding: 2px 8px 8px 8px; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';			
 	var multipleOutput = false;
 	var replaceDate = true;		// whether a date should be replaced by a relative date (tonight, tomorrow, etc)
 	
@@ -300,8 +300,11 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 	
 	if ((passed || upcoming || upcomingSoon || upcomingLater) && withinWeek) {
 		if (passed) {
-			output = output.replace('opacity: 1.0;', 'opacity: 0.4;');
-			output2 = output2.replace('opacity: 1.0;', 'opacity: 0.4;');					
+			output = output.replace('opacity: 1.0;"', 'opacity: 0.4;" class="fakebox"');
+			output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4;" class="fakebox"');				
+		} else {
+			output = output.replace('opacity: 1.0;"', 'opacity: 1.0;" class="fakebox"');
+			output2 = output2.replace('opacity: 1.0;"', 'opacity: 1.0;" class="fakebox"');
 		}
 						
 		if (passed && replaceDate) {
@@ -316,7 +319,8 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 		} else {
 			output = output.replace('%DATE%', dateStr1);
 			output2 = output2.replace('%DATE%', dateStr2);
-		}
+		}		
+		
 		parsedHTML(output).appendTo('#fakeweek');
 		if (multipleOutput)
 			parsedHTML(output2).appendTo('#fakeweek');			
@@ -326,11 +330,11 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 		if (prevWeek > 0) {
 			if (prevWeek > maxPreviousDate)
 				maxPreviousDate = prevWeek
-			output = output.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="pastweek'+prevWeek+'"');
-			output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="pastweek'+prevWeek+'"');	
+			output = output.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="fakebox pastweek'+prevWeek+'"');
+			output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="fakebox pastweek'+prevWeek+'"');	
 		} else {
-			output = output.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');
-			output2 = output2.replace('opacity: 1.0;"', 'display:none;" class="comingsoon"');						
+			output = output.replace('opacity: 1.0;"', 'display:none;" class="fakebox comingsoon"');
+			output2 = output2.replace('opacity: 1.0;"', 'display:none;" class="fakebox comingsoon"');						
 		}
 					
 		parsedHTML(output.replace('%DATE%', dateStr1)).appendTo('#fakeweek');
@@ -357,7 +361,7 @@ function addFooters(parsedHTML, maxPreviousDate) {
 	}
 	
 	parsedHTML('body').append('<style>#showAllButton { background-color: hsl(0, 0%, 96%); } #showAllButton:hover {background-color: hsl(0, 0%, 93%);}#showPrevButton, #hidePrevButton { color: #9776C1; } #showPrevButton:hover, #hidePrevButton:hover {color: #623f8d;}</style>')
-	parsedHTML('body').append('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>')
+	parsedHTML('body').append('<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>')
 	parsedHTML('body').append('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>')
 	parsedHTML('body').append('<script type="text/javascript">'+clientsideJS.replace('%MAX_DATE%',maxPreviousDate)+'</script>')	
 }
