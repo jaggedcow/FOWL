@@ -23,16 +23,19 @@ $(document).ready(function() {
 		count = 1;
 	});	
 	
-/*
-	$('#fakeloginframe').on('load', function(){
-        if ($(this).attr('src').indexOf('/portal/logout') !== -1) {
-    		$("#fakeloginframe").attr('src','')
-
-        }
-    });
-*/
+	var currDate = new Date();
+	if (currDate.getMonth() === 9 && currDate.getDate() > 27) {		// todo: replace this with something smarter that finds weekends
+		setTimeout(function(){
+			$('body, #container').animate({backgroundColor:'#424242'}, 'slow');	
+			$('#toolMenu li').animate({backgroundColor:'#808080', borderColor:'#656565'}, 'slow');
+			$('.fakebox').animate({backgroundColor:'#f37015'}, 'slow');	
+			$('.fakebutton').animate({color:'#f37015'}, 'slow');			
+			$('.fakeheader').animate({color:'#dbdbdb'}, 'slow');	
+			$('#innercontent span').animate({color:'#424242'}, 'slow')					
+			$('#innercontent a').animate({color:'#424242'}, 'slow')											
+		}, 1200)
+	}
 	
-// 	$("#fakeloginframe").attr('src','https://owl.uwo.ca/portal/logout')
 	$("#fakeloginform").submit();		
 	window.lastFakeLoginCheck = new Date();
 	

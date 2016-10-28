@@ -17,9 +17,9 @@ function initPage(html) {
 	return parsedHTML;
 }
 function addHeaders(parsedHTML, session, userInfo) {	
-	parsedHTML('<h1 style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><div><h1 style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1></div><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
+	parsedHTML('<h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><div><h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1></div><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
 	
-	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2>PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2>Pending Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2>Course Pages</h2></div>').appendTo('#faketopnav');
+	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 class="fakeheader" id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2 class="fakeheader">PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2 class="fakeheader">Pending Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2 class="fakeheader">Course Pages</h2></div>').appendTo('#faketopnav');
 	
 	parsedHTML('<iframe id="fakeloginframe" name="fakeloginframe" style="position:fixed; top:-900px; width:900px; height:0px; border:none;" src=""></iframe>').appendTo('body')
 	parsedHTML('<form id="fakeloginform" method="post" target="fakeloginframe" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="'+session+'" type="hidden"><input name="pw" id="pw" value="'+util.decrypt(userInfo[session].pass)+'" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('body')
@@ -29,25 +29,15 @@ function addClass(parsedHTML, content, expired) {
 	var opacity = '1.0'
 	if (expired)
 		opacity = '0.4'
-	parsedHTML('<div style="padding: 2px 8px 2px 8px; margin-bottom: 8px; opacity:'+opacity+'; '+util.dropShadowForCourse(content.title)+' background-color:'+util.colourForCourse(content.title)+';"><h3><a id="'+content.hash+'" target="_blank" href="'+content.href+'" title="'+content.title+'"><span>'+content.title+'</span></a><h3></div>').appendTo('#fakehomework');
-	if (content.title.indexOf('5139') !== -1) {
-		parsedHTML('<div style="padding: 1px 8px 1px 8px; margin-top: -7px; margin-left: 24px; margin-bottom: 8px; font-size: 10px; -webkit-box-shadow: hsla(133, 20%, 55%, 0.5) 0px 1px 1px; box-shadow: hsla(133, 20%, 55%, 0.5) 0px 1px 1px; background-color: hsl(133, 100%, 96%);"><h3><a id="'+content.hash+'_hanbook" target="_blank" href="https://owl.uwo.ca/access/content/group/9ed134dc-0872-476b-a56e-1bfe1d80bb29/Introduction%20to%20Interviewing/pcm1_16_17_interviewing_student_syllabus_FINAL%20REVISED.pdf#page=8" title="Interviewing Handbook"><span>Interviewing Handbook</span></a><h3></div>').appendTo('#fakehomework');
-	}
+	parsedHTML('<div class="fakebox" style="padding: 2px 8px 2px 8px; margin-bottom: 8px; opacity:'+opacity+'; '+util.dropShadowForCourse(content.title)+' background-color:'+util.colourForCourse(content.title)+';"><h3><a id="'+content.hash+'" target="_blank" href="'+content.href+'" title="'+content.title+'"><span>'+content.title+'</span></a><h3></div>').appendTo('#fakehomework');
 }
 
 function addLectureHeader(parsedHTML, todayLecture, tomorrowLecture) {
-	parsedHTML('<div id="fakelectureheader" style="display:table; width:99%;"></div>').appendTo('#fakelecturenav')
+	parsedHTML('<div id="fakelectureheader" style="display:table; width:102%;"></div>').appendTo('#fakelecturenav')
 	if (todayLecture || tomorrowLecture)
-		parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2>Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2>Tomorrow</h2></div><div style="display:table-row"></div><div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
+		parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 class="fakeheader">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 class="fakeheader">Tomorrow</h2></div><div style="display:table-row"></div><div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
 	else
-		parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>No Immediate Lectures!</h4></div>').appendTo('#fakelectureheader');
-		
-	if (!todayLecture) {
-		parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>None Today!</h4></div>').appendTo('#fakelectureheader');
-	}
-	if (!tomorrowLecture) {
-		parsedHTML('<div style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>None Tomorrow!</h4></div>').appendTo('#fakelectureheader');
-	}
+		parsedHTML('<div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>No Immediate Lectures!</h4></div>').appendTo('#fakelectureheader');
 }
 
 function addLecture(parsedHTML, content, isTomorrow, isFuture) {
@@ -62,14 +52,23 @@ function addLecture(parsedHTML, content, isTomorrow, isFuture) {
 		if (prev.length > 0)
 			$(prev).append('<br><br>'+content.data.html)
 		else
-			parsedHTML('<div style="display:table-cell; width: 46%; padding:1%; padding-top: 0px; padding-bottom: 1%;"><div class="lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
+			parsedHTML('<div style="display:table-cell; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
 	} else {
 		
 	}
 }
 
+function addLecturePlaceholders(parsedHTML, todayLecture, tomorrowLecture) {
+	if (!todayLecture) {
+		parsedHTML('<div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>None Today!</h4></div>').insertBefore('#fakelecturerow')
+	}
+	if (!tomorrowLecture) {
+		parsedHTML('<div style="display:table-cell; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox" style="margin-top:0px; padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-left: 1%; margin-right: 1%; width:100%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>None Tomorrow!</h4></div></div>').insertBefore('#fakelecturerow');
+	}
+}
+
 function addPCCIA(parsedHTML, content) {
-	var output = '<div style="padding: 2px 8px 8px 8px; opacity: 1.0; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
+	var output = '<div class="fakebox" style="padding: 2px 8px 8px 8px; opacity: 1.0; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
 	content.data.objectives+' ';
 	if (util.isArray(content.data.resources)) {
 		 for (var j = 0; j < content.data.resources.length; j++) {
@@ -88,15 +87,15 @@ function addPCCIA(parsedHTML, content) {
 
 function addAssignment(parsedHTML, content) {
 	if (content.data.status.indexOf("Submitted") === -1)					
-		parsedHTML('<div style="padding: 2px 8px 8px 8px; opacity: 1.0; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+';"><h4>'+content.data.title+'</h4>'+
+		parsedHTML('<div class="fakebox" style="padding: 2px 8px 8px 8px; opacity: 1.0; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+';"><h4>'+content.data.title+'</h4>'+
 	'<strong>Status</strong>: '+content.data.status+' <span style="float:right;"><strong>Due</strong>: '+df(util.addDays(new Date(content.data.dueDate),-0.05), 'mmm dd, yyyy')+'</span></div>').appendTo("#fakeassignments")	
 }
 
 function addHomework(parsedHTML, content, maxPreviousDate) {
 	var futureHomeworkExists = false;
 	
-	var output = '<div style="padding: 2px 8px 8px 8px; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';
-	var output2 = '<div style="padding: 2px 8px 8px 8px; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';			
+	var output = '<div class="fakebox" style="padding: 2px 8px 8px 8px; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';
+	var output2 = '<div class="fakebox" style="padding: 2px 8px 8px 8px; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><h4>%DATE%';			
 	var multipleOutput = false;
 	var replaceDate = true;		// whether a date should be replaced by a relative date (tonight, tomorrow, etc)
 	
@@ -343,12 +342,12 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 }
 
 function addShowNextButton(parsedHTML) {
-	parsedHTML('<div id="showAllButton" class="hoverButton" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-right: 20%; margin-left: 20%; text-align: center; cursor: pointer;"><h4>Show Upcoming Weeks</h4></div>').appendTo('#fakeweek');		
+	parsedHTML('<div class="fakebox" id="showAllButton" class="hoverButton" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-right: 20%; margin-left: 20%; text-align: center; cursor: pointer;"><h4>Show Upcoming Weeks</h4></div>').appendTo('#fakeweek');		
 }
 
 function addShowPrevButton(parsedHTML) {
-	parsedHTML('<font small><div id="hidePrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small; display:none;">Hide Previous Weeks</div></font>').appendTo('#fakeweeklabel');		
-	parsedHTML('<font small><div id="showPrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');						
+	parsedHTML('<font small><div class="fakebutton" id="hidePrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small; display:none;">Hide Previous Weeks</div></font>').appendTo('#fakeweeklabel');		
+	parsedHTML('<font small><div class="fakebutton" id="showPrevButton" class="hoverButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');						
 }
 
 var clientsideJS = undefined;
@@ -359,17 +358,19 @@ function addFooters(parsedHTML, maxPreviousDate) {
 	
 	parsedHTML('body').append('<style>#showAllButton { background-color: hsl(0, 0%, 96%); } #showAllButton:hover {background-color: hsl(0, 0%, 93%);}#showPrevButton, #hidePrevButton { color: #9776C1; } #showPrevButton:hover, #hidePrevButton:hover {color: #623f8d;}</style>')
 	parsedHTML('body').append('<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>')
+	parsedHTML('body').append('<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>')
 	parsedHTML('body').append('<script type="text/javascript">'+clientsideJS.replace('%MAX_DATE%',maxPreviousDate)+'</script>')	
 }
 
-exports.addAssignment 		= addAssignment
-exports.addClass 			= addClass
-exports.addFooters 			= addFooters
-exports.addHeaders 			= addHeaders
-exports.addHomework 		= addHomework
-exports.addLecture 			= addLecture
-exports.addLectureHeader 	= addLectureHeader
-exports.addPCCIA 			= addPCCIA
-exports.addShowNextButton 	= addShowNextButton
-exports.addShowPrevButton 	= addShowPrevButton
-exports.initPage 			= initPage
+exports.addAssignment 			= addAssignment
+exports.addClass 				= addClass
+exports.addFooters 				= addFooters
+exports.addHeaders 				= addHeaders
+exports.addHomework 			= addHomework
+exports.addLecture 				= addLecture
+exports.addLectureHeader 		= addLectureHeader
+exports.addLecturePlaceholders 	= addLecturePlaceholders
+exports.addPCCIA 				= addPCCIA
+exports.addShowNextButton 		= addShowNextButton
+exports.addShowPrevButton	 	= addShowPrevButton
+exports.initPage 				= initPage

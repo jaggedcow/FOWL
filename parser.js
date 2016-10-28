@@ -877,6 +877,8 @@ function processDashboard(html, module, session, userInfo, callback) {
 			}	
 		}
 		
+		formatter.addLecturePlaceholders(formatObj, todayLecture, tomorrowLecture)
+		
 		for (var i = 0; i < pccia.length; i++) {
 			if (today < new Date(pccia[i].data.displayUntil))
 				formatter.addPCCIA(formatObj, pccia[i])
