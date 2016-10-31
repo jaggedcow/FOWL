@@ -36,6 +36,18 @@ $(document).ready(function() {
 		}, 1200)
 	}
 	
+	if (currDate.getMonth() === 3 && currDate.getDate() === 0 && !readCookie('aprilfooled')) {
+		$('#portalContainer').hide();
+		$('#fakeloginframe').css({width:$(document).width()+'px', height:$(document).height()+'px', top: 0+'px'})		
+		
+		setTimeout(function() {
+			alert("April Fools!")
+			$('#portalContainer').show();		
+			$('#fakeloginframe').animate({top:$(document).height()}, 800)
+			createCookie('aprilfooled', true, 7)				
+		}, 12000)
+	}
+	
 	$("#fakeloginform").submit();		
 	window.lastFakeLoginCheck = new Date();
 	
@@ -52,3 +64,24 @@ $(window).focus(function() {
 		$("#fakeloginframe").attr('src','https://owl.uwo.ca/portal/logout')					
 	}
 })
+
+function createCookie(name,value,days) {
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+    }
+    else var expires = "";
+    document.cookie = name+"="+value+expires+"; path=/";
+}
+
+function readCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
