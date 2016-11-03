@@ -68,8 +68,12 @@ function addLecturePlaceholders(parsedHTML, todayLecture, tomorrowLecture) {
 }
 
 function addPCCIA(parsedHTML, content) {
-	var output = '<div class="fakebox" style="padding: 2px 8px 8px 8px; opacity: 1.0; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>'+
-	content.data.objectives+' ';
+	var output = '<div class="fakebox" style="padding: 2px 8px 8px 8px; opacity: 1.0; position:relative; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; background-color:'+util.colourForCourse(content.course)+';"><h4>Week '+content.data.week+' - '+content.data.topic+'<h4>';
+	if (content.data.objectives !== undefined) {
+		output += content.data.objectives+' '
+	} else {
+		output += '&nbsp; '
+	}
 	if (util.isArray(content.data.resources)) {
 		 for (var j = 0; j < content.data.resources.length; j++) {
 		 	var item = content.data.resources[j];
