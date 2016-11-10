@@ -61,7 +61,8 @@ $(document).ready(function() {
 $(window).focus(function() {
 	if (window.lastFakeLoginCheck && new Date().getTime() - window.lastFakeLoginCheck.getTime() > 3600000) {
 		console.log("Focus login")
-		$("#fakeloginframe").attr('src','https://owl.uwo.ca/portal/logout')					
+		$("#fakeloginform").submit();		
+		window.lastFakeLoginCheck = new Date();
 	}
 })
 
