@@ -709,7 +709,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			
 				for (var j = 0; j < pccia.length; j++) {
 					if (classes[i].title.match(pccia[j].course)) {
-						var displayDate = util.addDays(startDate, 7*pccia[j].data.week)		// figures when PCCIA sesh is done
+						var displayDate = util.addDays(startDate, 7*pccia[j].data.week - 1)		// figures when PCCIA sesh is done
 						pccia[j].data.displayUntil = displayDate.toString();
 					}
 				}
