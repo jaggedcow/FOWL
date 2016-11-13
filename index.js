@@ -4,6 +4,7 @@ var http = require("http")
 var https = require("https")
 var qs = require('querystring')
 var request = require('request')
+var Set = require('set')
 var sys = require('systeminformation')
 var url = require("url")
 
@@ -17,7 +18,7 @@ var parser = require('./parser')
 var userInfo = {};
 
 function processLogin(module, response, pathname, username, cookiejar) {	
-	if (config.debug) console.log("LOGIN")	
+	if (config.debug) console.log("LOGIN", pathname)	
 	
 	if (pathname.match('/'))
 		pathname = '/portal/xlogin'
@@ -68,7 +69,7 @@ function processLogin(module, response, pathname, username, cookiejar) {
 
 
 function processJSON(module, response, query, username, cookiejar) {	
-	if (config.debug) console.log("JSON")	
+	if (config.debug) console.log("JSON", pathname)	
 			
 	var post = {eid:query.user, pw:query.pw}
     var auth = "Basic " + new Buffer(post.eid + ":" + post.pw).toString("base64");
@@ -113,7 +114,7 @@ function processJSON(module, response, query, username, cookiejar) {
 }
 
 function processRequest(req, module, response, pathname, username, cookiejar) {
-	if (config.debug) console.log("REQ", req.method)	
+	if (config.debug) console.log("REQ", req.method, pathname)	
 	
     if (req.method == 'POST') {
         var body = '';
@@ -191,6 +192,17 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
     }
 }
 
+var _pages = [
+	'/',
+	'/portal',
+	'/portal/login',		
+	'/portal/xlogin',	
+	'/portal/logout',
+	'/portal/relogin',
+	'/json'
+] 
+var whitelist = new Set(_pages)
+
 serverFunc = function(req, response) { 
 	var cookiejar = new Cookies(req, response);
 	var pathname = url.parse(req.url).pathname;
@@ -219,42 +231,49 @@ serverFunc = function(req, response) {
 		cookiejar.set('key')		
 		cookiejar.set('saveInfo')		
 	}
-
-	if (config.debug) console.log("START", userInfo)
-
-	if (pathname.match('/json')) {
-		if (query.user !== undefined && query.pw !== undefined)		
-			processJSON(request, response, query, username, cookiejar);
-		else {
-			response.writeHead(403, {"Content-Type": "text/html"}); 		
-			response.end();	
-		}
-	} else if (!pathname.match('/portal/relogin') && (!userInfo[username] || !userInfo[username].cookie)) {	
-		if (!userInfo[username] || Object.keys(userInfo[username]).length === 0) {			
-			if (config.debug) console.log("BASIC")
-			request('http://owl.uwo.ca/portal', function(err, resp, html) {
-				if (err)
-					console.log(err)
-				if (resp) {
-					cookieIn = resp.headers['set-cookie']		
-					for (var i = 0; i < cookieIn.length; i++) {
-						cookieIn[i] = cookieIn[i].replace('Secure;','')
-						cookieIn[i] = cookieIn[i].replace('secure','')						
-					}
-					
-					session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
-					userInfo[username] = {cookie: cookieIn, session: session}					
 	
-					response.writeHead(200, {"Content-Type": "text/html"}); 		
-					response.write(util.cleanHTML(html));		
-					response.end();	
-				}
-			});
-		} else {
-			processLogin(request, response, pathname, username, cookiejar);
-		}
+	if (!whitelist.contains(pathname)) {
+		if (config.debug) console.log("REDIRECT", req.url, pathname)			
+		response.setHeader('Location', 'https://owl.uwo.ca' + pathname);
+		response.statusCode = 301;
+		response.end();
 	} else {
-		processRequest(req, request, response, pathname, username, cookiejar);
+		if (config.debug) console.log("START", userInfo)
+		
+		if (pathname.match('/json')) {
+			if (query.user !== undefined && query.pw !== undefined)		
+				processJSON(request, response, query, username, cookiejar);
+			else {
+				response.writeHead(403, {"Content-Type": "text/html"}); 		
+				response.end();	
+			}
+		} else if (!pathname.match('/portal/relogin') && (!userInfo[username] || !userInfo[username].cookie)) {	
+			if (!userInfo[username] || Object.keys(userInfo[username]).length === 0) {			
+				if (config.debug) console.log("BASIC", pathname)
+				request('http://owl.uwo.ca/portal', function(err, resp, html) {
+					if (err)
+						console.log(err)
+					if (resp) {
+						cookieIn = resp.headers['set-cookie']		
+						for (var i = 0; i < cookieIn.length; i++) {
+							cookieIn[i] = cookieIn[i].replace('Secure;','')
+							cookieIn[i] = cookieIn[i].replace('secure','')						
+						}
+						
+						session = cookieIn[0].substring(cookieIn[0].indexOf('=')+1, cookieIn[0].indexOf(';'))
+						userInfo[username] = {cookie: cookieIn, session: session}					
+		
+						response.writeHead(200, {"Content-Type": "text/html"}); 		
+						response.write(util.cleanHTML(html));		
+						response.end();	
+					}
+				});
+			} else {
+				processLogin(request, response, pathname, username, cookiejar);
+			}
+		} else {
+			processRequest(req, request, response, pathname, username, cookiejar);
+		}
 	}
 }
 

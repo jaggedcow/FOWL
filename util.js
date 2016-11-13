@@ -81,6 +81,7 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	var redirectSet = new Set();
 	var downgradeSet = new Set();
 
+/*
 	parsedHTML('img').map(function(i, img) {
 		var href = $(img).attr('src')
 		if (href.lastIndexOf('http://owl.uwo.ca', 0) !== 0 && href.lastIndexOf('https://owl.uwo.ca', 0) !== 0)		
@@ -94,12 +95,13 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 		var href = $(img).attr('src')
 		replaceSet.add(href);
 	})			
-	
 	parsedHTML('a').map(function(i, img) {
 		var href = $(img).attr('href')
 		if (!ignoredURLs.contains(href))
 			replaceSet.add(href);
 	})	
+*/
+	
 	parsedHTML('form').map(function(i, img) {
 		var href = $(img).attr('action')
 		if (href.lastIndexOf('/access/login') !== 17 && href.lastIndexOf('/access/login') !== 18)
@@ -114,10 +116,12 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	
 	
 		
+/*
 	replaceSet.get().forEach(function(href) {
 		if (href.lastIndexOf('/', 0) === 0)
 			temp = replaceAll(''+href,'http://owl.uwo.ca'+href, temp);	
 	});
+*/
 	redirectSet.get().forEach(function(href) {
 		if (href.lastIndexOf('http://owl.uwo.ca', 0) === 0)
 			temp = replaceAll(''+href,''+href.substring(17), temp);	
