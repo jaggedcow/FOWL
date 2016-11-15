@@ -80,27 +80,6 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	var replaceSet = new Set();
 	var redirectSet = new Set();
 	var downgradeSet = new Set();
-
-/*
-	parsedHTML('img').map(function(i, img) {
-		var href = $(img).attr('src')
-		if (href.lastIndexOf('http://owl.uwo.ca', 0) !== 0 && href.lastIndexOf('https://owl.uwo.ca', 0) !== 0)		
-			replaceSet.add(href);		
-	})
-	parsedHTML('link').map(function(i, img) {
-		var href = $(img).attr('href')
-		replaceSet.add(href);
-	})		
-	parsedHTML('script').map(function(i, img) {
-		var href = $(img).attr('src')
-		replaceSet.add(href);
-	})			
-	parsedHTML('a').map(function(i, img) {
-		var href = $(img).attr('href')
-		if (!ignoredURLs.contains(href))
-			replaceSet.add(href);
-	})	
-*/
 	
 	parsedHTML('form').map(function(i, img) {
 		var href = $(img).attr('action')
@@ -114,14 +93,6 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 			downgradeSet.add(href);
 	})			
 	
-	
-		
-/*
-	replaceSet.get().forEach(function(href) {
-		if (href.lastIndexOf('/', 0) === 0)
-			temp = replaceAll(''+href,'http://owl.uwo.ca'+href, temp);	
-	});
-*/
 	redirectSet.get().forEach(function(href) {
 		if (href.lastIndexOf('http://owl.uwo.ca', 0) === 0)
 			temp = replaceAll(''+href,''+href.substring(17), temp);	
@@ -190,6 +161,30 @@ function dropShadowForCourse(course) {
 	return '-webkit-box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px;'
 }
 
+var visitors = require('./analytics.json')
+function logVisit(username, classes) {
+	var temp;
+	var year = undefined;
+	for (var i = 0; i < classes.length; i++) {
+		course = classes[i].title
+		temp = parseInt('20'+course.substring(course.length-2))
+		if (year === undefined || temp < year)
+			year = temp;
+	}
+	year += 4
+	username = crypto.createHash('md5').update(username).digest('hex')		// store as little info as possible
+	
+	if (visitors[year] === undefined)
+		visitors[year] = {}
+	
+	if (visitors[year][username] === undefined)
+		visitors[year][username] = 1
+	else
+		visitors[year][username] = visitors[year][username] + 1
+		
+	fs.writeFile('analytics.json', JSON.stringify(visitors, null, 4))	
+}
+
 function isArray(a) {
     return (!!a) && (a.constructor === Array);
 }
@@ -240,5 +235,6 @@ exports.encrypt 			= encrypt
 exports.flattenArray 		= flattenArray
 exports.getKey				= getKey
 exports.isArray 			= isArray
+exports.logVisit 			= logVisit
 exports.replaceAll 			= replaceAll
 exports.replaceClasses 		= replaceClasses

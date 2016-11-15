@@ -802,6 +802,10 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 				return dateA.getMonth() - dateB.getMonth()
 			return dateA.getDate() - dateB.getDate()				
 		});
+		
+		
+		util.logVisit(session, classes)
+		
 				
 		if (JSONoutput) {
 			if (prettyOutput)
