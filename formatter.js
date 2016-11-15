@@ -32,39 +32,33 @@ function addClass(parsedHTML, content, expired) {
 	parsedHTML('<div class="fakebox" style="padding: 2px 8px 2px 8px; margin-bottom: 8px; opacity:'+opacity+'; '+util.dropShadowForCourse(content.title)+' background-color:'+util.colourForCourse(content.title)+';"><h3><a id="'+content.hash+'" target="_blank" href="'+content.href+'" title="'+content.title+'"><span>'+content.title+'</span></a><h3></div>').appendTo('#fakehomework');
 }
 
-function addLectureHeader(parsedHTML, todayLecture, tomorrowLecture) {
-	parsedHTML('<div id="fakelectureheader" style="display:table; width:102%;"></div>').appendTo('#fakelecturenav')
-	if (todayLecture || tomorrowLecture)
-		parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 class="fakeheader">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 class="fakeheader">Tomorrow</h2></div><div style="display:table-row"></div><div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
-	else
-		parsedHTML('<div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>No Immediate Lectures!</h4></div>').appendTo('#fakelectureheader');
+function addLectureHeader(parsedHTML) {
+	parsedHTML('<div id="fakelectureheader" style="display:table; width:102%; overflow-x:scroll;"></div>').appendTo('#fakelecturenav')
+	parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 class="fakeheader">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 class="fakeheader">Tomorrow</h2></div><div style="display:table-row"></div><div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
 }
 
 function addLecture(parsedHTML, content, isTomorrow, isFuture) {
-	if (isFuture === undefined) {
-		var hash = crypto.createHash('md5').update(content.course+content.data.date).digest('hex');
+	var hash = crypto.createHash('md5').update(content.course+content.data.date).digest('hex');
+	var displayType = 'table-cell'
 	
-		var type = '1'
-		if (isTomorrow)
-			type = '51'
-	
-		var prev = parsedHTML('#fakelectureheader').find('.lecture_'+hash)
-		if (prev.length > 0)
-			$(prev).append('<br><br>'+content.data.html)
-		else
-			parsedHTML('<div style="display:table-cell; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
-	} else {
-		
-	}
+	if (isFuture !== undefined)
+		displayType = 'none'
+
+
+	var prev = parsedHTML('#fakelectureheader').find('.lecture_'+hash)
+	if (prev.length > 0)
+		$(prev).append('<br><br>'+content.data.html)
+	else
+		parsedHTML('<div style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
 }
 
-function addLecturePlaceholders(parsedHTML, todayLecture, tomorrowLecture) {
-	if (!todayLecture) {
-		parsedHTML('<div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>None Today!</h4></div>').insertBefore('#fakelecturerow')
-	}
-	if (!tomorrowLecture) {
-		parsedHTML('<div style="display:table-cell; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox" style="margin-top:0px; padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-left: 1%; margin-right: 1%; width:100%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>None Tomorrow!</h4></div></div>').insertBefore('#fakelecturerow');
-	}
+function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
+	var displayType = 'table-cell'
+	
+	if (isFuture !== undefined)
+		displayType = 'none'	
+	
+	parsedHTML('<div class="fakebox" style="display:'+displayType+'; padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-left: 1%; margin-right: 1%; text-align: center; background-color: hsl(0, 0%, 96%);"><h4>No Lectures!</h4></div>').insertBefore('#fakelecturerow')
 }
 
 function addPCCIA(parsedHTML, content) {
@@ -377,7 +371,7 @@ exports.addHeaders 				= addHeaders
 exports.addHomework 			= addHomework
 exports.addLecture 				= addLecture
 exports.addLectureHeader 		= addLectureHeader
-exports.addLecturePlaceholders 	= addLecturePlaceholders
+exports.addLecturePlaceholder 	= addLecturePlaceholder
 exports.addPCCIA 				= addPCCIA
 exports.addShowNextButton 		= addShowNextButton
 exports.addShowPrevButton	 	= addShowPrevButton

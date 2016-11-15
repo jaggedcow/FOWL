@@ -658,11 +658,39 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		}			
 						
 		assignments.sort(function(a,b) {
-			return new Date(a.data.dueDate) - new Date(b.data.dueDate);
+			var dateA = new Date(a.data.dueDate)
+			var dateB = new Date(b.data.dueDate)
+			
+			if (!isFinite(dateA) && isFinite(dateB))
+				return 1;	
+			if (isFinite(dateA) && !isFinite(dateB))
+				return -1;	
+			if (!isFinite(dateA) && !isFinite(dateB))
+				return 0;		
+													
+			if (dateA.getYear() !== dateB.getYear())
+				return dateA.getYear() - dateB.getYear()
+			if (dateA.getMonth() !== dateB.getMonth())
+				return dateA.getMonth() - dateB.getMonth()
+			return dateA.getDate() - dateB.getDate()				
 		});
 		
 		lectures.sort(function(a,b) {
-			return new Date(a.data.date) - new Date(b.data.date);
+			var dateA = new Date(a.data.date)
+			var dateB = new Date(b.data.date)
+			
+			if (!isFinite(dateA) && isFinite(dateB))
+				return 1;	
+			if (isFinite(dateA) && !isFinite(dateB))
+				return -1;	
+			if (!isFinite(dateA) && !isFinite(dateB))
+				return 0;		
+													
+			if (dateA.getYear() !== dateB.getYear())
+				return dateA.getYear() - dateB.getYear()
+			if (dateA.getMonth() !== dateB.getMonth())
+				return dateA.getMonth() - dateB.getMonth()
+			return dateA.getDate() - dateB.getDate()								
 		});		
 		
 		homework.sort(function(a, b) {
@@ -687,7 +715,21 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 						dateB = dateB.date;
 				}				
 			}			
-			return new Date(dateA) - new Date(dateB);
+			dateA = new Date(dateA)
+			dateB = new Date(dateB)
+			
+			if (!isFinite(dateA) && isFinite(dateB))
+				return 1;	
+			if (isFinite(dateA) && !isFinite(dateB))
+				return -1;	
+			if (!isFinite(dateA) && !isFinite(dateB))
+				return 0;		
+													
+			if (dateA.getYear() !== dateB.getYear())
+				return dateA.getYear() - dateB.getYear()
+			if (dateA.getMonth() !== dateB.getMonth())
+				return dateA.getMonth() - dateB.getMonth()
+			return dateA.getDate() - dateB.getDate()				
 		})
 		
 		for (var i = 0; i < classes.length; i++) {			
@@ -744,7 +786,21 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		}
 				
 		pccia.sort(function(a,b) {
-			return new Date(a.data.displayUntil) - new Date(b.data.displayUntil);
+			var dateA = new Date(a.data.displayUntil)
+			var dateB = new Date(b.data.displayUntil)
+			
+			if (!isFinite(dateA) && isFinite(dateB))
+				return 1;	
+			if (isFinite(dateA) && !isFinite(dateB))
+				return -1;	
+			if (!isFinite(dateA) && !isFinite(dateB))
+				return 0;		
+													
+			if (dateA.getYear() !== dateB.getYear())
+				return dateA.getYear() - dateB.getYear()
+			if (dateA.getMonth() !== dateB.getMonth())
+				return dateA.getMonth() - dateB.getMonth()
+			return dateA.getDate() - dateB.getDate()				
 		});
 				
 		if (JSONoutput) {
@@ -766,57 +822,17 @@ function processDashboard(html, module, session, userInfo, callback) {
 		var pccia = out.pccia;
 		var lectures = out.lectures;
 		
-		var formatObj = out.formatObj;
-						
-		var todayLecture = false
-		var tomorrowLecture = false
-		for (var i = 0; i < lectures.length; i++) {
-			var content = lectures[i];						
-			var today = new Date();
-			today = util.addDays(today, -0.25);	// adjusts for time zones
-			var tomorrow = util.addDays(today, 1);
-			var twodays = util.addDays(today, 2);			
-			var yesterday = util.addDays(today, -1)			
-			
-			var dates = []
-			if (util.isArray(content.data.date)) {
-				for (var j = 0; j < content.data.date.length; j++)
-					dates.push(new Date(content.data.date[j]));
-			} else {
-				dates = [new Date(content.data.date)];
-			}
-			
-			var passed = false;
-			var isToday = false;
-			var isTomorrow = false;
-			
-			for (var j = 0; j < dates.length; j++) {
-				if (dates[j] >= yesterday) {
-					passed = true;
-				}
-				if (dates[j] >= today) {
-					passed = false;
-					isToday = true;
-				}
-				if (dates[j] >= tomorrow) {
-					isToday = false;
-					isTomorrow = true;
-				}
-				if (dates[j] >= twodays) {
-					isTomorrow = false;
-					passed = true;
-				}				
-			}
-			
-			if (isToday)
-				todayLecture = true;
-			
-			if (isTomorrow)
-				tomorrowLecture = true;
-		}
-		
+		var formatObj = out.formatObj;		
 		
 		formatter.addHeaders(formatObj, session, userInfo);
+
+		var today = new Date();
+		var tempDate = undefined;
+		today = util.addDays(today, -0.25);	// adjusts for time zones
+		var tomorrow = util.addDays(today, 1);
+		var twodays = util.addDays(today, 2);			
+		var yesterday = util.addDays(today, -1)	
+		var lastDate = undefined
 
 		for (var i = 0; i < classes.length; i++) {
 			if (classes[i].displayUntil === undefined || yesterday < new Date(classes[i].displayUntil))
@@ -828,13 +844,8 @@ function processDashboard(html, module, session, userInfo, callback) {
 				formatter.addClass(formatObj, classes[i], true)
 		}		
 		
-		formatter.addLectureHeader(formatObj, todayLecture, tomorrowLecture)
-				
-		var today = new Date();
-		today = util.addDays(today, -0.25);	// adjusts for time zones
-		var tomorrow = util.addDays(today, 1);
-		var twodays = util.addDays(today, 2);			
-		var yesterday = util.addDays(today, -1)	
+		formatter.addLectureHeader(formatObj)
+			
 			
 		for (var i = 0; i < lectures.length; i++) {
 			var content = lectures[i];								
@@ -847,38 +858,72 @@ function processDashboard(html, module, session, userInfo, callback) {
 				dates = [new Date(content.data.date)];
 			}
 			
+			// only sets it for the first lecture (aka earliest date)
+			if (tempDate === undefined)
+				tempDate = dates[0]
+			
 			var passed = false;
 			var isToday = false;
 			var isTomorrow = false;
 			var isFuture = false;
 			
-			for (var j = 0; j < dates.length; j++) {
-				if (dates[j] >= yesterday) {
-					passed = true;
+			var isEmptyDate = true;
+			var emptyDateCounter = 0;
+			
+			while (isEmptyDate && emptyDateCounter < 7) {				
+				for (var j = 0; j < dates.length; j++) {
+					if (lastDate !== undefined && isFinite(lastDate) && (dates[j].getMonth() !== lastDate.getMonth() || dates[j].getDate() !== lastDate.getDate()))
+						tempDate = util.addDays(tempDate, 1)		
+					
+					if (dates[j] < util.addDays(tempDate,1)) {
+						isEmptyDate = false;
+						emptyDateCounter = 0;
+					}
+					if (!isFinite(dates[j])) {
+						isEmptyDate = false;
+						emptyDateCounter = 0;						
+					}
+					
+					lastDate = dates[j]
+						
+					if (dates[j] >= yesterday) {
+						passed = true;
+					}
+					if (dates[j] >= today) {
+						passed = false;
+						isToday = true;
+					}
+					if (dates[j] >= tomorrow) {
+						isToday = false;
+						isTomorrow = true;
+					}
+					if (dates[j] >= twodays) {
+						isTomorrow = false;
+						isFuture = true;
+					}				
+				}	
+									
+				if (!isEmptyDate) {					
+					if (isToday || isTomorrow) {
+						formatter.addLecture(formatObj, content, isTomorrow)			
+					} else {
+						formatter.addLecture(formatObj, content, null, isFuture)
+					}
+				} else {
+					if (isToday || isTomorrow) {
+						formatter.addLecturePlaceholder(formatObj, tempDate, isTomorrow)			
+					} else {
+						formatter.addLecturePlaceholder(formatObj, tempDate, null, isFuture)
+					}					
 				}
-				if (dates[j] >= today) {
-					passed = false;
-					isToday = true;
+			
+				if (isEmptyDate) {
+					tempDate = util.addDays(tempDate, 1)				
+					emptyDateCounter++
 				}
-				if (dates[j] >= tomorrow) {
-					isToday = false;
-					isTomorrow = true;
-				}
-				if (dates[j] >= twodays) {
-					isTomorrow = false;
-					isFuture = true;
-				}				
-			}	
-				
-			if (isToday || isTomorrow) {
-				formatter.addLecture(formatObj, content, isTomorrow)			
-			} else {
-				formatter.addLecture(formatObj, content, null, isFuture)
-			}	
+			}
 		}
-		
-		formatter.addLecturePlaceholders(formatObj, todayLecture, tomorrowLecture)
-		
+				
 		for (var i = 0; i < pccia.length; i++) {
 			if (today < new Date(pccia[i].data.displayUntil))
 				formatter.addPCCIA(formatObj, pccia[i])

@@ -69,7 +69,7 @@ function processLogin(module, response, pathname, username, cookiejar) {
 
 
 function processJSON(module, response, query, username, cookiejar) {	
-	if (config.debug) console.log("JSON", pathname)	
+	if (config.debug) console.log("JSON")	
 			
 	var post = {eid:query.user, pw:query.pw}
     var auth = "Basic " + new Buffer(post.eid + ":" + post.pw).toString("base64");
