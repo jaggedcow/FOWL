@@ -1,5 +1,6 @@
 var $ = require('cheerio')
 var crypto = require('crypto')
+var dateformat = require('dateformat')
 var deasync = require('deasync')
 var fs = require('fs')
 var Set = require('set') 
@@ -173,14 +174,18 @@ function logVisit(username, classes) {
 	}
 	year += 4
 	username = crypto.createHash('md5').update(username).digest('hex')		// store as little info as possible
+	var date = dateformat(new Date(), "mmm d, yyyy")
+
+	if (visitors[date] === undefined)
+		visitors[date] = {}
 	
-	if (visitors[year] === undefined)
-		visitors[year] = {}
+	if (visitors[date][year] === undefined)
+		visitors[date][year] = {}
 	
-	if (visitors[year][username] === undefined)
-		visitors[year][username] = 1
+	if (visitors[date][year][username] === undefined)
+		visitors[date][year][username] = 1
 	else
-		visitors[year][username] = visitors[year][username] + 1
+		visitors[date][year][username] = visitors[date][year][username] + 1
 		
 	fs.writeFile('analytics.json', JSON.stringify(visitors, null, 4))	
 }
