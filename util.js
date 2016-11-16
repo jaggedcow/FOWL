@@ -225,6 +225,7 @@ function replaceClasses(temp) {
 	temp = temp.replace(/MEDICINE 5246\w? 001 FW(\d){2}/g, 'PCCM 2');		
 	temp = temp.replace(/MEDICINE 5203\w? 001 FW(\d){2}/g, 'Digestion + PCCIA');							
 	temp = temp.replace(/MEDICINE 5202\w? 001 FW(\d){2}/g, 'Endocrine & Metabolism + PCCIA');	
+	temp = temp.replace(/MEDICINE 5205\w? 001 FW(\d){2}/g, 'Reproduction + PCCIA');		
 	
 	return temp
 }

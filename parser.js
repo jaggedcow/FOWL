@@ -7,6 +7,9 @@ var Set = require('set')
 var formatter = require('./formatter')
 var util = require('./util')
 
+var config = require('./config.json')
+delete config.key	// so it's not kept in memory
+
 function _processPage(href, module, course, session, userInfo, callback) {
 	href = href.replace('https','http');
 	module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session].cookie}}, function(err, resp, html) {  
@@ -105,7 +108,7 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 					
 					if (homework.length === 0) {
 						if (pageType.match('Lecture')) {
-							console.log("NO LECTURE")
+							if (config.debug) console.log("NO LECTURE", href)
 							_callback(err, undefined)						
 						} else {
 							var out = parsedHTML('table');
@@ -113,7 +116,7 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 							if (out.length > 0)
 								_callback(err, _processPageTableSync(out, pageType, course))
 							else {
-								console.log("NO HOMEWORK")								
+								if (config.debug) console.log("NO HOMEWORK", href)								
 								_callback(err, undefined)
 							}
 						}
@@ -128,8 +131,13 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 										__callback(err, _processPageLectureSync(parsedHTML, course, href))						
 									} else {									
 										var out = parsedHTML('table');
-										
-										__callback(err, _processPageTableSync(out, pageType, course))
+																				
+										if (out.length > 0)
+											__callback(err, _processPageTableSync(out, pageType, course))
+										else {
+											if (config.debug) console.log("NO TABLE", href)								
+											_callback(err, undefined)											
+										}
 									}
 								}
 							});						
