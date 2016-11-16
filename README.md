@@ -3,7 +3,7 @@
   - On Ubuntu, run `apt-get install nodejs`
   - On other platforms you can download an installer from <https://nodejs.org/en/download/>
 2. Download the source code
-3. You must create two json configuration files in the same location as the source code
+3. You must create a json configuration files in the same location as the source code
   - `config.json` contains basic information about how to run the program. An example file is:
 
        <code>{
@@ -12,8 +12,6 @@
 }</code>
 
     - other options are `debug` (`true` for more detailed logging) and `securePort` (to enable HTTPS with a valid certificate)
-
-  - `analytics.json` will store anonymized output about how many people are visiting the site. It should just include the text `{}` initially and will be updated by FOWL
   
 # Running FOWL
 1. Run the program using `nodejs index.js`

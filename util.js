@@ -162,7 +162,12 @@ function dropShadowForCourse(course) {
 	return '-webkit-box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px;'
 }
 
-var visitors = require('./analytics.json')
+var visitors = undefined;
+try {
+	visitors = JSON.parse(fs.readFileSync('.analytics.json'))
+} catch(e) {
+	visitors = {}
+}
 function logVisit(username, classes) {
 	var temp;
 	var year = undefined;
