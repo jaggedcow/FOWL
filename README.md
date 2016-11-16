@@ -14,5 +14,5 @@
   - `analytics.json` will store anonymized output about how many poeple are visiting the site. It should just include the text `{}` initially and will be updated by FOWL
   
 # Running FOWL
-1. Run the program using nodejs index.js
-2. Visit FOWL by directing your browser to localhost:8888
+1. Run the program using `nodejs index.js`
+2. Visit FOWL by directing your browser to <localhost:8888>
