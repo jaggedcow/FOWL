@@ -18,4 +18,3 @@
 # Running FOWL
 1. Run the program using `nodejs index.js`
 2. Visit FOWL by directing your browser to `localhost:8888`
-s
