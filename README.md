@@ -11,8 +11,11 @@
 	"key": "a long random string of (ideally 72) characters"	
 }</code>
 
-  - `analytics.json` will store anonymized output about how many poeple are visiting the site. It should just include the text `{}` initially and will be updated by FOWL
+    - other options are `debug` (`true` for more detailed logging) and `securePort` (to enable HTTPS with a valid certificate)
+
+  - `analytics.json` will store anonymized output about how many people are visiting the site. It should just include the text `{}` initially and will be updated by FOWL
   
 # Running FOWL
 1. Run the program using `nodejs index.js`
-2. Visit FOWL by directing your browser to <localhost:8888>
+2. Visit FOWL by directing your browser to `localhost:8888`
+s
