@@ -81,7 +81,8 @@ var _comments = [
 	'Is this thing still working?',
 	'ZzzzZZzzzzzZzzz',
 	'¯\_(ツ)_/¯',
-	'Call your mom today, she misses you.'
+	'Call your mom today, she misses you.',
+	'#wellness day'
 ]
 function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
 	var displayType = 'table-cell'
