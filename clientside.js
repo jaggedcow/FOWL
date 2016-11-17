@@ -49,21 +49,22 @@ $(document).ready(function() {
 	}
 	
 	var _cutoff = 99
-	window.todayDate = new Date();
+	window.prevDate = new Date();
+	window.nextDate = addDays(1);	
 	$("#prevLectureButton").on("click", function() {
 		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
 		
 		do {
 			pdelta++
 		
-			prevDate = addDays(window.todayDate, -pdelta)
+			prevDate = addDays(window.prevDate, -pdelta)
 			prevDateNum = prevDate.getMonth()+""+prevDate.getDate()+""+prevDate.getFullYear()
 		} while($('.day_'+prevDateNum).length === 0 && pdelta < _cutoff) 
 		
 		do {
 			ndelta++
 			
-			nextDate = addDays(window.todayDate, ndelta)		
+			nextDate = addDays(window.prevDate, ndelta)		
 			nextDateNum = nextDate.getMonth()+""+nextDate.getDate()+""+nextDate.getFullYear()	
 		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
 								
@@ -72,11 +73,10 @@ $(document).ready(function() {
 			$('.day_'+nextDateNum).hide()
 			$('.placeholder_'+nextDateNum).hide()				
 			
-			window.prevVisible = prevDateNum
-			window.nextVisible = window.todayDate.getMonth()+""+window.todayDate.getDate()+""+window.todayDate.getFullYear()						
-
-			window.todayDate = addDays(window.todayDate, -pdelta)			
-			resetDayCounters(window.todayDate)
+			window.nextDate = window.prevDate
+			window.prevDate = prevDate
+						
+			resetDayCounters(window.prevDate)
 		}
 	});
 	$("#nextLectureButton").on("click", function() {
@@ -85,14 +85,14 @@ $(document).ready(function() {
 		do {
 			pdelta++
 		
-			prevDate = addDays(window.todayDate, -pdelta)
+			prevDate = addDays(window.nextDate, -pdelta)
 			prevDateNum = prevDate.getMonth()+""+prevDate.getDate()+""+prevDate.getFullYear()
 		} while($('.day_'+prevDateNum).length === 0 && pdelta < _cutoff) 
 		
 		do {
 			ndelta++
 			
-			nextDate = addDays(window.todayDate, ndelta)		
+			nextDate = addDays(window.nextDate, ndelta)		
 			nextDateNum = nextDate.getMonth()+""+nextDate.getDate()+""+nextDate.getFullYear()	
 		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
 				
@@ -101,11 +101,10 @@ $(document).ready(function() {
 			$('.placeholder_'+prevDateNum).hide()
 			$('.day_'+nextDateNum).css('display','table-cell')
 			
-			window.prevVisible = window.todayDate.getMonth()+""+window.todayDate.getDate()+""+window.todayDate.getFullYear()
-			window.nextVisible = nextDateNum
+			window.prevDate = window.nextDate
+			window.nextDate = nextDate
 			
-			window.todayDate = addDays(window.todayDate, ndelta)
-			resetDayCounters(window.todayDate)
+			resetDayCounters(window.prevDate)
 		}
 	});	
 	
@@ -162,8 +161,9 @@ function resetDayCounters(todayDate) {
 function resetLectures() {
 	var date = new Date();
 	
-	var prevDateNum = window.prevVisible
-	var nextDateNum = window.nextVisible
+	var prevDateNum = window.prevDate.getMonth()+""+window.prevDate.getDate()+""+window.prevDate.getFullYear()
+	var nextDateNum = window.nextDate.getMonth()+""+window.nextDate.getDate()+""+window.nextDate.getFullYear()	
+
 	
 	$('.day_'+prevDateNum).hide()
 	$('.day_'+nextDateNum).hide()
@@ -178,8 +178,9 @@ function resetLectures() {
 	$('.placeholder_'+prevDateNum).show()
 	$('.placeholder_'+nextDateNum).show()	
 	
-	window.todayDate = date;
-	resetDayCounters(window.todayDate)		
+	window.prevDate = prevDate
+	window.nextDate = nextDate
+	resetDayCounters(window.prevDate)		
 }
 
 function createCookie(name,value,days) {
