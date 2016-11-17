@@ -676,8 +676,8 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			if (!isFinite(dateA) && !isFinite(dateB))
 				return 0;		
 													
-			if (dateA.getYear() !== dateB.getYear())
-				return dateA.getYear() - dateB.getYear()
+			if (dateA.getFullYear() !== dateB.getFullYear())
+				return dateA.getFullYear() - dateB.getFullYear()
 			if (dateA.getMonth() !== dateB.getMonth())
 				return dateA.getMonth() - dateB.getMonth()
 			return dateA.getDate() - dateB.getDate()				
@@ -694,8 +694,8 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			if (!isFinite(dateA) && !isFinite(dateB))
 				return 0;		
 													
-			if (dateA.getYear() !== dateB.getYear())
-				return dateA.getYear() - dateB.getYear()
+			if (dateA.getFullYear() !== dateB.getFullYear())
+				return dateA.getFullYear() - dateB.getFullYear()
 			if (dateA.getMonth() !== dateB.getMonth())
 				return dateA.getMonth() - dateB.getMonth()
 			return dateA.getDate() - dateB.getDate()								
@@ -733,8 +733,8 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			if (!isFinite(dateA) && !isFinite(dateB))
 				return 0;		
 													
-			if (dateA.getYear() !== dateB.getYear())
-				return dateA.getYear() - dateB.getYear()
+			if (dateA.getFullYear() !== dateB.getFullYear())
+				return dateA.getFullYear() - dateB.getFullYear()
 			if (dateA.getMonth() !== dateB.getMonth())
 				return dateA.getMonth() - dateB.getMonth()
 			return dateA.getDate() - dateB.getDate()				
@@ -804,8 +804,8 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			if (!isFinite(dateA) && !isFinite(dateB))
 				return 0;		
 													
-			if (dateA.getYear() !== dateB.getYear())
-				return dateA.getYear() - dateB.getYear()
+			if (dateA.getFullYear() !== dateB.getFullYear())
+				return dateA.getFullYear() - dateB.getFullYear()
 			if (dateA.getMonth() !== dateB.getMonth())
 				return dateA.getMonth() - dateB.getMonth()
 			return dateA.getDate() - dateB.getDate()				
@@ -917,9 +917,9 @@ function processDashboard(html, module, session, userInfo, callback) {
 									
 				if (!isEmptyDate) {					
 					if (isToday || isTomorrow) {
-						formatter.addLecture(formatObj, content, isTomorrow)			
+						formatter.addLecture(formatObj, content, dates[0], isTomorrow)			
 					} else {
-						formatter.addLecture(formatObj, content, null, isFuture)
+						formatter.addLecture(formatObj, content, dates[0], null, isFuture)
 					}
 				} else {
 					if (isToday || isTomorrow) {
@@ -962,11 +962,8 @@ function processDashboard(html, module, session, userInfo, callback) {
 			maxPreviousDate = out.maxDate;
 		}
 		
-		if (futureHomeworkExists) {
-			formatter.addShowNextButton(formatObj)		
-		}
 		
-		formatter.addShowPrevButton(formatObj)
+		formatter.addButtons(formatObj, futureHomeworkExists)
 		formatter.addFooters(formatObj, maxPreviousDate)
 
 		callback(util._cleanHTML(formatObj, classes.length > 0?formatObj.html():html, out.ignoredURLs));		

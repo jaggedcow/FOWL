@@ -48,6 +48,67 @@ $(document).ready(function() {
 		}, 12000)
 	}
 	
+	var _cutoff = 99
+	window.todayDate = new Date();
+	$("#prevLectureButton").on("click", function() {
+		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
+		
+		do {
+			pdelta++
+		
+			prevDate = addDays(window.todayDate, -pdelta)
+			prevDateNum = prevDate.getMonth()+""+prevDate.getDate()+""+prevDate.getFullYear()
+		} while($('.day_'+prevDateNum).length === 0 && pdelta < _cutoff) 
+		
+		do {
+			ndelta++
+			
+			nextDate = addDays(window.todayDate, ndelta)		
+			nextDateNum = nextDate.getMonth()+""+nextDate.getDate()+""+nextDate.getFullYear()	
+		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
+								
+		if (pdelta < _cutoff && ndelta < _cutoff) {				
+			$('.day_'+prevDateNum).css('display','table-cell')
+			$('.day_'+nextDateNum).hide()
+			$('.placeholder_'+nextDateNum).hide()				
+			
+			window.prevVisible = prevDateNum
+			window.nextVisible = window.todayDate.getMonth()+""+window.todayDate.getDate()+""+window.todayDate.getFullYear()						
+
+			window.todayDate = addDays(window.todayDate, -pdelta)			
+			resetDayCounters(window.todayDate)
+		}
+	});
+	$("#nextLectureButton").on("click", function() {
+		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
+		
+		do {
+			pdelta++
+		
+			prevDate = addDays(window.todayDate, -pdelta)
+			prevDateNum = prevDate.getMonth()+""+prevDate.getDate()+""+prevDate.getFullYear()
+		} while($('.day_'+prevDateNum).length === 0 && pdelta < _cutoff) 
+		
+		do {
+			ndelta++
+			
+			nextDate = addDays(window.todayDate, ndelta)		
+			nextDateNum = nextDate.getMonth()+""+nextDate.getDate()+""+nextDate.getFullYear()	
+		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
+				
+		if (pdelta < _cutoff && ndelta < _cutoff) {				
+			$('.day_'+prevDateNum).hide()
+			$('.placeholder_'+prevDateNum).hide()
+			$('.day_'+nextDateNum).css('display','table-cell')
+			
+			window.prevVisible = window.todayDate.getMonth()+""+window.todayDate.getDate()+""+window.todayDate.getFullYear()
+			window.nextVisible = nextDateNum
+			
+			window.todayDate = addDays(window.todayDate, ndelta)
+			resetDayCounters(window.todayDate)
+		}
+	});	
+	
 	$("#fakeloginform").submit();		
 	window.lastFakeLoginCheck = new Date();
 	
@@ -65,6 +126,61 @@ $(window).focus(function() {
 		window.lastFakeLoginCheck = new Date();
 	}
 })
+
+function resetDayCounters(todayDate) {
+	$('#backToPresent').off('click')
+	
+	var date = new Date();
+	
+	if (compareDates(todayDate, date) <= -10) {
+		$('#faketodayheader').html("The Distant Past...")
+		$('#faketomorrowheader').html('<font small><div class="fakebutton hoverButton textButton noselect" id="backToPresent" style="cursor: pointer; font-size: small;">Back to Present Day?</div></font>')					
+		$('#backToPresent').on("click", resetLectures);
+	} else if (compareDates(todayDate, date) <= -2) {
+		$('#faketodayheader').html("The Past...")
+		$('#faketomorrowheader').html("&nbsp;")			
+	} else if (compareDates(todayDate, date) === -1) {
+		$('#faketodayheader').html("The Past...")
+		$('#faketomorrowheader').html("Today")		
+	} else if (compareDates(todayDate, date) === 0) {
+		$('#faketodayheader').html("Today")
+		$('#faketomorrowheader').html("Tomorrow")		
+	} else if (compareDates(todayDate, date) === 1) {
+		$('#faketodayheader').html("Tomorrow")
+		$('#faketomorrowheader').html("The Future...")		
+	} else if (compareDates(todayDate, date) >= 10) {
+		$('#faketodayheader').html("The Mysterious Future...")
+		$('#faketomorrowheader').html('<font small><div class="fakebutton hoverButton textButton noselect" id="backToPresent" style="cursor: pointer; font-size: small;">Back to Present Day?</div></font>')		
+		$('#backToPresent').on("click", resetLectures);		
+	} else if (compareDates(todayDate, date) >= 2) {
+		$('#faketodayheader').html("The Future...")
+		$('#faketomorrowheader').html("&nbsp;")		
+	}			
+}
+
+
+function resetLectures() {
+	var date = new Date();
+	
+	var prevDateNum = window.prevVisible
+	var nextDateNum = window.nextVisible
+	
+	$('.day_'+prevDateNum).hide()
+	$('.day_'+nextDateNum).hide()
+	
+	var prevDate = addDays(date, 0)
+	prevDateNum = prevDate.getMonth()+""+prevDate.getDate()+""+prevDate.getFullYear()
+	var nextDate = addDays(date, 1)
+	nextDateNum = nextDate.getMonth()+""+nextDate.getDate()+""+nextDate.getFullYear()		
+	
+	$('.day_'+prevDateNum).show()
+	$('.day_'+nextDateNum).show()
+	$('.placeholder_'+prevDateNum).show()
+	$('.placeholder_'+nextDateNum).show()	
+	
+	window.todayDate = date;
+	resetDayCounters(window.todayDate)		
+}
 
 function createCookie(name,value,days) {
     if (days) {
@@ -85,4 +201,29 @@ function readCookie(name) {
         if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
     }
     return null;
+}
+
+function compareDates(dateA, dateB) {
+	if (!isFinite(dateA) && isFinite(dateB))
+		return 1;	
+	if (isFinite(dateA) && !isFinite(dateB))
+		return -1;	
+	if (!isFinite(dateA) && !isFinite(dateB))
+		return 0;		
+											
+  var utc1 = Date.UTC(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+  var utc2 = Date.UTC(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+
+  return Math.floor((utc1 - utc2) / 86400000);
+}
+
+function addDays(date, days) {
+	if (typeof date === 'number') {
+		days = date;
+		date = new Date();
+	}
+	
+    var result = new Date(date);
+    result.setTime(result.getTime() + days * 86400000);
+    return result;
 }
