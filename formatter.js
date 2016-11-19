@@ -80,7 +80,7 @@ var _comments = [
 	'Such freedom. Wow amaze.',
 	'Is this thing still working?',
 	'ZzzzZZzzzzzZzzz',
-	'¯\_(ツ)_/¯',
+	'¯\\_(ツ)_/¯',
 	'Call your mom today, she misses you.',
 	'#wellness day'
 ]
