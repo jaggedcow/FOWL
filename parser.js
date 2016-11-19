@@ -922,6 +922,22 @@ function processDashboard(html, module, session, userInfo, callback) {
 						formatter.addLecture(formatObj, content, dates[0], null, isFuture)
 					}
 				} else {
+					if (tempDate >= yesterday) {
+						passed = true;
+					}
+					if (tempDate >= today) {
+						passed = false;
+						isToday = true;
+					}
+					if (tempDate >= tomorrow) {
+						isToday = false;
+						isTomorrow = true;
+					}
+					if (tempDate >= twodays) {
+						isTomorrow = false;
+						isFuture = true;
+					}						
+					
 					if (isToday || isTomorrow) {
 						formatter.addLecturePlaceholder(formatObj, tempDate, isTomorrow)			
 					} else {

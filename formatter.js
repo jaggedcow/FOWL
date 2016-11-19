@@ -70,7 +70,7 @@ var _comments = [
 	'Sleep in!',
 	'This day has been cancelled',
 	'Did you know screen lout is an anagram for no lectures?',
-	'You can get sunburned even on a partly sunny day...<br>Best to stay in',
+	'Inside: Netflix, pillows, warm things;<br>Outside: I dunno bears? Better not risk it.',
 	'Wow. Such quiet.',
 	'A nice clear day for you',
 	'Another day off brought to you by FOWL',
@@ -93,6 +93,7 @@ function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
 	var dateNum = date.getMonth()+""+date.getDate()+""+date.getFullYear()	
 	var dateText = df(date,'mmm dd')
 	var comment = _comments[Math.floor(Math.random()*_comments.length)]
+	console.log(dateText, isTomorrow, isFuture)
 	
 	parsedHTML('<div class="placeholder_'+dateNum+'"style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; background-color: hsl(0, 0%, 96%); width:100%"><p><span style="font-size: 16.0px; font-family: arial , helvetica , sans-serif;"><strong>'+dateText+'</strong></span><br><span style="font-family: Verdana;font-size: small;">'+comment+'</span></p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
 }
