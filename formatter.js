@@ -81,7 +81,7 @@ var _comments = [
 	'Is this thing still working?',
 	'ZzzzZZzzzzzZzzz',
 	'¯\\_(ツ)_/¯',
-	'Call your mom today, she misses you.',
+	'Call your mom, she misses you.',
 	'#wellness day'
 ]
 function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
@@ -93,7 +93,6 @@ function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
 	var dateNum = date.getMonth()+""+date.getDate()+""+date.getFullYear()	
 	var dateText = df(date,'mmm dd')
 	var comment = _comments[Math.floor(Math.random()*_comments.length)]
-	console.log(dateText, isTomorrow, isFuture)
 	
 	parsedHTML('<div class="placeholder_'+dateNum+'"style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; background-color: hsl(0, 0%, 96%); width:100%"><p><span style="font-size: 16.0px; font-family: arial , helvetica , sans-serif;"><strong>'+dateText+'</strong></span><br><span style="font-family: Verdana;font-size: small;">'+comment+'</span></p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
 }
@@ -284,6 +283,10 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 	output += '</div>';
 	output2 += '</div>';			
 	
+	var startDate = dates[0], endDate = dates[dates.length-1]
+	startDate = startDate.getMonth()+""+startDate.getDate()+""+startDate.getFullYear()	
+	endDate = endDate.getMonth()+""+endDate.getDate()+""+endDate.getFullYear()		
+	
 	var today = new Date();
 	today = util.addDays(today, -0.25);	// adjusts for time zones
 	var tomorrow = util.addDays(today, 1);
@@ -335,11 +338,11 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 	
 	if ((passed || upcoming || upcomingSoon || upcomingLater) && withinWeek) {
 		if (passed) {
-			output = output.replace('opacity: 1.0;"', 'opacity: 0.4;" class="fakebox"');
-			output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4;" class="fakebox"');				
+			output = output.replace('opacity: 1.0;"', 'opacity: 0.4;" class="fakebox start_'+startDate+' end_'+endDate+'"');
+			output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4;" class="fakebox start_'+startDate+' end_'+endDate+'"');				
 		} else {
-			output = output.replace('opacity: 1.0;"', 'opacity: 1.0;" class="fakebox"');
-			output2 = output2.replace('opacity: 1.0;"', 'opacity: 1.0;" class="fakebox"');
+			output = output.replace('opacity: 1.0;"', 'opacity: 1.0;" class="fakebox start_'+startDate+' end_'+endDate+'"');
+			output2 = output2.replace('opacity: 1.0;"', 'opacity: 1.0;" class="fakebox start_'+startDate+' end_'+endDate+'"');
 		}
 						
 		if (passed && replaceDate) {
@@ -365,11 +368,11 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 		if (prevWeek > 0) {
 			if (prevWeek > maxPreviousDate)
 				maxPreviousDate = prevWeek
-			output = output.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="fakebox pastweek'+prevWeek+'"');
-			output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="fakebox pastweek'+prevWeek+'"');	
+			output = output.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="fakebox start_'+startDate+' end_'+endDate+' pastweek'+prevWeek+'"');
+			output2 = output2.replace('opacity: 1.0;"', 'opacity: 0.4; display:none;" class="fakebox start_'+startDate+' end_'+endDate+'pastweek'+prevWeek+'"');	
 		} else {
-			output = output.replace('opacity: 1.0;"', 'display:none;" class="fakebox comingsoon"');
-			output2 = output2.replace('opacity: 1.0;"', 'display:none;" class="fakebox comingsoon"');						
+			output = output.replace('opacity: 1.0;"', 'display:none;" class="fakebox comingsoon start_'+startDate+' end_'+endDate+'"');
+			output2 = output2.replace('opacity: 1.0;"', 'display:none;" class="fakebox comingsoon start_'+startDate+' end_'+endDate+'"');						
 		}
 					
 		parsedHTML(output.replace('%DATE%', dateStr1)).appendTo('#fakeweek');
@@ -386,8 +389,10 @@ function addButtons(parsedHTML, addNextButton) {
 	parsedHTML('<font small><div class="fakebutton hoverButton textButton noselect" id="hidePrevButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small; display:none;">Hide Previous Weeks</div></font>').appendTo('#fakeweeklabel');		
 	parsedHTML('<font small><div class="fakebutton hoverButton textButton noselect" id="showPrevButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');
 	
-	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -1.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
+	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -1.75%; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
+	
+// 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo('#innercontent')	
 }
 
 var clientsideJS = undefined;

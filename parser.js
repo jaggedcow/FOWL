@@ -651,7 +651,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		var lectures = [];
 		
 		for (var i = 0; i < results.length; i++) {
-			if (results !== null && results[i] !== undefined && results[i].data !== undefined) {
+			if (results !== null && results[i] !== undefined && results[i] !== null && results[i].data !== undefined) {
 				if (Object.keys(results[i].data).length > 1) {
 					if (results[i].type === 'Homework')
 						homework.push(results[i]);

@@ -49,8 +49,9 @@ $(document).ready(function() {
 	}
 	
 	var _cutoff = 99
-	window.prevDate = new Date();
-	window.nextDate = addDays(1);	
+	window.prevDate = addDays(0)
+	window.nextDate = addDays(1)
+	
 	$("#prevLectureButton").on("click", function() {
 		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
 		
@@ -58,21 +59,23 @@ $(document).ready(function() {
 			pdelta++
 		
 			prevDate = addDays(window.prevDate, -pdelta)
-			prevDateNum = prevDate.getMonth()+""+prevDate.getDate()+""+prevDate.getFullYear()
-		} while($('.day_'+prevDateNum).length === 0 && pdelta < _cutoff) 
+			prevDateNum = getDateText(prevDate)
+		} while($('.day_'+prevDateNum).length === 0 && compareDates(prevDate, addDays(0)) !== 0 && compareDates(prevDate, addDays(1)) !== 0 && pdelta < _cutoff) 
 		
 		do {
 			ndelta++
 			
 			nextDate = addDays(window.prevDate, ndelta)		
-			nextDateNum = nextDate.getMonth()+""+nextDate.getDate()+""+nextDate.getFullYear()	
+			nextDateNum = getDateText(nextDate)
 		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
 								
-		if (pdelta < _cutoff && ndelta < _cutoff) {				
+		if (pdelta < _cutoff && ndelta < _cutoff) {			
 			$('.day_'+prevDateNum).css('display','table-cell')
+			$('.placeholder_'+prevDateNum).css('display','table-cell')			
 			$('.day_'+nextDateNum).hide()
-			$('.placeholder_'+nextDateNum).hide()				
-			
+			$('.placeholder_'+getDateText(addDays(window.prevDate,1))).hide()
+						
+						
 			window.nextDate = window.prevDate
 			window.prevDate = prevDate
 						
@@ -86,20 +89,21 @@ $(document).ready(function() {
 			pdelta++
 		
 			prevDate = addDays(window.nextDate, -pdelta)
-			prevDateNum = prevDate.getMonth()+""+prevDate.getDate()+""+prevDate.getFullYear()
+			prevDateNum = getDateText(prevDate)
 		} while($('.day_'+prevDateNum).length === 0 && pdelta < _cutoff) 
 		
 		do {
 			ndelta++
 			
 			nextDate = addDays(window.nextDate, ndelta)		
-			nextDateNum = nextDate.getMonth()+""+nextDate.getDate()+""+nextDate.getFullYear()	
-		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
+			nextDateNum = getDateText(nextDate)
+		} while($('.day_'+nextDateNum).length === 0 && compareDates(nextDate, addDays(0)) !== 0 && compareDates(nextDate, addDays(1)) !== 0 && ndelta < _cutoff) 		
 				
 		if (pdelta < _cutoff && ndelta < _cutoff) {				
 			$('.day_'+prevDateNum).hide()
-			$('.placeholder_'+prevDateNum).hide()
+			$('.placeholder_'+getDateText(window.prevDate)).hide()
 			$('.day_'+nextDateNum).css('display','table-cell')
+			$('.placeholder_'+nextDateNum).css('display','table-cell')			
 			
 			window.prevDate = window.nextDate
 			window.nextDate = nextDate
@@ -108,13 +112,23 @@ $(document).ready(function() {
 		}
 	});	
 	
+	$('#fakeTestButton').on('click', performDayTick);
+	
 	$("#fakeloginform").submit();		
 	window.lastFakeLoginCheck = new Date();
+	
+	// gets maximum number of days to move ahead without checking server for new content	
+	// right now, counts until next Sunday
+	window.tickTimeOut = 7-addDays(0).getDay()
+	window.tickStart = addDays(0);
+	createCookie('tempUser',undefined,-1)
+	createCookie('tempPw',undefined,-1)		
 	
 	setInterval(function() {
 		console.log("Timed login")
 		$("#fakeloginform").submit();		
-		window.lastFakeLoginCheck = new Date();		
+		window.lastFakeLoginCheck = new Date();	
+		performDayTick()	
 	}, 3600000)
 });
 
@@ -123,6 +137,7 @@ $(window).focus(function() {
 		console.log("Focus login")
 		$("#fakeloginform").submit();		
 		window.lastFakeLoginCheck = new Date();
+		performDayTick()
 	}
 })
 
@@ -157,21 +172,44 @@ function resetDayCounters(todayDate) {
 	}			
 }
 
+function performDayTick() {
+	resetLectures()
+	
+	var passed = getDateText(addDays(-2))
+	var yesterday = getDateText(addDays(-1))
+	var tomorrow = getDateText(addDays(1))
+	
+	$('.day_'+yesterday).hide();
+	$('.placeholder_'+yesterday).hide();	
+	$('.day_'+tomorrow).css('display','table-cell')
+	$('.placeholder_'+tomorrow).css('display','table-cell')
+	
+	$('.end_'+passed).hide();
+	$('.end_'+yesterday).css('opacity',0.4)
+	$('.start_'+tomorrow).show();
+	
+	if (compareDates(addDays(2), window.tickStart) === window.tickTimeOut) {
+		createCookie('tempUser',$('#eid').val(),2/24*60)
+		createCookie('tempPw',$('#pw').val(),2/24*60)		
+		window.location.reload(true)		
+	}
+}
+
 
 function resetLectures() {
 	var date = new Date();
 	
-	var prevDateNum = window.prevDate.getMonth()+""+window.prevDate.getDate()+""+window.prevDate.getFullYear()
-	var nextDateNum = window.nextDate.getMonth()+""+window.nextDate.getDate()+""+window.nextDate.getFullYear()	
+	var prevDateNum = getDateText(window.prevDate)
+	var nextDateNum = getDateText(window.nextDate)
 
 	
 	$('.day_'+prevDateNum).hide()
 	$('.day_'+nextDateNum).hide()
 	
 	var prevDate = addDays(date, 0)
-	prevDateNum = prevDate.getMonth()+""+prevDate.getDate()+""+prevDate.getFullYear()
+	prevDateNum =  getDateText(prevDate)
 	var nextDate = addDays(date, 1)
-	nextDateNum = nextDate.getMonth()+""+nextDate.getDate()+""+nextDate.getFullYear()		
+	nextDateNum =  getDateText(nextDate)
 	
 	$('.day_'+prevDateNum).show()
 	$('.day_'+nextDateNum).show()
@@ -216,6 +254,10 @@ function compareDates(dateA, dateB) {
   var utc2 = Date.UTC(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
 
   return Math.floor((utc1 - utc2) / 86400000);
+}
+
+function getDateText(date) {
+	return date.getMonth()+""+date.getDate()+""+date.getFullYear()
 }
 
 function addDays(date, days) {

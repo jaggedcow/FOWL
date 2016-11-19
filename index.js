@@ -216,6 +216,12 @@ serverFunc = function(req, response) {
 		password = util.decrypt(cookiejar.get('pw'), new Buffer(key,'hex')) 	
 	}
 	
+	if (!username) {
+		console.log("GETTING JS LOGIN")
+		username = cookiejar.get('tempUser')
+		password = cookiejar.get('tempPw')
+	}
+	
 	if (username && !password && !userInfo[username])
 		username = undefined
 	
