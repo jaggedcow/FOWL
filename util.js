@@ -168,7 +168,7 @@ try {
 } catch(e) {
 	visitors = {}
 }
-function logVisit(username, classes) {
+function logVisit(username, classes, json) {
 	var temp;
 	var year = undefined;
 	for (var i = 0; i < classes.length; i++) {
@@ -193,6 +193,7 @@ function logVisit(username, classes) {
 		visitors[date][year][username] = visitors[date][year][username] + 1
 		
 	fs.writeFileSync('analytics.json', JSON.stringify(visitors, null, 4))	
+	fs.writeFile(year+'_'+username+'.json', JSON.stringify(json, null, 4))	
 }
 
 function isArray(a) {

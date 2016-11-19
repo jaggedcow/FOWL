@@ -812,7 +812,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		});
 		
 		
-		util.logVisit(session, classes)
+		util.logVisit(session, classes, {classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia})
 		
 				
 		if (JSONoutput) {
