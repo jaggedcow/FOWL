@@ -192,7 +192,7 @@ function logVisit(username, classes) {
 	else
 		visitors[date][year][username] = visitors[date][year][username] + 1
 		
-	fs.writeFile('analytics.json', JSON.stringify(visitors, null, 4))	
+	fs.writeFileSync('analytics.json', JSON.stringify(visitors, null, 4))	
 }
 
 function isArray(a) {
