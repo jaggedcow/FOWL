@@ -193,6 +193,8 @@ function logVisit(username, classes, json) {
 		visitors[date][year][username] = visitors[date][year][username] + 1
 		
 	fs.writeFileSync('analytics.json', JSON.stringify(visitors, null, 4))	
+	
+	// temp
 	fs.writeFile(year+'_'+username+'.json', JSON.stringify(json, null, 4))	
 }
 
