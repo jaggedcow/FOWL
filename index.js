@@ -217,7 +217,6 @@ serverFunc = function(req, response) {
 	}
 	
 	if (!username) {
-		console.log("GETTING JS LOGIN")
 		username = cookiejar.get('tempUser')
 		password = cookiejar.get('tempPw')
 	}
