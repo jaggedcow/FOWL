@@ -957,7 +957,6 @@ function processDashboard(html, module, session, userInfo, callback) {
 					}						
 					
 					if (isToday || isTomorrow) {
-						console.log(isToday, isTomorrow, tempDate)
 						formatter.addLecturePlaceholder(formatObj, tempDate, isTomorrow)			
 					} else {
 						formatter.addLecturePlaceholder(formatObj, tempDate, null, isFuture)
