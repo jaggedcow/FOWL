@@ -230,25 +230,25 @@ function changeYearIfNeeded(date, course) {
 }
 
 function replaceClasses(temp) {
-	temp = temp.replace(/MEDICINE 5115\w? 001 FW(\d){2}/g, 'ITM + PCCIA');
-	temp = temp.replace(/MEDICINE 5151\w? 001 FW(\d){2}/g, 'Social Medicine');
-	temp = temp.replace(/MEDICINE 5140\w? 001 FW(\d){2}/g, 'Professional Portfolio');
-	temp = temp.replace(/MEDICINE 5139\w? 001 FW(\d){2}/g, 'PCCM');		
-	temp = temp.replace(/MEDICINE 5121\w? 001 FW(\d){2}/g, 'Blood + PCCIA');
-	temp = temp.replace(/MEDICINE 5116\w? 001 FW(\d){2}/g, 'Infection & Immunity + PCCIA');
-	temp = temp.replace(/MEDICINE 5104\w? 001 FW(\d){2}/g, 'Genitourinary + PCCIA');
-	temp = temp.replace(/MEDICINE 5105\w? 001 FW(\d){2}/g, 'Population Health');
-	temp = temp.replace(/MEDICINE 5117\w? 001 FW(\d){2}/g, 'Skin + PCCIA');
-	temp = temp.replace(/MEDICINE 5130\w? 001 FW(\d){2}/g, 'Medical Ethics');
-	temp = temp.replace(/MEDICINE 5107\w? 001 FW(\d){2}/g, 'Epidemiology & CrAp');						
-	temp = temp.replace(/MEDICINE 5119\w? 001 FW(\d){2}/g, 'Respiration & Airways + PCCIA');
-	temp = temp.replace(/MEDICINE 5120\w? 001 FW(\d){2}/g, 'Heart & Circulation + PCCIA');		
+	temp = temp.replace(/MEDICINE 5115\w? \d{3} FW(\d){2}/g, 'ITM + PCCIA');
+	temp = temp.replace(/MEDICINE 5151\w? \d{3} FW(\d){2}/g, 'Social Medicine');
+	temp = temp.replace(/MEDICINE 5140\w? \d{3} FW(\d){2}/g, 'Professional Portfolio');
+	temp = temp.replace(/MEDICINE 5139\w? \d{3} FW(\d){2}/g, 'PCCM');		
+	temp = temp.replace(/MEDICINE 5121\w? \d{3} FW(\d){2}/g, 'Blood + PCCIA');
+	temp = temp.replace(/MEDICINE 5116\w? \d{3} FW(\d){2}/g, 'Infection & Immunity + PCCIA');
+	temp = temp.replace(/MEDICINE 5104\w? \d{3} FW(\d){2}/g, 'Genitourinary + PCCIA');
+	temp = temp.replace(/MEDICINE 5105\w? \d{3} FW(\d){2}/g, 'Population Health');
+	temp = temp.replace(/MEDICINE 5117\w? \d{3} FW(\d){2}/g, 'Skin + PCCIA');
+	temp = temp.replace(/MEDICINE 5130\w? \d{3} FW(\d){2}/g, 'Medical Ethics');
+	temp = temp.replace(/MEDICINE 5107\w? \d{3} FW(\d){2}/g, 'Epidemiology & CrAp');						
+	temp = temp.replace(/MEDICINE 5119\w? \d{3} FW(\d){2}/g, 'Respiration & Airways + PCCIA');
+	temp = temp.replace(/MEDICINE 5120\w? \d{3} FW(\d){2}/g, 'Heart & Circulation + PCCIA');		
 		
-	temp = temp.replace(/MEDICINE 5250\w? 001 FW(\d){2}/g, 'Professional Identity');		
-	temp = temp.replace(/MEDICINE 5246\w? 001 FW(\d){2}/g, 'PCCM 2');		
-	temp = temp.replace(/MEDICINE 5203\w? 001 FW(\d){2}/g, 'Digestion + PCCIA');							
-	temp = temp.replace(/MEDICINE 5202\w? 001 FW(\d){2}/g, 'Endocrine & Metabolism + PCCIA');	
-	temp = temp.replace(/MEDICINE 5205\w? 001 FW(\d){2}/g, 'Reproduction + PCCIA');		
+	temp = temp.replace(/MEDICINE 5250\w? \d{3} FW(\d){2}/g, 'Professional Identity');		
+	temp = temp.replace(/MEDICINE 5246\w? \d{3} FW(\d){2}/g, 'PCCM 2');		
+	temp = temp.replace(/MEDICINE 5203\w? \d{3} FW(\d){2}/g, 'Digestion + PCCIA');							
+	temp = temp.replace(/MEDICINE 5202\w? \d{3} FW(\d){2}/g, 'Endocrine & Metabolism + PCCIA');	
+	temp = temp.replace(/MEDICINE 5205\w? \d{3} FW(\d){2}/g, 'Reproduction + PCCIA');		
 	
 	return temp
 }
