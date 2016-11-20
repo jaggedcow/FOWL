@@ -177,12 +177,6 @@ function dropShadowForCourse(course) {
 	return '-webkit-box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px;'
 }
 
-var visitors = undefined;
-try {
-	visitors = JSON.parse(fs.readFileSync('.analytics.json'))
-} catch(e) {
-	visitors = {}
-}
 function logVisit(username, classes, json) {
 	var temp;
 	var year = undefined;
@@ -193,22 +187,7 @@ function logVisit(username, classes, json) {
 			year = temp;
 	}
 	year += 4
-	username = crypto.createHash('md5').update(username).digest('hex')		// store as little info as possible
-	var date = dateformat(new Date(), "mmm d, yyyy")
-
-	if (visitors[date] === undefined)
-		visitors[date] = {}
-	
-	if (visitors[date][year] === undefined)
-		visitors[date][year] = {}
-	
-	if (visitors[date][year][username] === undefined)
-		visitors[date][year][username] = 1
-	else
-		visitors[date][year][username] = visitors[date][year][username] + 1
-		
-	fs.writeFileSync('analytics.json', JSON.stringify(visitors, null, 4))	
-	
+	username = crypto.createHash('md5').update(username).digest('hex')		// store as little info as possible	
 	// temp
 	fs.writeFile(year+'_'+username+'.json', JSON.stringify(json, null, 4))	
 }
