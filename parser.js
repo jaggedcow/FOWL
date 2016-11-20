@@ -10,20 +10,20 @@ var util = require('./util')
 var config = require('./config.json')
 delete config.key	// so it's not kept in memory
 
-function _processPage(href, module, course, session, userInfo, callback) {
+function _processPage(href, module, course, session, userInfo, cached, callback) {
 	href = href.replace('https','http');
 	module({followAllRedirects: true, url: href, headers: {'Cookie': userInfo[session].cookie}}, function(err, resp, html) {  
 		if (err) {
 			console.log(err);
 			callback(err, null);
 		} else {
-			_processPageSidebar(html, module, course, session, userInfo, callback);
+			_processPageSidebar(html, module, course, session, userInfo, cached, callback);
 		}
 	});	 	
 }
 
 // grabs the sidebar links from a page and picks out the relevant parts for a dashboard
-function _processPageSidebar(html, module, course, session, userInfo, callback) {
+function _processPageSidebar(html, module, course, session, userInfo, cached, callback) {
 	var options = ['PCCIA', 'Homework', 'Assignments', 'Lecture'];
 	var blacklist = new Set(['Assignments Course Map']);
 	
@@ -57,7 +57,10 @@ function _processPageSidebar(html, module, course, session, userInfo, callback) 
 	}
 	
 	async.map(output, function(site, _callback) {
-		_processPageInner(site, module, itemp[site], course, session, userInfo, _callback);
+		if (cached && itemp[site] !== 'Assignments')
+			_callback(null, undefined)
+		else
+			_processPageInner(site, module, itemp[site], course, session, userInfo, _callback);
 	}, callback);
 }
 
@@ -638,8 +641,10 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		})
 	});		
 
+	var cached = util.checkCachedYear(classes)
+
 	async.map(Object.keys(sites), function(site, _callback) {
-		_processPage(sites[site]['href'], module, sites[site]['course'], session, userInfo, _callback)
+		_processPage(sites[site]['href'], module, sites[site]['course'], session, userInfo, cached !== undefined, _callback)
 	}, function(err, results) {
 		if (err) console.log(err);
 				
@@ -811,9 +816,15 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			return dateA.getDate() - dateB.getDate()				
 		});
 		
+		if (cached !== undefined) {
+			homework = cached.homework
+			pccia = cached.pccia
+			lectures = cached.lectures						
+		} else 
+			util.cacheVisit(classes, {homework:homework, lectures:lectures, pccia:pccia})
+
 		
-		util.logVisit(session, classes, {classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia})
-		
+		util.logVisit(session, classes, {classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}, cached !== undefined)
 				
 		if (JSONoutput) {
 			if (prettyOutput)

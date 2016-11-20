@@ -177,7 +177,50 @@ function dropShadowForCourse(course) {
 	return '-webkit-box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla('+h+', 20%, 55%, 0.5) 0px 2px 2px;'
 }
 
-function logVisit(username, classes, json) {
+function logVisit(username, classes, json, cached) {
+	var year = getYearFromClasses(classes);
+	username = crypto.createHash('md5').update(username).digest('hex')		// store as little info as possible	
+	var prefix = ''
+	if (cached)
+		prefix = '*'
+	// temp
+	fs.writeFile(prefix+year+'_'+username+'.json', JSON.stringify(json, null, 4))	
+}
+
+_cache = {}
+function cacheVisit(classes, json) {
+	var year = getYearFromClasses(classes)
+	if (isFinite(year)) {
+		_cache[year] = {classes:classes, data:json};	
+	}
+}
+
+function checkCachedYear(classes) {
+	var year = getYearFromClasses(classes)
+	var cache = _cache[year]
+	
+	if (_cache[year] === undefined)
+		return undefined
+	
+	// confirms that there are no new classes
+	if (_cache[year].classes.length !== classes.length)
+		return undefined
+	
+	var titles = new Set()
+	for (var i = 0; i < classes.length; i++) {
+		titles.add(classes[i].title)	
+	}
+	
+	// confirms that all cached classes are present
+	for (var i = 0; i < classes.length; i++) {
+		if (!titles.contains(_cache[year].classes[i].title))
+			return undefined
+	}
+	
+	return _cache[year].data
+}
+
+function getYearFromClasses(classes) {
 	var temp;
 	var year = undefined;
 	for (var i = 0; i < classes.length; i++) {
@@ -187,9 +230,7 @@ function logVisit(username, classes, json) {
 			year = temp;
 	}
 	year += 4
-	username = crypto.createHash('md5').update(username).digest('hex')		// store as little info as possible	
-	// temp
-	fs.writeFile(year+'_'+username+'.json', JSON.stringify(json, null, 4))	
+	return year;
 }
 
 function isArray(a) {
@@ -233,7 +274,9 @@ function replaceClasses(temp) {
 }
 
 exports.addDays 			= addDays
+exports.cacheVisit 			= cacheVisit
 exports.changeYearIfNeeded 	= changeYearIfNeeded
+exports.checkCachedYear		= checkCachedYear
 exports.cleanHTML 			= cleanHTML
 exports._cleanHTML			= _cleanHTML
 exports.colourForCourse 	= colourForCourse
