@@ -9,17 +9,20 @@ $(document).ready(function() {
 			$("#showPrevButton").fadeOut();
 			$("#hidePrevButton").delay(400).fadeIn();			
 		}
-		$(".pastweek"+count).fadeIn();
+		
+		var start = addDays(-7*(count-1)-2);	// -2 to avoid today and yesterday, which are already visible
+		for (var i = 0; i < 7; i++) {
+			console.log(".end_"+getDateText(addDays(start,i)))
+			$(".end_"+getDateText(addDays(start,-i))).fadeIn().addClass("previouslyHidden");
+		}
+		
 		count++;
 	});
 	$("#hidePrevButton").on("click", function() {
 		$("#hidePrevButton").fadeOut();			
 		$("#showPrevButton").delay(400).fadeIn();			
 		
-		while (count > 0) {
-			$(".pastweek"+count).fadeOut();
-			count--;
-		}
+		$(".previouslyHidden").fadeOut().removeClass("previouslyHidden");
 		count = 1;
 	});	
 	

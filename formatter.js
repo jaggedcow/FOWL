@@ -140,19 +140,19 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 		if (typeof content.data.date[0] === 'object') {
 			multipleOutput = true;
 			dates = [new Date(content.data.date[0].date), new Date(content.data.date[1].date)]
-			dateStr1 = df(content.data.date[0].date, 'mmm dd')+' ('+ content.data.date[0].location+' only)';
-			dateStr2 = df(content.data.date[1].date, 'mmm dd')+' ('+ content.data.date[1].location+' only)';					
+			dateStr1 = '<span class="fakedate">'+df(content.data.date[0].date, 'mmm dd')+'</span> ('+ content.data.date[0].location+' only)';
+			dateStr2 = '<span class="fakedate">'+df(content.data.date[1].date, 'mmm dd')+'</span> ('+ content.data.date[1].location+' only)';					
 		} else {
 			dates = [];	
 			for (var j = 0; j < content.data.date.length; j++) {
 				dates.push(new Date(content.data.date[j]));
 			}
-			dateStr1 = df(content.data.date[0].date, 'mmm dd');
+			dateStr1 = '<span class="fakedate">'+df(content.data.date[0].date, 'mmm dd')+'</span>';
 		}								
 	} else {
 		dates = [new Date(content.data.date)];
 		if (!isNaN(Date.parse(content.data.date)))
-			dateStr1 = df(content.data.date, 'mmm dd');
+			dateStr1 = '<span class="fakedate">'+df(content.data.date, 'mmm dd')+'</span>';
 		else {
 			console.log(content.data.date);
 			dateStr1 = "Invalid Date"
@@ -346,14 +346,14 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 		}
 						
 		if (passed && replaceDate) {
-			output = output.replace('%DATE%', 'Yesterday');
-			output2 = output2.replace('%DATE%', 'Yesterday');
+			output = output.replace('%DATE%', '<span class="fakedate">Yesterday</span>');
+			output2 = output2.replace('%DATE%', '<span class="fakedate">Yesterday</span>');
 		} else if (upcomingSoon && replaceDate) {
-			output = output.replace('%DATE%', 'Tonight');
-			output2 = output2.replace('%DATE%', 'Tonight');
+			output = output.replace('%DATE%', '<span class="fakedate">Tonight</span>');
+			output2 = output2.replace('%DATE%', '<span class="fakedate">Tonight</span>');
 		} else if (upcoming && replaceDate) {
-			output = output.replace('%DATE%', 'Tomorrow');
-			output2 = output2.replace('%DATE%', 'Tomorrow');
+			output = output.replace('%DATE%', '<span class="fakedate">Tomorrow</span>');
+			output2 = output2.replace('%DATE%', '<span class="fakedate">Tomorrow</span>');
 		} else {
 			output = output.replace('%DATE%', dateStr1);
 			output2 = output2.replace('%DATE%', dateStr2);
