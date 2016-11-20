@@ -73,7 +73,7 @@ var _comments = [
 	'Inside: Netflix, pillows, warm things;<br>Outside: I dunno bears? Better not risk it.',
 	'Wow. Such quiet.',
 	'A nice clear day for you',
-	'Another day off brought to you by FOWL',
+	'Another day off brought to you by OWL',
 	'Are you enjoying your day off?',
 	'A clear night',
 	'Here, have some time off',
