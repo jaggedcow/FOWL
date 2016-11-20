@@ -125,21 +125,22 @@ $(document).ready(function() {
 	createCookie('tempPw',undefined,-1)		
 	
 	setInterval(function() {
+		performDayTick()	
+				
 		console.log("Timed login")
 		$("#fakeloginform").submit();		
 		window.lastFakeLoginCheck = new Date();	
-		performDayTick()	
 	}, 3600000)
+	
+	$(window).on("focus pageshow pagecontainershow", function() {
+		if (window.lastFakeLoginCheck && new Date().getTime() - window.lastFakeLoginCheck.getTime() > 3600000) {
+			performDayTick()					
+					
+			console.log("Focus login")
+			$("#fakeloginform").submit();		
+			window.lastFakeLoginCheck = new Date();		}
+	})
 });
-
-$(window).focus(function() {
-	if (window.lastFakeLoginCheck && new Date().getTime() - window.lastFakeLoginCheck.getTime() > 3600000) {
-		console.log("Focus login")
-		$("#fakeloginform").submit();		
-		window.lastFakeLoginCheck = new Date();
-		performDayTick()
-	}
-})
 
 function resetDayCounters(todayDate) {
 	$('#backToPresent').off('click')
