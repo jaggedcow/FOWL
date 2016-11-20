@@ -112,7 +112,8 @@ $(document).ready(function() {
 		}
 	});	
 	
-	$('#fakeTestButton').on('click', performDayTick);
+	var counter = 0;
+	$('#fakeTestButton').on('click', function() {performDayTick(counter++)});
 	
 	$("#fakeloginform").submit();		
 	window.lastFakeLoginCheck = new Date();
@@ -173,21 +174,30 @@ function resetDayCounters(todayDate) {
 	}			
 }
 
-function performDayTick() {
-	resetLectures()
+// counter is only used for testing purposes, please ignore
+function performDayTick(counter) {
+	if (counter === undefined) {
+		counter = 0
+		resetLectures()
+	}
 	
-	var passed = getDateText(addDays(-2))
-	var yesterday = getDateText(addDays(-1))
-	var tomorrow = getDateText(addDays(1))
+	var passed = getDateText(addDays(-2+counter))
+	var yesterday = getDateText(addDays(-1+counter))
+	var today = getDateText(addDays(0+counter))	
+	var tomorrow = getDateText(addDays(1+counter))
 	
 	$('.day_'+yesterday).hide();
 	$('.placeholder_'+yesterday).hide();	
 	$('.day_'+tomorrow).css('display','table-cell')
 	$('.placeholder_'+tomorrow).css('display','table-cell')
 	
-	$('.end_'+passed).hide();
+	$('.end_'+passed).hide()
+	$('.end_'+passed+' .fakedate').text(formatDate(getTextDate(passed)))	
 	$('.end_'+yesterday).css('opacity',0.4)
+	$('.end_'+yesterday+' .fakedate').text('Yesterday')	
 	$('.start_'+tomorrow).show();
+	$('.start_'+tomorrow+' .fakedate').text('Tomorrow')		
+	$('.end_'+today+' .fakedate').text('Tonight')		
 	
 	if (compareDates(addDays(2), window.tickStart) === window.tickTimeOut) {
 		createCookie('tempUser',$('#eid').val(),2/24*60)
@@ -259,6 +269,20 @@ function compareDates(dateA, dateB) {
 
 function getDateText(date) {
 	return date.getMonth()+""+date.getDate()+""+date.getFullYear()
+}
+
+function getTextDate(text) {
+	if (text.indexOf('_') !== -1)
+		text = text.substring(text.indexOf('_')+1)
+	var y = text.substring(text.length-4), m = text.substring(0,text.length-6), d = text.substring(text.length-6, text.length-4)
+	
+	return new Date(parseInt(y), parseInt(m), parseInt(d))
+}
+
+function formatDate(date) {
+	console.log(typeof date)
+	var dates = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+	return dates[date.getMonth()]+' '+date.getDate()
 }
 
 function addDays(date, days) {
