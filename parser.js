@@ -899,17 +899,26 @@ function processDashboard(html, module, session, userInfo, callback) {
 					lastDate = dates[j]
 						
 					if (dates[j] >= yesterday) {
-						passed = true;
+						passed = true;						
+						isToday = false;						
+						isTomorrow = false;						
+						isFuture = false;	
 					}
 					if (dates[j] >= today) {
 						passed = false;
 						isToday = true;
+						isTomorrow = false;			
+						isFuture = false;																
 					}
 					if (dates[j] >= tomorrow) {
+						passed = false;
 						isToday = false;
 						isTomorrow = true;
+						isFuture = false;	
 					}
 					if (dates[j] >= twodays) {
+						passed = false;						
+						isToday = false;						
 						isTomorrow = false;
 						isFuture = true;
 					}				
@@ -923,22 +932,32 @@ function processDashboard(html, module, session, userInfo, callback) {
 					}
 				} else {
 					if (tempDate >= yesterday) {
-						passed = true;
+						passed = true;						
+						isToday = false;						
+						isTomorrow = false;						
+						isFuture = false;	
 					}
 					if (tempDate >= today) {
-						passed = false;
-						isToday = true;
+						passed = false;						
+						isToday = true;						
+						isTomorrow = false;						
+						isFuture = false;	
 					}
 					if (tempDate >= tomorrow) {
-						isToday = false;
-						isTomorrow = true;
+						passed = false;						
+						isToday = false;						
+						isTomorrow = true;						
+						isFuture = false;	
 					}
 					if (tempDate >= twodays) {
-						isTomorrow = false;
-						isFuture = true;
+						passed = false;						
+						isToday = false;						
+						isTomorrow = false;						
+						isFuture = true;	
 					}						
 					
 					if (isToday || isTomorrow) {
+						console.log(isToday, isTomorrow, tempDate)
 						formatter.addLecturePlaceholder(formatObj, tempDate, isTomorrow)			
 					} else {
 						formatter.addLecturePlaceholder(formatObj, tempDate, null, isFuture)
