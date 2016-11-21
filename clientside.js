@@ -137,10 +137,8 @@ $(document).ready(function() {
 	}, 3600000)
 	
 	$(window).on("focus pageshow pagecontainershow", function() {
-		if (window.lastFakeLoginCheck && new Date().getTime() - window.lastFakeLoginCheck.getTime() > 3600000) {
-			performDayTick()					
-					
-			console.log("Focus login")
+		performDayTick()					
+		if (window.lastFakeLoginCheck && new Date().getTime() - window.lastFakeLoginCheck.getTime() > 3600000) {				console.log("Focus login")
 			$("#fakeloginform").submit();		
 			window.lastFakeLoginCheck = new Date();		}
 	})
