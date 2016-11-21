@@ -646,7 +646,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 
 	var cachedContent = util.checkStaticCache(classes)
 	var cachedLinks = util.checkDynamicCache(session)	
-// 	if (cachedContent === undefined)	// invalidate dynamic cache too if new classes have been added
+	if (cachedContent === undefined)	// invalidate dynamic cache too if new classes have been added
 		cachedLinks = undefined
 
 	// bypass usual stuff and just scrape the dynamic content
