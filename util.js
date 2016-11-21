@@ -249,6 +249,20 @@ function changeYearIfNeeded(date, course) {
 		date.setFullYear(parseInt('20'+course.substring(course.length-2))+1)
 }
 
+function compareDates(dateA, dateB) {
+	if (!isFinite(dateA) && isFinite(dateB))
+		return 2;	
+	if (isFinite(dateA) && !isFinite(dateB))
+		return -2;	
+	if (!isFinite(dateA) && !isFinite(dateB))
+		return 0;		
+											
+  var utc1 = Date.UTC(dateA.getFullYear(), dateA.getMonth(), dateA.getDate());
+  var utc2 = Date.UTC(dateB.getFullYear(), dateB.getMonth(), dateB.getDate());
+
+  return Math.floor((utc1 - utc2) / 86400000);
+}
+
 function replaceClasses(temp) {
 	temp = temp.replace(/MEDICINE 5115\w? \d{3} FW(\d){2}/g, 'ITM + PCCIA');
 	temp = temp.replace(/MEDICINE 5151\w? \d{3} FW(\d){2}/g, 'Social Medicine');
@@ -280,6 +294,7 @@ exports.checkCachedYear		= checkCachedYear
 exports.cleanHTML 			= cleanHTML
 exports._cleanHTML			= _cleanHTML
 exports.colourForCourse 	= colourForCourse
+exports.compareDates 		= compareDates
 exports.dropShadowForCourse = dropShadowForCourse
 exports.decrypt 			= decrypt
 exports.encrypt 			= encrypt

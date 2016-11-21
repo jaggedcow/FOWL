@@ -885,10 +885,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 			if (tempDate === undefined)
 				tempDate = dates[0]
 			
-			var passed = false;
-			var isToday = false;
-			var isTomorrow = false;
-			var isFuture = false;
+			var compareDate = 0
 			
 			var isEmptyDate = true;
 			var emptyDateCounter = 0;
@@ -909,68 +906,24 @@ function processDashboard(html, module, session, userInfo, callback) {
 					
 					lastDate = dates[j]
 						
-					if (dates[j] >= yesterday) {
-						passed = true;						
-						isToday = false;						
-						isTomorrow = false;						
-						isFuture = false;	
-					}
-					if (dates[j] >= today) {
-						passed = false;
-						isToday = true;
-						isTomorrow = false;			
-						isFuture = false;																
-					}
-					if (dates[j] >= tomorrow) {
-						passed = false;
-						isToday = false;
-						isTomorrow = true;
-						isFuture = false;	
-					}
-					if (dates[j] >= twodays) {
-						passed = false;						
-						isToday = false;						
-						isTomorrow = false;
-						isFuture = true;
-					}				
+					compareDate = util.compareDates(dates[j], today)			
 				}	
 									
 				if (!isEmptyDate) {					
-					if (isToday || isTomorrow) {
-						formatter.addLecture(formatObj, content, dates[0], isTomorrow)			
+					if (compareDate === 0 || compareDate === 1) {
+						console.log(dates[0], compareDate)
+						formatter.addLecture(formatObj, content, dates[0], compareDate === 1)			
 					} else {
-						formatter.addLecture(formatObj, content, dates[0], null, isFuture)
+						formatter.addLecture(formatObj, content, dates[0], null, compareDate > 1)
 					}
 				} else {
-					if (tempDate >= yesterday) {
-						passed = true;						
-						isToday = false;						
-						isTomorrow = false;						
-						isFuture = false;	
-					}
-					if (tempDate >= today) {
-						passed = false;						
-						isToday = true;						
-						isTomorrow = false;						
-						isFuture = false;	
-					}
-					if (tempDate >= tomorrow) {
-						passed = false;						
-						isToday = false;						
-						isTomorrow = true;						
-						isFuture = false;	
-					}
-					if (tempDate >= twodays) {
-						passed = false;						
-						isToday = false;						
-						isTomorrow = false;						
-						isFuture = true;	
-					}						
+					compareDate = util.compareDates(tempDate, today)			
 					
-					if (isToday || isTomorrow) {
-						formatter.addLecturePlaceholder(formatObj, tempDate, isTomorrow)			
+					
+					if (compareDate === 0 || compareDate === 1) {
+						formatter.addLecturePlaceholder(formatObj, tempDate, compareDate === 1)			
 					} else {
-						formatter.addLecturePlaceholder(formatObj, tempDate, null, isFuture)
+						formatter.addLecturePlaceholder(formatObj, tempDate, null, compareDate > 1)
 					}					
 				}
 			
