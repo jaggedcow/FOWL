@@ -393,9 +393,7 @@ function addButtons(parsedHTML, addNextButton) {
 	
 // 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo('#innercontent')	
 	var expiry = new Date()
-	console.log("EXP", expiry, expiry.getDay())	
 	expiry = util.addDays(expiry, 7-expiry.getDay());
-	console.log("EXP", expiry)
 	parsedHTML('<span class="noselect" id="fakeTestButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo('#innercontent')	
 }
 
