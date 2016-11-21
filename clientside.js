@@ -281,7 +281,6 @@ function getTextDate(text) {
 }
 
 function formatDate(date) {
-	console.log(typeof date)
 	var dates = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 	return dates[date.getMonth()]+' '+date.getDate()
 }

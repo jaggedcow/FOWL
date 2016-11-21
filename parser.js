@@ -113,7 +113,10 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 						if (pageType.match('Lecture')) {
 							if (config.debug) console.log("NO LECTURE", href)
 							_callback(err, undefined)						
-						} else {
+						} else {					
+							if (pageType.match('Assignments'))
+								util.cacheDynamic(session, src, course)
+										
 							var out = parsedHTML('table');
 							
 							if (out.length > 0)
@@ -132,7 +135,7 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 									var parsedHTML = $.load(html);	
 									if (pageType.match('Lecture')) {
 										__callback(err, _processPageLectureSync(parsedHTML, course, href))						
-									} else {									
+									} else {	
 										var out = parsedHTML('table');
 																				
 										if (out.length > 0)
@@ -641,11 +644,123 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		})
 	});		
 
-	var cached = util.checkStaticCache(classes)
+	var cachedContent = util.checkStaticCache(classes)
+	var cachedLinks = util.checkDynamicCache(session)	
+// 	if (cachedContent === undefined)	// invalidate dynamic cache too if new classes have been added
+		cachedLinks = undefined
 
+	// bypass usual stuff and just scrape the dynamic content
+	if (cachedLinks !== undefined) {
+		console.log("Skipping all pages, using dynamic cache")
+		var homework = cachedContent.data.homework
+		var pccia = cachedContent.data.pccia
+		var lectures = cachedContent.data.lectures	
+		var assignments = [];	
+		
+		async.map(cachedLinks, function(data, _callback) {
+			module({followAllRedirects: true, url: data.href, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
+				if (err) {
+					console.log(err);
+					_callback(err, null);
+				} else {
+					var parsedHTML = $.load(html);				
+					var out = parsedHTML('table');
+					
+					if (out.length > 0)
+						_callback(err, _processPageTableSync(out, 'Assignments', data.course))
+					else {
+						if (config.debug) console.log("NO ASSIGNMENTS (cached)", data.href)								
+						_callback(err, undefined)
+					}	
+				}
+			});		
+		}, function(err, results) {
+			if (err) console.log(err);
+					
+			results = util.flattenArray(results)
+			
+			for (var i = 0; i < results.length; i++) {
+				if (results !== null && results[i] !== undefined && results[i] !== null && results[i].data !== undefined) {
+					assignments.push(results[i])
+				}
+			}
+			
+			assignments.sort(function(a,b) {
+				var dateA = new Date(a.data.dueDate)
+				var dateB = new Date(b.data.dueDate)
+				
+				return util.compareDates(dateA, dateB)			
+			});
+						
+			for (var i = 0; i < classes.length; i++) {			
+				var startDate = undefined;
+				var endDate = undefined;			
+				
+				// convert relative PCCIA weeks into absolute dates
+				for (var j = 0; j < homework.length; j++) {
+					if (classes[i].title.match(homework[j].course)) {
+						startDate = new Date(homework[j].data.date);
+						if (!isNaN(startDate.getTime()))
+							break;
+					}
+				}
+				
+				if (startDate) {
+					startDate = util.addDays(startDate, -startDate.getDay())	// clever way to reset all the dates to prior Sunday
+					
+				
+					for (var j = 0; j < pccia.length; j++) {
+						if (classes[i].title.match(pccia[j].course)) {
+							var displayDate = util.addDays(startDate, 7*pccia[j].data.week - 1)		// figures when PCCIA sesh is done
+							pccia[j].data.displayUntil = displayDate.toString();
+						}
+					}
+				}
+				
+				// determine when course ends
+				for (var j = homework.length-1; j >= 0; j--) {
+					if (classes[i].title.match(homework[j].course)) {
+						endDate = new Date(homework[j].data.date);
+						if (!isNaN(endDate.getTime()))
+							break;
+					}
+				}
+				
+				for (var j = assignments.length-1; j >= 0; j--) {
+					if (classes[i].title.match(assignments[j].course)) {
+						var temp = new Date(assignments[j].data.dueDate);
+						
+						if (!isNaN(temp.getTime())) {
+							if (endDate < temp)
+								endDate = temp;
+							break;
+						}
+					}
+				}			
+				
+				if (endDate) {
+					if (endDate.getDay() !== 0)			
+						endDate = util.addDays(endDate, 7-endDate.getDay())	// clever way to reset all the dates to next Sunday				
+					classes[i].displayUntil = endDate.toString();
+				}
+			}					
+							
+			util.logVisit(session, classes, {classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}, true)
+					
+			if (JSONoutput) {
+				if (prettyOutput)
+					callback(JSON.stringify({classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}, null, 4))
+				else
+					callback(JSON.stringify({classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}));
+			} else
+				callback({ignoredURLs:ignoredURLs, formatObj:formatObj, classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia});
+		});
+		return;
+	}
+	
 	async.map(Object.keys(sites), function(site, _callback) {
-		if (cached === undefined || cached.dynamicClasses.contains(sites[site].course))
-			_processPage(sites[site]['href'], module, sites[site]['course'], session, userInfo, cached !== undefined, _callback)
+		if (cachedContent === undefined || cachedContent.dynamicClasses.contains(sites[site].course))
+			_processPage(sites[site]['href'], module, sites[site]['course'], session, userInfo, cachedContent !== undefined, _callback)
 		else {
 			console.log('Skipping static cached page:', sites[site])
 			_callback()
@@ -681,6 +796,12 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			
 			return util.compareDates(dateA, dateB)			
 		});
+		
+		if (cachedContent !== undefined) {
+			homework = cachedContent.data.homework
+			pccia = cachedContent.data.pccia
+			lectures = cachedContent.data.lectures	
+		}
 		
 		lectures.sort(function(a,b) {
 			var dateA = new Date(a.data.date)
@@ -777,15 +898,12 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			return util.compareDates(dateA, dateB)			
 		});
 		
-		if (cached !== undefined) {
-			homework = cached.data.homework
-			pccia = cached.data.pccia
-			lectures = cached.data.lectures						
-		} else 
-			util.cacheStaticContent(classes, {homework:homework, lectures:lectures, assignments:assignments, pccia:pccia})
+					
+		if (cachedContent === undefined)
+			util.cacheStatic(classes, {homework:homework, lectures:lectures, assignments:assignments, pccia:pccia})
 
 		
-		util.logVisit(session, classes, {classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}, cached !== undefined)
+		util.logVisit(session, classes, {classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}, cachedContent !== undefined)
 				
 		if (JSONoutput) {
 			if (prettyOutput)

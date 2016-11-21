@@ -187,27 +187,38 @@ function logVisit(username, classes, json, cached) {
 	fs.writeFile(prefix+year+'_'+username+'.json', JSON.stringify(json, null, 4))	
 }
 
-_cache = {}
-function cacheStaticContent(classes, json) {
+_staticCache = {}
+function cacheStatic(classes, json) {
 	var year = getYearFromClasses(classes)
 	if (isFinite(year)) {
 		var dynamic = new Set();
 		for (var i = 0; i < json.assignments.length; i++) {
 			dynamic.add(json.assignments[i].course)
 		}
-		_cache[year] = {classes:classes, data:{homework:json.homework, lectures:json.lectures, pccia:json.pccia}, dynamicClasses:dynamic};	
+		_staticCache[year] = {classes:classes, data:{homework:json.homework, lectures:json.lectures, pccia:json.pccia}, dynamicClasses:dynamic};	
 	}
+}
+
+_dynamicCache = {}
+function cacheDynamic(user, href, course) {
+	if (_dynamicCache[user] === undefined)
+		_dynamicCache[user] = [];
+	_dynamicCache[user].push({href:href, course:course})
+}
+
+function checkDynamicCache(user) {
+	return _dynamicCache[user];
 }
 
 function checkStaticCache(classes) {
 	var year = getYearFromClasses(classes)
-	var cache = _cache[year]
+	var cache = _staticCache[year]
 	
-	if (_cache[year] === undefined)
+	if (_staticCache[year] === undefined)
 		return undefined
 	
 	// confirms that there are no new classes
-	if (_cache[year].classes.length !== classes.length)
+	if (_staticCache[year].classes.length !== classes.length)
 		return undefined
 	
 	var titles = new Set()
@@ -217,11 +228,11 @@ function checkStaticCache(classes) {
 	
 	// confirms that all cached classes are present
 	for (var i = 0; i < classes.length; i++) {
-		if (!titles.contains(_cache[year].classes[i].title))
+		if (!titles.contains(_staticCache[year].classes[i].title))
 			return undefined
 	}
 	
-	return {data:_cache[year].data, dynamicClasses:_cache[year].dynamicClasses}
+	return {data:_staticCache[year].data, dynamicClasses:_staticCache[year].dynamicClasses}
 }
 
 function getYearFromClasses(classes) {
@@ -292,8 +303,10 @@ function replaceClasses(temp) {
 }
 
 exports.addDays 			= addDays
-exports.cacheStaticContent 	= cacheStaticContent
+exports.cacheDynamic 		= cacheDynamic
+exports.cacheStatic 		= cacheStatic
 exports.changeYearIfNeeded 	= changeYearIfNeeded
+exports.checkDynamicCache	= checkDynamicCache
 exports.checkStaticCache	= checkStaticCache
 exports.cleanHTML 			= cleanHTML
 exports._cleanHTML			= _cleanHTML
