@@ -674,36 +674,14 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			var dateA = new Date(a.data.dueDate)
 			var dateB = new Date(b.data.dueDate)
 			
-			if (!isFinite(dateA) && isFinite(dateB))
-				return 1;	
-			if (isFinite(dateA) && !isFinite(dateB))
-				return -1;	
-			if (!isFinite(dateA) && !isFinite(dateB))
-				return 0;		
-													
-			if (dateA.getFullYear() !== dateB.getFullYear())
-				return dateA.getFullYear() - dateB.getFullYear()
-			if (dateA.getMonth() !== dateB.getMonth())
-				return dateA.getMonth() - dateB.getMonth()
-			return dateA.getDate() - dateB.getDate()				
+			return util.compareDates(dateA, dateB)			
 		});
 		
 		lectures.sort(function(a,b) {
 			var dateA = new Date(a.data.date)
 			var dateB = new Date(b.data.date)
 			
-			if (!isFinite(dateA) && isFinite(dateB))
-				return 1;	
-			if (isFinite(dateA) && !isFinite(dateB))
-				return -1;	
-			if (!isFinite(dateA) && !isFinite(dateB))
-				return 0;		
-													
-			if (dateA.getFullYear() !== dateB.getFullYear())
-				return dateA.getFullYear() - dateB.getFullYear()
-			if (dateA.getMonth() !== dateB.getMonth())
-				return dateA.getMonth() - dateB.getMonth()
-			return dateA.getDate() - dateB.getDate()								
+			return util.compareDates(dateA, dateB)							
 		});		
 		
 		homework.sort(function(a, b) {
@@ -731,18 +709,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			dateA = new Date(dateA)
 			dateB = new Date(dateB)
 			
-			if (!isFinite(dateA) && isFinite(dateB))
-				return 1;	
-			if (isFinite(dateA) && !isFinite(dateB))
-				return -1;	
-			if (!isFinite(dateA) && !isFinite(dateB))
-				return 0;		
-													
-			if (dateA.getFullYear() !== dateB.getFullYear())
-				return dateA.getFullYear() - dateB.getFullYear()
-			if (dateA.getMonth() !== dateB.getMonth())
-				return dateA.getMonth() - dateB.getMonth()
-			return dateA.getDate() - dateB.getDate()				
+			return util.compareDates(dateA, dateB)				
 		})
 		
 		for (var i = 0; i < classes.length; i++) {			
@@ -802,18 +769,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 			var dateA = new Date(a.data.displayUntil)
 			var dateB = new Date(b.data.displayUntil)
 			
-			if (!isFinite(dateA) && isFinite(dateB))
-				return 1;	
-			if (isFinite(dateA) && !isFinite(dateB))
-				return -1;	
-			if (!isFinite(dateA) && !isFinite(dateB))
-				return 0;		
-													
-			if (dateA.getFullYear() !== dateB.getFullYear())
-				return dateA.getFullYear() - dateB.getFullYear()
-			if (dateA.getMonth() !== dateB.getMonth())
-				return dateA.getMonth() - dateB.getMonth()
-			return dateA.getDate() - dateB.getDate()				
+			return util.compareDates(dateA, dateB)			
 		});
 		
 		if (cached !== undefined) {
