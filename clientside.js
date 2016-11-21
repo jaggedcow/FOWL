@@ -180,9 +180,13 @@ function resetDayCounters(todayDate) {
 
 // counter is only used for testing purposes, please ignore
 function performDayTick(counter) {
+	var changeLectures = true		
+	if (window.lastLectureMove && new Date().getTime() - window.lastLectureMove.getTime() > 3600000)
+		changeLectures = false
+		
 	if (counter === undefined) {
 		counter = 0
-		if (window.lastLectureMove && new Date().getTime() - window.lastLectureMove.getTime() > 3600000)
+		if (changeLectures)
 			resetLectures()
 	}
 	
@@ -191,10 +195,12 @@ function performDayTick(counter) {
 	var today = getDateText(addDays(0+counter))	
 	var tomorrow = getDateText(addDays(1+counter))
 	
-	$('.day_'+yesterday).hide();
-	$('.placeholder_'+yesterday).hide();	
-	$('.day_'+tomorrow).css('display','table-cell')
-	$('.placeholder_'+tomorrow).css('display','table-cell')
+	if (changeLectures) {
+		$('.day_'+yesterday).hide();
+		$('.placeholder_'+yesterday).hide();	
+		$('.day_'+tomorrow).css('display','table-cell')
+		$('.placeholder_'+tomorrow).css('display','table-cell')
+	}
 	
 	$('.end_'+passed).hide()
 	$('.end_'+passed+' .fakedate').text(formatDate(getTextDate(passed)))	
