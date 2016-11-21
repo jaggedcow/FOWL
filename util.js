@@ -253,6 +253,13 @@ function isArray(a) {
 }
 
 function addDays(date, days) {
+	if (date === undefined && days === undefined)
+		return new Date()
+	else if (days === undefined && typeof date === 'number') {
+		days = date;
+		date = new Date();
+	}
+	
     var result = new Date(date);
     result.setTime(result.getTime() + days * 86400000);
     return result;
@@ -262,6 +269,10 @@ function addDays(date, days) {
 function changeYearIfNeeded(date, course) {
 	if (date.getMonth() < 8)
 		date.setFullYear(parseInt('20'+course.substring(course.length-2))+1)
+}
+
+function getDateText(date) {
+	return date.getMonth()+""+date.getDate()+""+date.getFullYear()
 }
 
 function compareDates(dateA, dateB) {
@@ -316,6 +327,7 @@ exports.dropShadowForCourse = dropShadowForCourse
 exports.decrypt 			= decrypt
 exports.encrypt 			= encrypt
 exports.flattenArray 		= flattenArray
+exports.getDateText			= getDateText
 exports.getKey				= getKey
 exports.isArray 			= isArray
 exports.logVisit 			= logVisit

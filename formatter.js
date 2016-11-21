@@ -283,9 +283,8 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 	output += '</div>';
 	output2 += '</div>';			
 	
-	var startDate = dates[0], endDate = dates[dates.length-1]
-	startDate = startDate.getMonth()+""+startDate.getDate()+""+startDate.getFullYear()	
-	endDate = endDate.getMonth()+""+endDate.getDate()+""+endDate.getFullYear()		
+	var startDate = util.getDateText(dates[0])
+	var endDate = util.getDateText(dates[dates.length-1])
 	
 	var today = new Date();
 	today = util.addDays(today, -0.25);	// adjusts for time zones
@@ -393,6 +392,11 @@ function addButtons(parsedHTML, addNextButton) {
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
 	
 // 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo('#innercontent')	
+	var expiry = new Date()
+	console.log("EXP", expiry, expiry.getDay())	
+	expiry = util.addDays(expiry, 7-expiry.getDay());
+	console.log("EXP", expiry)
+	parsedHTML('<span class="noselect" id="fakeTestButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo('#innercontent')	
 }
 
 var clientsideJS = undefined;

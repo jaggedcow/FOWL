@@ -123,8 +123,6 @@ $(document).ready(function() {
 	
 	// gets maximum number of days to move ahead without checking server for new content	
 	// right now, counts until next Sunday
-	window.tickTimeOut = 7-addDays(0).getDay()
-	window.tickStart = addDays(0);
 	createCookie('tempUser',undefined,-1)
 	createCookie('tempPw',undefined,-1)		
 	
@@ -140,7 +138,8 @@ $(document).ready(function() {
 		performDayTick()					
 		if (window.lastFakeLoginCheck && new Date().getTime() - window.lastFakeLoginCheck.getTime() > 3600000) {				console.log("Focus login")
 			$("#fakeloginform").submit();		
-			window.lastFakeLoginCheck = new Date();		}
+			window.lastFakeLoginCheck = new Date();		
+		}
 	})
 });
 
@@ -200,7 +199,7 @@ function performDayTick(counter) {
 	$('.start_'+tomorrow+' .fakedate').text('Tomorrow')		
 	$('.end_'+today+' .fakedate').text('Tonight')		
 	
-	if (compareDates(addDays(2), window.tickStart) === window.tickTimeOut) {
+	if (compareDates(addDays(0), getTextDate($('#fakeexpiry').text())) === 0) {
 		createCookie('tempUser',$('#eid').val(),2/24*60)
 		createCookie('tempPw',$('#pw').val(),2/24*60)		
 		window.location.reload(true)		
@@ -286,7 +285,9 @@ function formatDate(date) {
 }
 
 function addDays(date, days) {
-	if (typeof date === 'number') {
+	if (date === undefined && days === undefined)
+		return new Date()
+	else if (days === undefined && typeof date === 'number') {
 		days = date;
 		date = new Date();
 	}
