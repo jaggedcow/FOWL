@@ -641,10 +641,15 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		})
 	});		
 
-	var cached = util.checkCachedYear(classes)
+	var cached = util.checkStaticCache(classes)
 
 	async.map(Object.keys(sites), function(site, _callback) {
-		_processPage(sites[site]['href'], module, sites[site]['course'], session, userInfo, cached !== undefined, _callback)
+		if (cached === undefined || cached.dynamicClasses.contains(sites[site].course))
+			_processPage(sites[site]['href'], module, sites[site]['course'], session, userInfo, cached !== undefined, _callback)
+		else {
+			console.log('Skipping static cached page:', sites[site])
+			_callback()
+		}
 	}, function(err, results) {
 		if (err) console.log(err);
 				
@@ -773,11 +778,11 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		});
 		
 		if (cached !== undefined) {
-			homework = cached.homework
-			pccia = cached.pccia
-			lectures = cached.lectures						
+			homework = cached.data.homework
+			pccia = cached.data.pccia
+			lectures = cached.data.lectures						
 		} else 
-			util.cacheVisit(classes, {homework:homework, lectures:lectures, pccia:pccia})
+			util.cacheStaticContent(classes, {homework:homework, lectures:lectures, assignments:assignments, pccia:pccia})
 
 		
 		util.logVisit(session, classes, {classes:classes, homework:homework, lectures:lectures, assignments:assignments, pccia:pccia}, cached !== undefined)
@@ -867,7 +872,6 @@ function processDashboard(html, module, session, userInfo, callback) {
 									
 				if (!isEmptyDate) {					
 					if (compareDate === 0 || compareDate === 1) {
-						console.log(dates[0], compareDate)
 						formatter.addLecture(formatObj, content, dates[0], compareDate === 1)			
 					} else {
 						formatter.addLecture(formatObj, content, dates[0], null, compareDate > 1)

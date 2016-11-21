@@ -188,14 +188,18 @@ function logVisit(username, classes, json, cached) {
 }
 
 _cache = {}
-function cacheVisit(classes, json) {
+function cacheStaticContent(classes, json) {
 	var year = getYearFromClasses(classes)
 	if (isFinite(year)) {
-		_cache[year] = {classes:classes, data:json};	
+		var dynamic = new Set();
+		for (var i = 0; i < json.assignments.length; i++) {
+			dynamic.add(json.assignments[i].course)
+		}
+		_cache[year] = {classes:classes, data:{homework:json.homework, lectures:json.lectures, pccia:json.pccia}, dynamicClasses:dynamic};	
 	}
 }
 
-function checkCachedYear(classes) {
+function checkStaticCache(classes) {
 	var year = getYearFromClasses(classes)
 	var cache = _cache[year]
 	
@@ -217,7 +221,7 @@ function checkCachedYear(classes) {
 			return undefined
 	}
 	
-	return _cache[year].data
+	return {data:_cache[year].data, dynamicClasses:_cache[year].dynamicClasses}
 }
 
 function getYearFromClasses(classes) {
@@ -288,9 +292,9 @@ function replaceClasses(temp) {
 }
 
 exports.addDays 			= addDays
-exports.cacheVisit 			= cacheVisit
+exports.cacheStaticContent 	= cacheStaticContent
 exports.changeYearIfNeeded 	= changeYearIfNeeded
-exports.checkCachedYear		= checkCachedYear
+exports.checkStaticCache	= checkStaticCache
 exports.cleanHTML 			= cleanHTML
 exports._cleanHTML			= _cleanHTML
 exports.colourForCourse 	= colourForCourse
