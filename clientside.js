@@ -56,6 +56,8 @@ $(document).ready(function() {
 	window.nextDate = addDays(1)
 	
 	$("#prevLectureButton").on("click", function() {
+		window.lastLectureMove = new Date();		
+		
 		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
 		
 		do {
@@ -86,6 +88,8 @@ $(document).ready(function() {
 		}
 	});
 	$("#nextLectureButton").on("click", function() {
+		window.lastLectureMove = new Date();
+			
 		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
 		
 		do {
@@ -178,7 +182,8 @@ function resetDayCounters(todayDate) {
 function performDayTick(counter) {
 	if (counter === undefined) {
 		counter = 0
-		resetLectures()
+		if (window.lastLectureMove && new Date().getTime() - window.lastLectureMove.getTime() > 3600000)
+			resetLectures()
 	}
 	
 	var passed = getDateText(addDays(-2+counter))
