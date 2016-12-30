@@ -178,6 +178,10 @@ function dropShadowForCourse(course) {
 }
 
 function logVisit(username, classes, json, cached) {
+	if (username === undefined) {
+		// TODO: why is this happening?
+		return;
+	}
 	var year = getYearFromClasses(classes);
 	username = crypto.createHash('md5').update(username).digest('hex')		// store as little info as possible	
 	var prefix = ''
