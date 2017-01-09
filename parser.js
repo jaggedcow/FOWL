@@ -109,6 +109,17 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 							homework.push(href);
 					});
 					
+					// temp workaround for Cardio not tagging links
+					if (course.indexOf('5120') !== -1 && pageType.match('Lecture')) {
+						parsedHTML('span.navIntraTool').map(function(i, link) {	
+							var title = $(link).children('a').text();
+							var href = $(link).children('a').attr('href');		
+									
+							if (title.indexOf('Week') !== -1 && title.regexIndexOf('[0-9]') !== -1)
+								homework.push(href)
+						})   
+					}
+					
 					if (homework.length === 0) {
 						if (pageType.match('Lecture')) {
 							if (config.debug) console.log("NO LECTURE", href)
@@ -969,7 +980,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 			var isEmptyDate = true;
 			var emptyDateCounter = 0;
 			
-			while (isEmptyDate && emptyDateCounter < 7) {				
+			while (isEmptyDate && emptyDateCounter < 99) {		
 				for (var j = 0; j < dates.length; j++) {
 					if (lastDate !== undefined && isFinite(lastDate) && (dates[j].getMonth() !== lastDate.getMonth() || dates[j].getDate() !== lastDate.getDate()))
 						tempDate = util.addDays(tempDate, 1)		
