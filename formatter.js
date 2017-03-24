@@ -34,7 +34,7 @@ function addClass(parsedHTML, content, expired) {
 
 function addLectureHeader(parsedHTML) {
 	parsedHTML('<div id="fakelectureheader" style="display:table; width:102%; overflow-x:scroll;"></div>').appendTo('#fakelecturenav')
-	parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketodayheader" class="fakeheader">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketomorrowheader" class="fakeheader">Tomorrow</h2></div><div style="display:table-row"></div><div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
+	parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketodayheader" class="fakeheader">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketomorrowheader" class="fakeheader">Tomorrow</h2></div><div style="display:table-row"></div>').appendTo('#fakelectureheader')
 }
 
 function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
@@ -54,7 +54,7 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 		if (prevCell.length > 0)
 			$(prevCell).append('<div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div>')		
 		else
-			parsedHTML('<div class="day_'+dateNum+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
+			parsedHTML('<div class="day_'+dateNum+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').appendTo('#fakelectureheader')
 	}
 }
 
@@ -94,7 +94,11 @@ function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
 	var dateText = df(date,'mmm dd')
 	var comment = _comments[Math.floor(Math.random()*_comments.length)]
 	
-	parsedHTML('<div class="placeholder_'+dateNum+'"style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; background-color: hsl(0, 0%, 96%); width:100%"><p><span style="font-size: 16.0px; font-family: arial , helvetica , sans-serif;"><strong>'+dateText+'</strong></span><br><span style="font-family: Verdana;font-size: small;">'+comment+'</span></p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
+	parsedHTML('<div class="placeholder_'+dateNum+'"style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; background-color: hsl(0, 0%, 96%); width:100%"><p><span style="font-size: 16.0px; font-family: arial , helvetica , sans-serif;"><strong>'+dateText+'</strong></span><br><span style="font-family: Verdana;font-size: small;">'+comment+'</span></p></div><div style="height:100%"></div></div>').appendTo('#fakelectureheader')
+}
+
+function addLectureFooter(parsedHTML) {
+	parsedHTML('<div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
 }
 
 function addPCCIA(parsedHTML, content) {
@@ -416,6 +420,7 @@ exports.addFooters 				= addFooters
 exports.addHeaders 				= addHeaders
 exports.addHomework 			= addHomework
 exports.addLecture 				= addLecture
+exports.addLectureFooter		= addLectureFooter
 exports.addLectureHeader 		= addLectureHeader
 exports.addLecturePlaceholder 	= addLecturePlaceholder
 exports.addPCCIA 				= addPCCIA

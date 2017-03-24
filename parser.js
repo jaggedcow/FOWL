@@ -57,9 +57,10 @@ function _processPageSidebar(html, module, course, session, userInfo, cached, ca
 	}
 	
 	async.map(output, function(site, _callback) {
-		if (cached && itemp[site] !== 'Assignments')
+		if (cached && itemp[site] !== 'Assignments') {
+			console.log("CACHED")
 			_callback(null, undefined)
-		else
+		} else 			
 			_processPageInner(site, module, itemp[site], course, session, userInfo, _callback);
 	}, callback);
 }
@@ -1003,7 +1004,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 					if (compareDate === 0 || compareDate === 1) {
 						formatter.addLecture(formatObj, content, dates[0], compareDate === 1)			
 					} else {
-						formatter.addLecture(formatObj, content, dates[0], null, compareDate > 1)
+// 						formatter.addLecture(formatObj, content, dates[0], null, compareDate > 1)
 					}
 				} else {
 					compareDate = util.compareDates(tempDate, today)			
@@ -1012,7 +1013,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 					if (compareDate === 0 || compareDate === 1) {
 						formatter.addLecturePlaceholder(formatObj, tempDate, compareDate === 1)			
 					} else {
-						formatter.addLecturePlaceholder(formatObj, tempDate, null, compareDate > 1)
+// 						formatter.addLecturePlaceholder(formatObj, tempDate, null, compareDate > 1)
 					}					
 				}
 			
@@ -1022,6 +1023,9 @@ function processDashboard(html, module, session, userInfo, callback) {
 				}
 			}
 		}
+		
+		formatter.addLectureFooter(formatObj)
+
 				
 		for (var i = 0; i < pccia.length; i++) {
 			if (today < new Date(pccia[i].data.displayUntil))
