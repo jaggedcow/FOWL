@@ -392,8 +392,8 @@ function addButtons(parsedHTML, addNextButton) {
 	parsedHTML('<font small><div class="fakebutton hoverButton textButton noselect" id="hidePrevButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small; display:none;">Hide Previous Weeks</div></font>').appendTo('#fakeweeklabel');		
 	parsedHTML('<font small><div class="fakebutton hoverButton textButton noselect" id="showPrevButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');
 	
-	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -20px; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
-	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
+// 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -20px; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
+// 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
 	
 // 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo('#innercontent')	
 	var expiry = new Date()
