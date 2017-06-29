@@ -34,18 +34,44 @@ function addClass(parsedHTML, content, expired) {
 
 function addLectureHeader(parsedHTML) {
 	parsedHTML('<div id="fakelectureheader" style="display:table; width:102%; overflow-x:scroll;"></div>').appendTo('#fakelecturenav')
-	parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketodayheader" class="fakeheader">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketomorrowheader" class="fakeheader">Tomorrow</h2></div><div style="display:table-row"></div>').appendTo('#fakelectureheader')
+	parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketodayheader" class="fakeheader">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketomorrowheader" class="fakeheader">Tomorrow</h2></div><div style="display:table-row"></div><div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
 }
+
+var pastDate = undefined
+var lectureData = {}
+var displayType = 'table-cell' 
 
 function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 	var hash = crypto.createHash('md5').update(content.course+content.data.date).digest('hex');
-	var displayType = 'table-cell'
 	
+	var dateNum = util.getDateText(date)
+
+// 	console.log("\tHELLO",'.day_'+dateNum, '.lecture_'+hash, displayType)
+	
+	if (pastDate != dateNum) {
+		var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
+		var lectures = Object.keys(lectureData).sort()	// might actually result in lectures out of order...
+		for (var i = 0; i < lectures.length; i++) {
+			lectureContent = lectureData[lectures[i]]
+			output += '<div class="fakebox '+lectures[i]+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(lectureContent.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(lectureContent.course)+'; opacity: 1.0;"><p>'+lectureContent.data.html+'</p></div>'
+		}
+		output += '<div style="height:100%"></div></div>'
+		
+		parsedHTML(output).insertBefore('#fakelecturerow')
+		lectureData = {}
+		pastDate = dateNum
+		displayType = 'table-cell' 	
+	} 
 	if (isFuture !== undefined)
 		displayType = 'none'
 	
-	var dateNum = date.getMonth()+""+date.getDate()+""+date.getFullYear()
+	if (lectureData.hasOwnProperty('.lecture_'+hash)) {
+		lectureData['.lecture_'+hash].data.html += '<br><br>'+content.data.html
+	} else {
+		lectureData['.lecture_'+hash] = content
+	}
 
+/*
 	var prev = parsedHTML('#fakelectureheader').find('.lecture_'+hash)
 	if (prev.length > 0)
 		$(prev).append('<br><br>'+content.data.html)
@@ -54,8 +80,9 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 		if (prevCell.length > 0)
 			$(prevCell).append('<div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div>')		
 		else
-			parsedHTML('<div class="day_'+dateNum+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').appendTo('#fakelectureheader')
+			parsedHTML('<div class="day_'+dateNum+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
 	}
+*/
 }
 
 var _comments = [
@@ -94,11 +121,25 @@ function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
 	var dateText = df(date,'mmm dd')
 	var comment = _comments[Math.floor(Math.random()*_comments.length)]
 	
-	parsedHTML('<div class="placeholder_'+dateNum+'"style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; background-color: hsl(0, 0%, 96%); width:100%"><p><span style="font-size: 16.0px; font-family: arial , helvetica , sans-serif;"><strong>'+dateText+'</strong></span><br><span style="font-family: Verdana;font-size: small;">'+comment+'</span></p></div><div style="height:100%"></div></div>').appendTo('#fakelectureheader')
+	parsedHTML('<div class="placeholder_'+dateNum+'"style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; background-color: hsl(0, 0%, 96%); width:100%"><p><span style="font-size: 16.0px; font-family: arial , helvetica , sans-serif;"><strong>'+dateText+'</strong></span><br><span style="font-family: Verdana;font-size: small;">'+comment+'</span></p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
 }
 
+/**
+ * Actually inserts the last lectures
+ */
 function addLectureFooter(parsedHTML) {
-	parsedHTML('<div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
+	var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
+	var lectures = Object.keys(lectureData).sort()
+	for (var i = 0; i < lectures.length; i++) {
+		lectureContent = lectureData[lectures[i]]
+		output += '<div class="fakebox '+lectures[i]+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(lectureContent.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(lectureContent.course)+'; opacity: 1.0;"><p>'+lectureContent.data.html+'</p></div>'
+	}
+	output += '<div style="height:100%"></div></div>'
+	
+	parsedHTML(output).insertBefore('#fakelecturerow')
+	lectureData = {}
+	pastDate = undefined
+	displayType = 'table-cell' 	
 }
 
 function addPCCIA(parsedHTML, content) {
@@ -392,10 +433,10 @@ function addButtons(parsedHTML, addNextButton) {
 	parsedHTML('<font small><div class="fakebutton hoverButton textButton noselect" id="hidePrevButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small; display:none;">Hide Previous Weeks</div></font>').appendTo('#fakeweeklabel');		
 	parsedHTML('<font small><div class="fakebutton hoverButton textButton noselect" id="showPrevButton" style="text-align: center; cursor: pointer; position: absolute; right: 2.5%; top: 29px; margin: 0; font-size: small;">Show Previous Week</div></font>').appendTo('#fakeweeklabel');
 	
-// 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -20px; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
-// 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
+	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -20px; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
+	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
 	
-// 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo('#innercontent')	
+	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo('#innercontent')	
 	var expiry = new Date()
 	expiry = util.addDays(expiry, 7-expiry.getDay());
 	parsedHTML('<span class="noselect" id="fakeTestButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo('#innercontent')	
@@ -420,8 +461,8 @@ exports.addFooters 				= addFooters
 exports.addHeaders 				= addHeaders
 exports.addHomework 			= addHomework
 exports.addLecture 				= addLecture
-exports.addLectureFooter		= addLectureFooter
 exports.addLectureHeader 		= addLectureHeader
+exports.addLectureFooter 		= addLectureFooter
 exports.addLecturePlaceholder 	= addLecturePlaceholder
 exports.addPCCIA 				= addPCCIA
 exports.initPage 				= initPage

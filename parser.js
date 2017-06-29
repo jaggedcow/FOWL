@@ -57,10 +57,9 @@ function _processPageSidebar(html, module, course, session, userInfo, cached, ca
 	}
 	
 	async.map(output, function(site, _callback) {
-		if (cached && itemp[site] !== 'Assignments') {
-			console.log("CACHED")
+		if (cached && itemp[site] !== 'Assignments')
 			_callback(null, undefined)
-		} else 			
+		else
 			_processPageInner(site, module, itemp[site], course, session, userInfo, _callback);
 	}, callback);
 }
@@ -1004,20 +1003,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 					if (compareDate === 0 || compareDate === 1) {
 						formatter.addLecture(formatObj, content, dates[0], compareDate === 1)			
 					} else {
-// 						formatter.addLecture(formatObj, content, dates[0], null, compareDate > 1)
-
-/*
-						var hash = crypto.createHash('md5').update(content.course+content.data.date).digest('hex');
-// 						var displayType = 'table-cell'
-						
-// 						if (isFuture !== undefined)
-							displayType = 'none'
-						
-						var dateNum = dates[0].getMonth()+""+dates[0].getDate()+""+dates[0].getFullYear()
-
-// 						formatObj('<div class="day_'+dateNum+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').appendTo('#fakelectureheader')
-*/
-
+						formatter.addLecture(formatObj, content, dates[0], null, compareDate > 1)
 					}
 				} else {
 					compareDate = util.compareDates(tempDate, today)			
@@ -1038,7 +1024,6 @@ function processDashboard(html, module, session, userInfo, callback) {
 		}
 		
 		formatter.addLectureFooter(formatObj)
-
 				
 		for (var i = 0; i < pccia.length; i++) {
 			if (today < new Date(pccia[i].data.displayUntil))

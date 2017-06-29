@@ -276,7 +276,11 @@ function changeYearIfNeeded(date, course) {
 }
 
 function getDateText(date) {
-	return date.getMonth()+""+date.getDate()+""+date.getFullYear()
+	var d = date.getDate()
+	
+	if (d < 10)
+		d = "0"+d
+	return (date.getMonth()+1)+""+d+""+date.getFullYear()
 }
 
 function compareDates(dateA, dateB) {

@@ -51,7 +51,7 @@ $(document).ready(function() {
 		}, 12000)
 	}
 	
-	var _cutoff = 99
+	var _cutoff = 365
 	window.prevDate = addDays(0)
 	window.nextDate = addDays(1)
 	
@@ -73,7 +73,7 @@ $(document).ready(function() {
 			nextDate = addDays(window.prevDate, ndelta)		
 			nextDateNum = getDateText(nextDate)
 		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
-								
+
 		if (pdelta < _cutoff && ndelta < _cutoff) {			
 			$('.day_'+prevDateNum).css('display','table-cell')
 			$('.placeholder_'+prevDateNum).css('display','table-cell')			
@@ -279,7 +279,11 @@ function compareDates(dateA, dateB) {
 }
 
 function getDateText(date) {
-	return date.getMonth()+""+date.getDate()+""+date.getFullYear()
+	var d = date.getDate()
+	
+	if (d < 10)
+		d = "0"+d
+	return (date.getMonth()+1)+""+d+""+date.getFullYear()
 }
 
 function getTextDate(text) {
@@ -296,9 +300,14 @@ function formatDate(date) {
 }
 
 function addDays(date, days) {
-	if (date === undefined && days === undefined)
+	if (date === undefined && days === undefined) {
 		return new Date()
-	else if (days === undefined && typeof date === 'number') {
+/*
+	    var result = new Date();
+	    result.setTime(result.getTime() - 30 * 86400000);
+	    return result;	
+*/	
+	} else if (days === undefined && typeof date === 'number') {
 		days = date;
 		date = new Date();
 	}
