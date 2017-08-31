@@ -18,6 +18,9 @@ $(document).ready(function() {
 		
 		count++;
 	});
+	$(".js-toggle-user-nav").on("click", function() {
+		$(".is-hidden").toggle();			
+	});	
 	$("#hidePrevButton").on("click", function() {
 		$("#hidePrevButton").fadeOut();			
 		$("#showPrevButton").delay(400).fadeIn();			
