@@ -192,26 +192,6 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					
 					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 				}
-			} else if (text.search(/(\s{4}\w{3,5} \d{1,2}\s-\s\w{3,5} \d{1,2})/) !== -1) {	// PCCM 2		
-				while (text.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/) !== -1) {
-					text = text.substring(text.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/)).trim()
-	
-					// dealing with multiple dates
-					var dateStr1 = text.match(/^(\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
-					var dateStr2 = text.match(/- (\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
-					dateStr2 = dateStr2.substring(2)		
-
-					var date1 = new Date(dateStr1);
-					var date2 = new Date(dateStr2);			
-					
-					date1 = util.addDays(date1, +0.95)
-					date2 = util.addDays(date2, +0.95)					
-					util.changeYearIfNeeded(date1, course);
-					util.changeYearIfNeeded(date2, course);					
-					
-					lastDate = [date1.toString(), date2.toString()]	
-					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
-				}
 			} else {
 				var keep = false;
 				var text = $(col).find('a').each(function(i, a) {

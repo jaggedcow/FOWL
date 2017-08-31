@@ -50,7 +50,12 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 
 // 	console.log("\tHELLO",'.day_'+dateNum, '.lecture_'+hash, displayType)
 	
-	if (pastDate != dateNum && pastDate !== undefined) {
+	if (isFuture !== undefined)
+		displayType = 'none'
+	
+	if (pastDate != dateNum && pastDate != undefined) {
+		pastDate = dateNum
+				 
 		var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
 		var lectures = Object.keys(lectureData).sort()	// might actually result in lectures out of order...
 		for (var i = 0; i < lectures.length; i++) {
@@ -61,17 +66,17 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 		
 		parsedHTML(output).insertBefore('#fakelecturerow')	// TODO: do this only once (after cache)
 		lectureData = {}
-		pastDate = dateNum
 		displayType = 'table-cell' 	
-	} 
-	if (isFuture !== undefined)
-		displayType = 'none'
-	
-	if (lectureData.hasOwnProperty('.lecture_'+hash)) {
-		lectureData['.lecture_'+hash].data.html += '<br><br>'+content.data.html
-	} else {
-		lectureData['.lecture_'+hash] = content
+	}  else if (pastDate == dateNum || pastDate == undefined) {
+		pastDate = dateNum
+		
+		if (lectureData.hasOwnProperty('.lecture_'+hash)) {
+			lectureData['.lecture_'+hash].data.html += '<br><br>'+content.data.html
+		} else {
+			lectureData['.lecture_'+hash] = content
+		}
 	}
+	
 
 /*
 	var prev = parsedHTML('#fakelectureheader').find('.lecture_'+hash)

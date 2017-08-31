@@ -183,7 +183,6 @@ function resetDayCounters(todayDate) {
 
 // counter is only used for testing purposes, please ignore
 function performDayTick(counter) {
-	return
 	var changeLectures = true		
 	if (window.lastLectureMove && new Date().getTime() - window.lastLectureMove.getTime() < 3600000)
 		changeLectures = false
