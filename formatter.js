@@ -190,7 +190,7 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 			dateStr1 = '<span class="fakedate">'+df(content.data.date[0].date, 'mmm dd')+'</span> ('+ content.data.date[0].location+' only)';
 			dateStr2 = '<span class="fakedate">'+df(content.data.date[1].date, 'mmm dd')+'</span> ('+ content.data.date[1].location+' only)';					
 		} else {
-			console.log(content.data)
+// 			console.log(content.data)
 			dates = [];	
 			for (var j = 0; j < content.data.date.length; j++) {
 				dates.push(new Date(content.data.date[j]));
@@ -202,7 +202,7 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 		if (!isNaN(Date.parse(content.data.date)))
 			dateStr1 = '<span class="fakedate">'+df(content.data.date, 'mmm dd')+'</span>';
 		else {
-			console.log(content.data.date);
+			console.log("INVALID DATE", content.data.date);
 			dateStr1 = "Invalid Date"
 			logErrors = true;
 		}

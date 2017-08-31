@@ -133,7 +133,7 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	parsedHTML('form').map(function(i, img) {
 		var id = $(img).attr('id');
 		if (id && id.match('loginForm')) {
-			$(img).prepend('<label for="fakesave">Remember Me:</label><input name="fakesave" id="fakesave" type="checkbox">')
+			$(img).prepend('<label for="fakesave" class="Mrphs-loginForm__label">Remember Me:</label><input name="fakesave" id="fakesave" class="Mrphs-loginForm__input" style="margin: 0 1em 0 0; padding:0.25em" type="checkbox">')
 		}
 	})	
 	

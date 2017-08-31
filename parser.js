@@ -512,7 +512,33 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 	
 	obj.textDate = obj.date;	// saves the original
 	
-	if (obj.date.toLowerCase().indexOf('end') !== -1 && lastDate !== undefined) {
+	if (obj.date.search(/(\s{4}\w{3,5} \d{1,2}\s-\s\w{3,5} \d{1,2})/) !== -1) {	// PCCM 2	
+		firstDate = undefined
+		
+		while (obj.date.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/) !== -1) {
+			obj.date = obj.date.substring(obj.date.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/)).trim()
+
+			// dealing with multiple dates
+			var dateStr1 = obj.date.match(/^(\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+			var dateStr2 = obj.date.match(/- (\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+			dateStr2 = dateStr2.substring(2)		
+
+			if (firstDate === undefined) {
+				firstDate = dateStr1;
+			}
+			lastDate = dateStr2;
+		}	
+		
+		firstDate = new Date(firstDate);	
+		firstDate = util.addDays(firstDate, +0.95)
+		util.changeYearIfNeeded(firstDate, course);		
+		
+		lastDate = new Date(lastDate);	
+		lastDate = util.addDays(lastDate, +0.95)
+		util.changeYearIfNeeded(lastDate, course);	
+		
+		obj.date = [firstDate.toString(), lastDate.toString()]			
+	} else if (obj.date.toLowerCase().indexOf('end') !== -1 && lastDate !== undefined) {
 		util.changeYearIfNeeded(lastDate, course);
 		obj.date = util.addDays(lastDate,1).toString();
 	} else if (obj.date.toLowerCase().indexOf('week') !== -1) {		
@@ -575,26 +601,6 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		temp.push(date2)
 		
 		obj.date = out;
-	} else if (obj.date.search(/(\s{4}\w{3,5} \d{1,2}\s-\s\w{3,5} \d{1,2})/) !== -1) {	// PCCM 2	
-		while (obj.date.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/) !== -1) {
-			obj.date = obj.date.substring(obj.date.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/)).trim()
-
-			// dealing with multiple dates
-			var dateStr1 = obj.date.match(/^(\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
-			var dateStr2 = obj.date.match(/- (\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
-			dateStr2 = dateStr2.substring(2)		
-
-			if (firstDate === undefined) {
-				firstDate = new Date(dateStr1);	
-				firstDate = util.addDays(firstDate, +0.95)
-				util.changeYearIfNeeded(firstDate, course);				
-			}
-			
-			lastDate = new Date(dateStr2);	
-			lastDate = util.addDays(lastDate, +0.95)
-			util.changeYearIfNeeded(lastDate, course);
-		}
-		obj.date = obj.textDate;
 	} else {
 		var out = []
 		
