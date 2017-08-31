@@ -33,8 +33,8 @@ function _processPageSidebar(html, module, course, session, userInfo, cached, ca
 	var parsedHTML = $.load(html);    
 	var output = [];
 	
-	parsedHTML('a.toolMenuLink').map(function(i, a) {	
-		var title = $(a).children('.menuTitle').text();
+	parsedHTML('a.Mrphs-toolsNav__menuitem--link').map(function(i, a) {	
+		var title = $(a).text().trim();
 		var href = $(a).attr('href');		
 				
 		for (var i = 0; i < options.length; i++) {
@@ -42,7 +42,7 @@ function _processPageSidebar(html, module, course, session, userInfo, cached, ca
 				temp[options[i]] = href;
 				itemp[href] = options[i];				
 				break;
-			}
+			}		
 			if (title.match('Course Map') && options[i].match('Lecture')) {
 				temp[options[i]] = href;
 				itemp[href] = options[i];				
@@ -81,22 +81,6 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 					_callback(err, null);
 				} else {
 					var parsedHTML = $.load(html);
-					
-					parsedHTML('iframe').map(function(i, frame) {
-						var src = $(frame).attr('src');
-						
-						_callback(err, src);
-					});
-				}
-			})			
-		},
-		function(src, _callback) {
-			module({followAllRedirects: true, url: src, headers: {'Cookie': userInfo[session]['cookie']}}, function(err, resp, html) {  
-				if (err) {
-					console.log(err);
-					_callback(err, null);
-				} else {
-					var parsedHTML = $.load(html);
 					var homework = [];
 					
 					// for ITM ILs, which are split up over multiple weeks
@@ -125,8 +109,8 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 							if (config.debug) console.log("NO LECTURE", href)
 							_callback(err, undefined)						
 						} else {					
-							if (pageType.match('Assignments'))
-								util.cacheDynamic(session, src, course)
+// 							if (pageType.match('Assignments'))
+// 								util.cacheDynamic(session, src, course)
 										
 							var out = parsedHTML('table');
 							
@@ -208,6 +192,26 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					
 					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 				}
+			} else if (text.search(/(\s{4}\w{3,5} \d{1,2}\s-\s\w{3,5} \d{1,2})/) !== -1) {	// PCCM 2		
+				while (text.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/) !== -1) {
+					text = text.substring(text.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/)).trim()
+	
+					// dealing with multiple dates
+					var dateStr1 = text.match(/^(\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					var dateStr2 = text.match(/- (\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					dateStr2 = dateStr2.substring(2)		
+
+					var date1 = new Date(dateStr1);
+					var date2 = new Date(dateStr2);			
+					
+					date1 = util.addDays(date1, +0.95)
+					date2 = util.addDays(date2, +0.95)					
+					util.changeYearIfNeeded(date1, course);
+					util.changeYearIfNeeded(date2, course);					
+					
+					lastDate = [date1.toString(), date2.toString()]	
+					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
+				}
 			} else {
 				var keep = false;
 				var text = $(col).find('a').each(function(i, a) {
@@ -215,7 +219,7 @@ function _processPageLectureSync(parsedHTML, course, href) {
 						keep = true;
 				});
 				
-				if (keep) {
+				if (keep) {					
 					if (util.isArray(lastDate)) {
 						output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 						output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
@@ -508,7 +512,7 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 	
 	obj.textDate = obj.date;	// saves the original
 	
-	if (obj.date.toLowerCase().indexOf('end') !== -1) {
+	if (obj.date.toLowerCase().indexOf('end') !== -1 && lastDate !== undefined) {
 		util.changeYearIfNeeded(lastDate, course);
 		obj.date = util.addDays(lastDate,1).toString();
 	} else if (obj.date.toLowerCase().indexOf('week') !== -1) {		
@@ -571,6 +575,26 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		temp.push(date2)
 		
 		obj.date = out;
+	} else if (obj.date.search(/(\s{4}\w{3,5} \d{1,2}\s-\s\w{3,5} \d{1,2})/) !== -1) {	// PCCM 2	
+		while (obj.date.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/) !== -1) {
+			obj.date = obj.date.substring(obj.date.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/)).trim()
+
+			// dealing with multiple dates
+			var dateStr1 = obj.date.match(/^(\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+			var dateStr2 = obj.date.match(/- (\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+			dateStr2 = dateStr2.substring(2)		
+
+			if (firstDate === undefined) {
+				firstDate = new Date(dateStr1);	
+				firstDate = util.addDays(firstDate, +0.95)
+				util.changeYearIfNeeded(firstDate, course);				
+			}
+			
+			lastDate = new Date(dateStr2);	
+			lastDate = util.addDays(lastDate, +0.95)
+			util.changeYearIfNeeded(lastDate, course);
+		}
+		obj.date = obj.textDate;
 	} else {
 		var out = []
 		
@@ -640,12 +664,12 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 
 	var formatObj = formatter.initPage(html);
 	
-	formatObj('ul[class=otherSitesCategorList]').children().map(function(i, li) {
-		$(li).children().map(function(i, a) {
+	formatObj('ul.otherSitesCategorList').children().map(function(i, li) {
+		$(li).children('div').children().map(function(i, a) {
 			var href = $(a).attr('href');
-			var title = $(a).attr('title');			
+			var title = $(a).text().trim()
 			
-			if (!href.match('#') && title.lastIndexOf('MEDICINE', 0) === 0) {
+			if (title !== undefined && !href.match('#') && title.lastIndexOf('MEDICINE', 0) === 0) {
 				var hash = crypto.createHash('md5').update(title).digest('hex');
 				sites[hash] = {'href':href, 'course':title};
 				ignoredURLs.add(href);

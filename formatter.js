@@ -4,12 +4,14 @@ var df = require('dateformat')
 var fs = require('fs')
 var util = require('./util')
 
+var mainId = '#pageBody .Mrphs-pagebody'
+
 // must be called first, returns an opaque object that should be passed on all subsequent calls
 function initPage(html) {
 	var parsedHTML = $.load(html);
 	
 	// removes normal OWL content
-	parsedHTML('#innercontent').empty();
+	parsedHTML(mainId).empty();
 	parsedHTML('li.nav-menu').css('display','none')
 	parsedHTML('li.more-tab').css('display','none')	
 	parsedHTML('.nav-selected').css('display','default')
@@ -17,9 +19,9 @@ function initPage(html) {
 	return parsedHTML;
 }
 function addHeaders(parsedHTML, session, userInfo) {	
-	parsedHTML('<h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><div><h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1></div><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo('#innercontent')
+	parsedHTML('<h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><div><h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1></div><div class="topnav" style="padding: 2em;" id="faketopnav"></div>').appendTo(mainId)
 	
-	parsedHTML('<div id="fakeweek" style="padding:1%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 class="fakeheader" id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2 class="fakeheader">PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2 class="fakeheader">Pending Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2 class="fakeheader">Course Pages</h2></div>').appendTo('#faketopnav');
+	parsedHTML('<div id="fakeweek" style="padding:1%; width:40%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 class="fakeheader" id="fakeweeklabel">This Week</h2></div><div style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2 class="fakeheader">PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2 class="fakeheader">Pending Assignments</h2></div></div><div id="fakehomework" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2 class="fakeheader">Course Pages</h2></div>').appendTo('#faketopnav');
 	
 	parsedHTML('<iframe id="fakeloginframe" name="fakeloginframe" style="position:fixed; top:-900px; width:900px; height:0px; border:none;" src=""></iframe>').appendTo('body')
 	parsedHTML('<form id="fakeloginform" method="post" target="fakeloginframe" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="'+session+'" type="hidden"><input name="pw" id="pw" value="'+util.decrypt(userInfo[session].pass)+'" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('body')
@@ -48,16 +50,16 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 
 // 	console.log("\tHELLO",'.day_'+dateNum, '.lecture_'+hash, displayType)
 	
-	if (pastDate != dateNum) {
+	if (pastDate != dateNum && pastDate !== undefined) {
 		var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
 		var lectures = Object.keys(lectureData).sort()	// might actually result in lectures out of order...
 		for (var i = 0; i < lectures.length; i++) {
 			lectureContent = lectureData[lectures[i]]
 			output += '<div class="fakebox '+lectures[i]+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(lectureContent.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(lectureContent.course)+'; opacity: 1.0;"><p>'+lectureContent.data.html+'</p></div>'
 		}
-		output += '<div style="height:100%"></div></div>'
+		output += '<div style="height:100%"></div></div>'	// TODO: cache all lectures
 		
-		parsedHTML(output).insertBefore('#fakelecturerow')
+		parsedHTML(output).insertBefore('#fakelecturerow')	// TODO: do this only once (after cache)
 		lectureData = {}
 		pastDate = dateNum
 		displayType = 'table-cell' 	
@@ -188,11 +190,12 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 			dateStr1 = '<span class="fakedate">'+df(content.data.date[0].date, 'mmm dd')+'</span> ('+ content.data.date[0].location+' only)';
 			dateStr2 = '<span class="fakedate">'+df(content.data.date[1].date, 'mmm dd')+'</span> ('+ content.data.date[1].location+' only)';					
 		} else {
+			console.log(content.data)
 			dates = [];	
 			for (var j = 0; j < content.data.date.length; j++) {
 				dates.push(new Date(content.data.date[j]));
 			}
-			dateStr1 = '<span class="fakedate">'+df(content.data.date[0].date, 'mmm dd')+'</span>';
+			dateStr1 = '<span class="fakedate">'+df(content.data.date[0], 'mmm dd')+' - '+df(content.data.date[content.data.date.length-1], 'mmm dd')+'</span>';
 		}								
 	} else {
 		dates = [new Date(content.data.date)];
@@ -436,10 +439,10 @@ function addButtons(parsedHTML, addNextButton) {
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -20px; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
 	
-	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo('#innercontent')	
+	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo(mainId)	
 	var expiry = new Date()
 	expiry = util.addDays(expiry, 7-expiry.getDay());
-	parsedHTML('<span class="noselect" id="fakeTestButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo('#innercontent')	
+	parsedHTML('<span class="noselect" id="fakeTestButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo(mainId)	
 }
 
 var clientsideJS = undefined;
