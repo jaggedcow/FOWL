@@ -54,8 +54,9 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 		displayType = 'none'
 	
 	if (pastDate != dateNum) {
-		pastDate = dateNum
-				 
+		if (pastDate === undefined)
+			pastDate = dateNum
+			
 		var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
 		var lectures = Object.keys(lectureData).sort()	// might actually result in lectures out of order...
 		for (var i = 0; i < lectures.length; i++) {
@@ -68,6 +69,7 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 			parsedHTML(output).insertBefore('#fakelecturerow')	// TODO: do this only once (after cache)
 		lectureData = {}
 		displayType = 'table-cell' 	
+		pastDate = dateNum		
 	}
 
 		
