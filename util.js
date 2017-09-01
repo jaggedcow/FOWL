@@ -125,10 +125,14 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	temp = replaceAll("window.location='https://owl.uwo.ca/portal'", "window.location='/portal'", temp);
 	temp = replaceAll('<a href="https://owl.uwo.ca/portal">','<a href="/portal">',temp)		// requires full tag to prevent removing other portal links
 	temp = replaceAll('href="https://owl.uwo.ca/portal/logout"','href="/portal/logout"',temp)	
-	temp = replaceAll('<meta http-equiv="Refresh" content="0:URL=https://owl.uwo.ca/portal">','<meta http-equiv="Refresh" content="0:URL=/portal">',temp)
-	
+	temp = replaceAll('<meta http-equiv="Refresh" content="0:URL=https://owl.uwo.ca/portal">','<meta http-equiv="Refresh" content="0:URL=/portal">',temp)	
 	
 	parsedHTML = $.load(temp)
+	
+	logo = parsedHTML('.Mrphs-headerLogo--institution')
+	logo.css('background', 'url("/images/owlEmblemWithText-small.svg") center center no-repeat')
+	logo.css('width','134px')
+	logo.css('margin-left','-20px')	
 	
 	parsedHTML('form').map(function(i, img) {
 		var id = $(img).attr('id');

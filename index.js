@@ -3,6 +3,7 @@ var fs = require('fs')
 var http = require("http")
 var https = require("https")
 var qs = require('querystring')
+var path = require('path');
 var request = require('request')
 var Set = require('set')
 var sys = require('systeminformation')
@@ -237,9 +238,33 @@ serverFunc = function(req, response) {
 		cookiejar.set('saveInfo')		
 	}
 	
-	if (!whitelist.contains(pathname)) {
+	if (pathname.endsWith('.svg')) {
+		if (config.debug) console.log("IMAGE",  path.join(__dirname, pathname), pathname)			
+		if (req.method !== 'GET') {
+			response.statusCode = 501;
+			response.setHeader('Content-Type', 'text/plain');
+			return response.end('Method not implemented');
+		}
+		var file = path.join(__dirname, pathname);
+		if (file.indexOf(__dirname + path.sep) !== 0) {
+			response.statusCode = 403;
+			response.setHeader('Content-Type', 'text/plain');
+			return response.end('Forbidden');
+		}
+		var s = fs.createReadStream(file);
+			s.on('open', function () {
+			response.setHeader('Content-Type', 'image/svg+xml');
+			s.pipe(response);
+		});
+		s.on('error', function (err) {
+			console.log(err)
+			response.setHeader('Content-Type', 'text/plain');
+			response.statusCode = 404;
+			response.end('Not found');
+		});
+	} else if (!whitelist.contains(pathname)) {
 		if (config.debug) console.log("REDIRECT", req.url, pathname)			
-		response.setHeader('Location', 'https://owl.uwo.ca' + pathname);
+		response.setHeader('Location', 'https://owl.uwo.ca' + req.url.toString());
 		response.statusCode = 301;
 		response.end();
 	} else {
