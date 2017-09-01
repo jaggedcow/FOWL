@@ -156,6 +156,10 @@ function _processPageLectureSync(parsedHTML, course, href) {
 	var lastDateStr;
 
 	parsedHTML('table').each(function(i, table) {	
+		// removes duplicates
+		if ($(table).find('table').length > 0)
+			return;
+					
 		$.load(table)('td, th').each(function(j, col) {
 			var text = $(col).text().trim();
 			if (text.search(/^(\w{3,5} +\d{1,2})/) !== -1) {
