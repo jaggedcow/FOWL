@@ -6,6 +6,9 @@ var util = require('./util')
 
 var mainId = '#pageBody .Mrphs-pagebody'
 
+var config = require('./config.json')
+delete config.key	// so it's not kept in memory
+
 // must be called first, returns an opaque object that should be passed on all subsequent calls
 function initPage(html) {
 	var parsedHTML = $.load(html);
@@ -429,7 +432,10 @@ function addButtons(parsedHTML, addNextButton) {
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -20px; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
 	
-	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="z-index:999; position: absolute; cursor: pointer; font-size:large; display:none;">TEST</span>').prependTo(mainId)	
+	if (config.debug)
+		parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="z-index:999; position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo(mainId)	
+	else		
+		parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="z-index:999; position: absolute; cursor: pointer; font-size:large; display:none;">TEST</span>').prependTo(mainId)			
 	var expiry = new Date()
 	expiry = util.addDays(expiry, 7-expiry.getDay());
 	parsedHTML('<span class="noselect" id="fakeExpiryButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo(mainId)	
