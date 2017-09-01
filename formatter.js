@@ -47,8 +47,6 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 	var hash = crypto.createHash('md5').update(content.course+content.data.date).digest('hex');
 	
 	var dateNum = util.getDateText(date)
-
-// 	console.log("\tHELLO",'.day_'+dateNum, '.lecture_'+hash, displayType)
 	
 	if (isFuture !== undefined)
 		displayType = 'none'
@@ -78,20 +76,6 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 	} else {
 		lectureData['.lecture_'+hash] = content
 	}
-	
-
-/*
-	var prev = parsedHTML('#fakelectureheader').find('.lecture_'+hash)
-	if (prev.length > 0)
-		$(prev).append('<br><br>'+content.data.html)
-	else {
-		var prevCell = parsedHTML('#fakelectureheader').find('.day_'+dateNum)
-		if (prevCell.length > 0)
-			$(prevCell).append('<div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div>')		
-		else
-			parsedHTML('<div class="day_'+dateNum+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;"><div class="fakebox lecture_'+hash+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(content.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(content.course)+'; opacity: 1.0;"><p>'+content.data.html+'</p></div><div style="height:100%"></div></div>').insertBefore('#fakelecturerow')
-	}
-*/
 }
 
 var _comments = [
@@ -445,7 +429,7 @@ function addButtons(parsedHTML, addNextButton) {
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -20px; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
 	
-	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="z-index:999; position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo(mainId)	
+	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="z-index:999; position: absolute; cursor: pointer; font-size:large; display:none;">TEST</span>').prependTo(mainId)	
 	var expiry = new Date()
 	expiry = util.addDays(expiry, 7-expiry.getDay());
 	parsedHTML('<span class="noselect" id="fakeExpiryButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo(mainId)	
