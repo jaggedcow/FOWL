@@ -47,8 +47,6 @@ var lectureData = {}
 var displayType = 'table-cell' 
 
 function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
-	var hash = crypto.createHash('md5').update(content.course+content.data.date).digest('hex');
-	
 	var dateNum = util.getDateText(date)
 	
 	if (isFuture !== undefined)
@@ -72,12 +70,14 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 		displayType = 'table-cell' 	
 		pastDate = dateNum		
 	}
-
 		
-	if (lectureData.hasOwnProperty('.lecture_'+hash)) {
-		lectureData['.lecture_'+hash].data.html += '<br><br>'+content.data.html
-	} else {
-		lectureData['.lecture_'+hash] = content
+	if (content !== undefined) {
+		var hash = crypto.createHash('md5').update(content.course+content.data.date).digest('hex');		
+		if (lectureData.hasOwnProperty('.lecture_'+hash)) {
+			lectureData['.lecture_'+hash].data.html += '<br><br>'+content.data.html
+		} else {
+			lectureData['.lecture_'+hash] = content
+		}
 	}
 }
 
@@ -108,6 +108,9 @@ var _comments = [
 	'#wellness day'
 ]
 function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
+	// dumps any lectures waiting to be added to the HTML
+	addLecture(parsedHTML, undefined, date)	
+	
 	var displayType = 'table-cell'
 	
 	if (isFuture !== undefined)
