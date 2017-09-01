@@ -1,3 +1,5 @@
+var _counter = 0;
+	
 $(document).ready(function() {
 	var count = 1;
 	$("#showAllButton").on("click", function() {
@@ -58,9 +60,8 @@ $(document).ready(function() {
 	window.prevDate = addDays(0)
 	window.nextDate = addDays(1)
 	
-	var counter = 0;
 	$('#fakeTestButton').on('click', function() {
-		performDayTick(counter++)
+		performDayTick(_counter++)
 	});
 	
 	$("#prevLectureButton").on("click", function() {
@@ -191,6 +192,8 @@ function performDayTick(counter) {
 		changeLectures = false	
 		
 	if (counter === undefined) {
+		if (_counter !== 0)
+			return
 		counter = 0
 		if (changeLectures)
 			resetLectures()
