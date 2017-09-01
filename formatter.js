@@ -53,7 +53,7 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 	if (isFuture !== undefined)
 		displayType = 'none'
 	
-	if (pastDate != dateNum && pastDate != undefined) {
+	if (pastDate != dateNum) {
 		pastDate = dateNum
 				 
 		var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; width: 46%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
@@ -64,17 +64,17 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 		}
 		output += '<div style="height:100%"></div></div>'	// TODO: cache all lectures
 		
-		parsedHTML(output).insertBefore('#fakelecturerow')	// TODO: do this only once (after cache)
+		if (lectures.length > 0)
+			parsedHTML(output).insertBefore('#fakelecturerow')	// TODO: do this only once (after cache)
 		lectureData = {}
 		displayType = 'table-cell' 	
-	}  else if (pastDate == dateNum || pastDate == undefined) {
-		pastDate = dateNum
+	}
+
 		
-		if (lectureData.hasOwnProperty('.lecture_'+hash)) {
-			lectureData['.lecture_'+hash].data.html += '<br><br>'+content.data.html
-		} else {
-			lectureData['.lecture_'+hash] = content
-		}
+	if (lectureData.hasOwnProperty('.lecture_'+hash)) {
+		lectureData['.lecture_'+hash].data.html += '<br><br>'+content.data.html
+	} else {
+		lectureData['.lecture_'+hash] = content
 	}
 	
 
@@ -124,7 +124,7 @@ function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
 	if (isFuture !== undefined)
 		displayType = 'none'	
 		
-	var dateNum = date.getMonth()+""+date.getDate()+""+date.getFullYear()	
+	var dateNum = util.getDateText(date)
 	var dateText = df(date,'mmm dd')
 	var comment = _comments[Math.floor(Math.random()*_comments.length)]
 	
@@ -195,12 +195,11 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 			dateStr1 = '<span class="fakedate">'+df(content.data.date[0].date, 'mmm dd')+'</span> ('+ content.data.date[0].location+' only)';
 			dateStr2 = '<span class="fakedate">'+df(content.data.date[1].date, 'mmm dd')+'</span> ('+ content.data.date[1].location+' only)';					
 		} else {
-// 			console.log(content.data)
 			dates = [];	
 			for (var j = 0; j < content.data.date.length; j++) {
 				dates.push(new Date(content.data.date[j]));
 			}
-			dateStr1 = '<span class="fakedate">'+df(content.data.date[0], 'mmm dd')+' - '+df(content.data.date[content.data.date.length-1], 'mmm dd')+'</span>';
+			dateStr1 = '<span class="fakedate">Prior to your session</span>';
 		}								
 	} else {
 		dates = [new Date(content.data.date)];
@@ -444,10 +443,10 @@ function addButtons(parsedHTML, addNextButton) {
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="prevLectureButton" style="position: absolute; top: 156px; padding:1%; margin-left: -20px; cursor: pointer; font-size:large; transform:scale(1,2);">&lt;</span>').insertBefore('#fakelectureheader')						
 	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="nextLectureButton" style="position: absolute; top: 156px; padding:1%; left: 97.5%; cursor: pointer; font-size:large; transform:scale(1,2);">&gt;</span>').insertAfter('#fakelectureheader')	
 	
-	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo(mainId)	
+	parsedHTML('<span class="fakebutton hoverButton textButton noselect" id="fakeTestButton" style="z-index:999; position: absolute; cursor: pointer; font-size:large;">TEST</span>').prependTo(mainId)	
 	var expiry = new Date()
 	expiry = util.addDays(expiry, 7-expiry.getDay());
-	parsedHTML('<span class="noselect" id="fakeTestButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo(mainId)	
+	parsedHTML('<span class="noselect" id="fakeExpiryButton" style="position: absolute; display:none;">Best Before: <span id="fakeexpiry">'+util.getDateText(expiry)+'</span></span>').prependTo(mainId)	
 }
 
 var clientsideJS = undefined;

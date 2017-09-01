@@ -155,8 +155,7 @@ function _processPageLectureSync(parsedHTML, course, href) {
 	var lastDate = []
 	var lastDateStr;
 
-	parsedHTML('table').each(function(i, table) {
-		
+	parsedHTML('table').each(function(i, table) {	
 		$.load(table)('td, th').each(function(j, col) {
 			var text = $(col).text().trim();
 			if (text.search(/^(\w{3,5} +\d{1,2})/) !== -1) {

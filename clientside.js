@@ -58,6 +58,11 @@ $(document).ready(function() {
 	window.prevDate = addDays(0)
 	window.nextDate = addDays(1)
 	
+	var counter = 0;
+	$('#fakeTestButton').on('click', function() {
+		performDayTick(counter++)
+	});
+	
 	$("#prevLectureButton").on("click", function() {
 		window.lastLectureMove = new Date();		
 		
@@ -81,6 +86,7 @@ $(document).ready(function() {
 			$('.day_'+prevDateNum).css('display','table-cell')
 			$('.placeholder_'+prevDateNum).css('display','table-cell')			
 			$('.day_'+nextDateNum).hide()
+			// NB: messes up when going back across the summer
 			$('.placeholder_'+getDateText(addDays(window.prevDate,1))).hide()
 						
 						
@@ -121,9 +127,6 @@ $(document).ready(function() {
 			resetDayCounters(window.prevDate)
 		}
 	});	
-	
-	var counter = 0;
-	$('#fakeTestButton').on('click', function() {performDayTick(counter++)});
 	
 	$("#fakeloginform").submit();		
 	window.lastFakeLoginCheck = new Date();
@@ -225,18 +228,15 @@ function performDayTick(counter) {
 
 function resetLectures() {
 	var date = new Date();
-	
-	var prevDateNum = getDateText(window.prevDate)
-	var nextDateNum = getDateText(window.nextDate)
 
-	
-	$('.day_'+prevDateNum).hide()
-	$('.day_'+nextDateNum).hide()
+	// hide everything
+	$('[class^=day_]').hide()
+	$('[class^=placeholder_]').hide()	
 	
 	var prevDate = addDays(date, 0)
-	prevDateNum =  getDateText(prevDate)
+	var prevDateNum =  getDateText(prevDate)
 	var nextDate = addDays(date, 1)
-	nextDateNum =  getDateText(nextDate)
+	var nextDateNum =  getDateText(nextDate)
 	
 	$('.day_'+prevDateNum).show()
 	$('.day_'+nextDateNum).show()
