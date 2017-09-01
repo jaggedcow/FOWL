@@ -967,8 +967,8 @@ function processDashboard(html, module, session, userInfo, callback) {
 		}		
 		
 		formatter.addLectureHeader(formatObj)
-			
-			
+				
+										
 		for (var i = 0; i < lectures.length; i++) {
 			var content = lectures[i];								
 			
@@ -981,8 +981,23 @@ function processDashboard(html, module, session, userInfo, callback) {
 			}
 			
 			// only sets it for the first lecture (aka earliest date)
-			if (tempDate === undefined)
+			if (tempDate === undefined) {
 				tempDate = dates[0]
+				placeholderDate = tempDate
+				placeholderCount = 0
+				while (today < placeholderDate) {
+					placeholderDate = util.addDays(placeholderDate, -1);
+					placeholderCount++;			
+				}
+				for (var j = 0; j < placeholderCount-1; j++) {
+					placeholderDate = util.addDays(placeholderDate, 1);					
+					compareDate = util.compareDates(placeholderDate, today);
+					if (compareDate === 0 || compareDate === 1)
+						formatter.addLecturePlaceholder(formatObj, placeholderDate, compareDate === 1);
+					else
+						formatter.addLecturePlaceholder(formatObj, placeholderDate, null, compareDate > 1);
+				}
+			}
 			
 			var compareDate = 0
 			
@@ -1016,7 +1031,6 @@ function processDashboard(html, module, session, userInfo, callback) {
 					}
 				} else {
 					compareDate = util.compareDates(tempDate, today)			
-					
 					
 					if (compareDate === 0 || compareDate === 1) {
 						formatter.addLecturePlaceholder(formatObj, tempDate, compareDate === 1)			
