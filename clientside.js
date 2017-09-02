@@ -207,8 +207,18 @@ function performDayTick(counter) {
 	if (changeLectures) {
 		$('.day_'+yesterday).hide();
 		$('.placeholder_'+yesterday).hide();	
+		$('.day_'+yesterday).removeClass('todayLecture')		
+		$('.placeholder_'+yesterday).removeClass('todayLecture')		
+
+		$('.day_'+today).removeClass('tomorrowLecture')		
+		$('.placeholder_'+today).removeClass('tomorrowLecture')		
+		$('.day_'+today).addClass('todayLecture')		
+		$('.placeholder_'+today).addClass('todayLecture')		
+		
 		$('.day_'+tomorrow).css('display','table-cell')
 		$('.placeholder_'+tomorrow).css('display','table-cell')
+		$('.day_'+tomorrow).addClass('tomorrowLecture')		
+		$('.placeholder_'+tomorrow).addClass('tomorrowLecture')	
 	}
 	
 	$('.end_'+passed).hide()
