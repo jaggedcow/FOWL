@@ -240,6 +240,7 @@ function checkStaticCache(classes) {
 			return undefined
 	}
 	
+	return undefined
 	return {data:_staticCache[year].data, dynamicClasses:_staticCache[year].dynamicClasses}
 }
 
