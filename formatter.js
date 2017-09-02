@@ -46,16 +46,17 @@ var pastDate = undefined
 var lectureData = {}
 var displayType = 'table-cell' 
 
-function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
+function addLecture(parsedHTML, content, date, compareToToday) {
 	var dateNum = util.getDateText(date)
 	
-	var className = ' todayLecture'
-	if (isTomorrow)
-		className = ' tomorrowLecture'	
-	if (isFuture !== undefined)
-		displayType = 'none'
-		className = ''
-		
+	var className = ''
+	if (compareToToday === 0 || compareToToday === 1)
+		displayType = 'table-cell'	
+	
+	if (compareToToday === 0)
+		className = ' todayLecture'
+	if (compareToToday === 1)
+		className = ' tomorrowLecture'		
 	
 	if (pastDate != dateNum) {
 		if (pastDate === undefined)
@@ -72,7 +73,7 @@ function addLecture(parsedHTML, content, date, isTomorrow, isFuture) {
 		if (lectures.length > 0)
 			parsedHTML(output).insertBefore('#fakelecturerow')	// TODO: do this only once (after cache)
 		lectureData = {}
-		displayType = 'table-cell' 	
+		displayType = 'none' 	
 		pastDate = dateNum		
 	}
 		
@@ -112,18 +113,20 @@ var _comments = [
 	'Call your mom, she misses you.',
 	'#wellness day'
 ]
-function addLecturePlaceholder(parsedHTML, date, isTomorrow, isFuture) {
+function addLecturePlaceholder(parsedHTML, date, compareToToday) {	
 	// dumps any lectures waiting to be added to the HTML
 	addLecture(parsedHTML, undefined, date)	
 	
-	var displayType = 'table-cell'
+	var displayType = 'none'
+	var className = ''
+	if (compareToToday === 0 || compareToToday === 1)
+		displayType = 'table-cell'	
 	
-	var className = ' todayLecture'
-	if (isTomorrow)
+	if (compareToToday === 0)
+		className = ' todayLecture'
+	if (compareToToday === 1)
 		className = ' tomorrowLecture'	
-	if (isFuture !== undefined)
-		displayType = 'none'
-		className = ''
+
 		
 	var dateNum = util.getDateText(date)
 	var dateText = df(date,'mmm dd')

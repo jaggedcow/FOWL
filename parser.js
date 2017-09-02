@@ -996,10 +996,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 				for (var j = 0; j < placeholderCount-1; j++) {
 					placeholderDate = util.addDays(placeholderDate, 1);					
 					compareDate = util.compareDates(placeholderDate, today);
-					if (compareDate === 0 || compareDate === 1)
-						formatter.addLecturePlaceholder(formatObj, placeholderDate, compareDate === 1);
-					else
-						formatter.addLecturePlaceholder(formatObj, placeholderDate, null, compareDate > 1);
+					formatter.addLecturePlaceholder(formatObj, placeholderDate, compareDate);
 				}
 			}
 			
@@ -1028,19 +1025,10 @@ function processDashboard(html, module, session, userInfo, callback) {
 				}	
 									
 				if (!isEmptyDate) {					
-					if (compareDate === 0 || compareDate === 1) {
-						formatter.addLecture(formatObj, content, dates[0], compareDate === 1)			
-					} else {
-						formatter.addLecture(formatObj, content, dates[0], null, compareDate > 1)
-					}
+					formatter.addLecture(formatObj, content, dates[0], compareDate);
 				} else {
 					compareDate = util.compareDates(tempDate, today)			
-					
-					if (compareDate === 0 || compareDate === 1) {
-						formatter.addLecturePlaceholder(formatObj, tempDate, compareDate === 1)			
-					} else {
-						formatter.addLecturePlaceholder(formatObj, tempDate, null, compareDate > 1)
-					}					
+					formatter.addLecturePlaceholder(formatObj, tempDate, compareDate)						
 				}
 			
 				if (isEmptyDate) {
