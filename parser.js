@@ -164,8 +164,7 @@ function _processPageLectureSync(parsedHTML, course, href) {
 				return;
 			}
 
-			var text = $(col).text().trim();
-		if (course.indexOf('5203') !== -1)			
+			var text = $(col).text().trim();	
 			if (text.search(/^(\w{3,5}\s+\d{1,2})/) !== -1) {		
 					// deal with lectures!!
 				if (text.search(/^(\w{3,5}\s+\d{1,2}\s+&\s+\d{1,2})/) !== -1) {					
