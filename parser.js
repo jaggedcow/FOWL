@@ -165,13 +165,16 @@ function _processPageLectureSync(parsedHTML, course, href) {
 			}
 
 			var text = $(col).text().trim();
-
-			if (text.search(/^(\w{3,5} +\d{1,2})/) !== -1) {			
+		if (course.indexOf('5203') !== -1)			
+			console.log(text.substring(0,30), text.search(/^(\w{3,5} +\d{1,2})/))
+			if (text.search(/^(\w{3,5}\s+\d{1,2})/) !== -1) {		
+					if (course.indexOf('5203') !== -1)			console.log("1")					
 					// deal with lectures!!
-				if (text.search(/^(\w{3,5} +\d{1,2} +& +\d{1,2})/) !== -1) {
+				if (text.search(/^(\w{3,5}\s+\d{1,2}\s+&\s+\d{1,2})/) !== -1) {
+					if (course.indexOf('5203') !== -1)			console.log("2")					
 					// dealing with multiple dates
-					var dateStr1 = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
-					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(& +\d{1,2})/)[0].substring(1).trim()+' 20'+course.substring(course.length-2)+' UTC';			
+					var dateStr1 = text.match(/^(\w{3,5}\s+\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(&\s+\d{1,2})/)[0].substring(1).trim()+' 20'+course.substring(course.length-2)+' UTC';			
 
 					var date1 = new Date(dateStr1);
 					var date2 = new Date(dateStr2);					
@@ -182,12 +185,13 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					util.changeYearIfNeeded(date2, course);					
 					
 					lastDate = [date1.toString(), date2.toString()]					
-					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					lastDateStr = text.match(/^(\w{3,5}\s+\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 
 					output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 					output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})					
 				} else {
-					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					if (course.indexOf('5203') !== -1)			console.log("3")					
+					var dateStr = text.match(/^(\w{3,5}\s+\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 					
 					var date = new Date(dateStr);
 					
@@ -199,14 +203,16 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					
 					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 				}
-			} else {									
+			} else {		
+				if (course.indexOf('5203') !== -1)				console.log("4")											
 				var keep = false;
 				var text = $(col).find('a').each(function(i, a) {
 					if ($(a).text().trim().indexOf("Objective") !== -1 || $(a).text().trim().indexOf("Slide") !== -1)
 						keep = true;
 				});
 				
-				if (keep) {								
+				if (keep) {		
+					if (course.indexOf('5203') !== -1)			console.log("5")											
 					if (util.isArray(lastDate)) {
 						output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 						output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
@@ -230,12 +236,12 @@ function _processPageLectureSync(parsedHTML, course, href) {
 		
 		$.load(table)('p').each(function(j, col) {
 			var text = $(col).text().trim();
-			if (text.search(/^(\w{3,5} +\d{1,2})/) !== -1) {
+			if (text.search(/^(\w{3,5}\s+\d{1,2})/) !== -1) {
 					// deal with lectures!!
-				if (text.search(/^(\w{3,5} +\d{1,2} +& +\d{1,2})/) !== -1) {
+				if (text.search(/^(\w{3,5}\s+\d{1,2}\s+&\s+\d{1,2})/) !== -1) {
 					// dealing with multiple dates
-					var dateStr1 = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
-					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(& +\d{1,2})/)[0].substring(1).trim()+' 20'+course.substring(course.length-2)+' UTC';			
+					var dateStr1 = text.match(/^(\w{3,5}\s+\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(&\s+\d{1,2})/)[0].substring(1).trim()+' 20'+course.substring(course.length-2)+' UTC';			
 
 					var date1 = new Date(dateStr1);
 					var date2 = new Date(dateStr2);					
@@ -246,12 +252,12 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					util.changeYearIfNeeded(date2, course);					
 					
 					lastDate = [date1.toString(), date2.toString()]					
-					lastDateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					lastDateStr = text.match(/^(\w{3,5}\s+\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 					
 					output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 					output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 				} else {
-					var dateStr = text.match(/^(\w{3,5} +\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+					var dateStr = text.match(/^(\w{3,5}\s+\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 					
 					var date = new Date(dateStr);
 					
@@ -504,15 +510,15 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 	
 	obj.textDate = obj.date;	// saves the original
 	
-	if (obj.date.search(/(\s{4}\w{3,5} \d{1,2}\s-\s\w{3,5} \d{1,2})/) !== -1) {	// PCCM 2	
+	if (obj.date.search(/(\s{4}\w{3,5}\s\d{1,2}\s-\s\w{3,5}\s\d{1,2})/) !== -1) {	// PCCM 2	
 		firstDate = undefined
 		
-		while (obj.date.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/) !== -1) {
-			obj.date = obj.date.substring(obj.date.search(/(\s{4}\w{3,5} \d{1,2} - \w{3,5} \d{1,2})/)).trim()
+		while (obj.date.search(/(\s{4}\w{3,5}\s\d{1,2}\s-\s\w{3,5}\s\d{1,2})/) !== -1) {
+			obj.date = obj.date.substring(obj.date.search(/(\s{4}\w{3,5}\s\d{1,2}\s-\s\w{3,5}\s\d{1,2})/)).trim()
 
 			// dealing with multiple dates
-			var dateStr1 = obj.date.match(/^(\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
-			var dateStr2 = obj.date.match(/- (\w{3,5} \d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+			var dateStr1 = obj.date.match(/^(\w{3,5}\s\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
+			var dateStr2 = obj.date.match(/-\s(\w{3,5}\s\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 			dateStr2 = dateStr2.substring(2)		
 
 			if (firstDate === undefined) {
