@@ -1,35 +1,10 @@
 var _counter = 0;
+var _cutoff = 365	
 	
 $(document).ready(function() {
 	var count = 1;
-	$("#showAllButton").on("click", function() {
-		$("#showAllButton").fadeOut();
-		$(".comingsoon").fadeIn()
-	});
-	$("#showPrevButton").on("click", function() {
-		if (count === %MAX_DATE%) {
-			$("#showPrevButton").fadeOut();
-			$("#hidePrevButton").delay(400).fadeIn();			
-		}
-		
-		var start = addDays(-7*(count-1)-2);	// -2 to avoid today and yesterday, which are already visible
-		for (var i = 0; i < 7; i++) {
-			console.log(".end_"+getDateText(addDays(start,i)))
-			$(".end_"+getDateText(addDays(start,-i))).fadeIn().addClass("previouslyHidden");
-		}
-		
-		count++;
-	});
-	$(".js-toggle-user-nav").on("click", function() {
-		$(".is-hidden").toggle();			
-	});	
-	$("#hidePrevButton").on("click", function() {
-		$("#hidePrevButton").fadeOut();			
-		$("#showPrevButton").delay(400).fadeIn();			
-		
-		$(".previouslyHidden").fadeOut().removeClass("previouslyHidden");
-		count = 1;
-	});	
+	window.prevDate = addDays(0)
+	window.nextDate = addDays(1)
 	
 	var currDate = new Date();
 	if (currDate.getMonth() === 9 && currDate.getDate() > 27) {		// todo: replace this with something smarter that finds weekends
@@ -47,78 +22,8 @@ $(document).ready(function() {
 		}, 1200)
 	}
 	
-	var _cutoff = 365
-	window.prevDate = addDays(0)
-	window.nextDate = addDays(1)
-	
-	$('#fakeTestButton').on('click', function() {
-		performDayTick(_counter++)
-	});
-	
-	$("#prevLectureButton").on("click", function() {
-		window.lastLectureMove = new Date();		
 		
-		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
-		
-		do {
-			pdelta++
-		
-			prevDate = addDays(window.prevDate, -pdelta)
-			prevDateNum = getDateText(prevDate)
-		} while($('.day_'+prevDateNum).length === 0 && compareDates(prevDate, addDays(0)) !== 0 && compareDates(prevDate, addDays(1)) !== 0 && pdelta < _cutoff) 
-		
-		do {
-			ndelta++
-			
-			nextDate = addDays(window.prevDate, ndelta)		
-			nextDateNum = getDateText(nextDate)
-		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
-
-		if (pdelta < _cutoff && ndelta < _cutoff) {			
-			$('.day_'+prevDateNum).css('display','table-cell')
-			$('.placeholder_'+prevDateNum).css('display','table-cell')			
-			$('.day_'+nextDateNum).hide()
-			// NB: messes up when going back across the summer
-			$('.placeholder_'+getDateText(addDays(window.prevDate,1))).hide()
-						
-						
-			window.nextDate = window.prevDate
-			window.prevDate = prevDate
-						
-			resetDayCounters(window.prevDate)
-		}
-	});
-	$("#nextLectureButton").on("click", function() {
-		window.lastLectureMove = new Date();
-			
-		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
-		
-		do {
-			pdelta++
-		
-			prevDate = addDays(window.nextDate, -pdelta)
-			prevDateNum = getDateText(prevDate)
-		} while($('.day_'+prevDateNum).length === 0 && pdelta < _cutoff) 
-		
-		do {
-			ndelta++
-			
-			nextDate = addDays(window.nextDate, ndelta)		
-			nextDateNum = getDateText(nextDate)
-		} while($('.day_'+nextDateNum).length === 0 && compareDates(nextDate, addDays(0)) !== 0 && compareDates(nextDate, addDays(1)) !== 0 && ndelta < _cutoff) 		
-				
-		if (pdelta < _cutoff && ndelta < _cutoff) {				
-			$('.day_'+prevDateNum).hide()
-			$('.placeholder_'+getDateText(window.prevDate)).hide()
-			$('.day_'+nextDateNum).css('display','table-cell')
-			$('.placeholder_'+nextDateNum).css('display','table-cell')			
-			
-			window.prevDate = window.nextDate
-			window.nextDate = nextDate
-			
-			resetDayCounters(window.prevDate)
-		}
-	});	
+	addListeners()
 	
 	$("#fakeloginform").submit();		
 	window.lastFakeLoginCheck = new Date();
@@ -222,11 +127,13 @@ function performDayTick(counter) {
 	$('.end_'+today+' .fakedate').text('Tonight')		
 	
 	if (compareDates(addDays(0), getTextDate($('#fakeexpiry').text())) === 0) {	
+		console.log("Data expired")
 		$.ajax({
 	        url: window.location,
 	        success: function(data) {
-	            console.log("Data expired, successfully fetched from server")
+	            console.log("Successfully fetched new data")
 	            $('#pageBody .Mrphs-pagebody').html($(data).find('#pageBody .Mrphs-pagebody').html())
+	            addListeners()
 	        }
 	    });
 	}
@@ -323,4 +230,104 @@ function addDays(date, days) {
     var result = new Date(date);
     result.setTime(result.getTime() + days * 86400000);
     return result;
+}
+
+function addListeners() {
+	$("#showAllButton").on("click", function() {
+		$("#showAllButton").fadeOut();
+		$(".comingsoon").fadeIn()
+	});
+	$("#showPrevButton").on("click", function() {
+		if (count === %MAX_DATE%) {
+			$("#showPrevButton").fadeOut();
+			$("#hidePrevButton").delay(400).fadeIn();			
+		}
+		
+		var start = addDays(-7*(count-1)-2);	// -2 to avoid today and yesterday, which are already visible
+		for (var i = 0; i < 7; i++) {
+			console.log(".end_"+getDateText(addDays(start,i)))
+			$(".end_"+getDateText(addDays(start,-i))).fadeIn().addClass("previouslyHidden");
+		}
+		
+		count++;
+	});
+	$(".js-toggle-user-nav").on("click", function() {
+		$(".is-hidden").toggle();			
+	});	
+	$("#hidePrevButton").on("click", function() {
+		$("#hidePrevButton").fadeOut();			
+		$("#showPrevButton").delay(400).fadeIn();			
+		
+		$(".previouslyHidden").fadeOut().removeClass("previouslyHidden");
+		count = 1;
+	});	
+	
+	$('#fakeTestButton').on('click', function() {
+		performDayTick(_counter++)
+	});
+	
+	$("#prevLectureButton").on("click", function() {
+		window.lastLectureMove = new Date();		
+		
+		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
+		
+		do {
+			pdelta++
+		
+			prevDate = addDays(window.prevDate, -pdelta)
+			prevDateNum = getDateText(prevDate)
+		} while($('.day_'+prevDateNum).length === 0 && compareDates(prevDate, addDays(0)) !== 0 && compareDates(prevDate, addDays(1)) !== 0 && pdelta < _cutoff) 
+		
+		do {
+			ndelta++
+			
+			nextDate = addDays(window.prevDate, ndelta)		
+			nextDateNum = getDateText(nextDate)
+		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
+
+		if (pdelta < _cutoff && ndelta < _cutoff) {			
+			$('.day_'+prevDateNum).css('display','table-cell')
+			$('.placeholder_'+prevDateNum).css('display','table-cell')			
+			$('.day_'+nextDateNum).hide()
+			// NB: messes up when going back across the summer
+			$('.placeholder_'+getDateText(addDays(window.prevDate,1))).hide()
+						
+						
+			window.nextDate = window.prevDate
+			window.prevDate = prevDate
+						
+			resetDayCounters(window.prevDate)
+		}
+	});
+	$("#nextLectureButton").on("click", function() {
+		window.lastLectureMove = new Date();
+			
+		var pdelta = 0, ndelta = 0, prevDate, nextDate, prevDateNum, nextDateNum
+		
+		do {
+			pdelta++
+		
+			prevDate = addDays(window.nextDate, -pdelta)
+			prevDateNum = getDateText(prevDate)
+		} while($('.day_'+prevDateNum).length === 0 && pdelta < _cutoff) 
+		
+		do {
+			ndelta++
+			
+			nextDate = addDays(window.nextDate, ndelta)		
+			nextDateNum = getDateText(nextDate)
+		} while($('.day_'+nextDateNum).length === 0 && compareDates(nextDate, addDays(0)) !== 0 && compareDates(nextDate, addDays(1)) !== 0 && ndelta < _cutoff) 		
+				
+		if (pdelta < _cutoff && ndelta < _cutoff) {				
+			$('.day_'+prevDateNum).hide()
+			$('.placeholder_'+getDateText(window.prevDate)).hide()
+			$('.day_'+nextDateNum).css('display','table-cell')
+			$('.placeholder_'+nextDateNum).css('display','table-cell')			
+			
+			window.prevDate = window.nextDate
+			window.nextDate = nextDate
+			
+			resetDayCounters(window.prevDate)
+		}
+	});	
 }
