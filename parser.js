@@ -166,12 +166,9 @@ function _processPageLectureSync(parsedHTML, course, href) {
 
 			var text = $(col).text().trim();
 		if (course.indexOf('5203') !== -1)			
-			console.log(text.substring(0,30), text.search(/^(\w{3,5} +\d{1,2})/))
 			if (text.search(/^(\w{3,5}\s+\d{1,2})/) !== -1) {		
-					if (course.indexOf('5203') !== -1)			console.log("1")					
 					// deal with lectures!!
-				if (text.search(/^(\w{3,5}\s+\d{1,2}\s+&\s+\d{1,2})/) !== -1) {
-					if (course.indexOf('5203') !== -1)			console.log("2")					
+				if (text.search(/^(\w{3,5}\s+\d{1,2}\s+&\s+\d{1,2})/) !== -1) {					
 					// dealing with multiple dates
 					var dateStr1 = text.match(/^(\w{3,5}\s+\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 					var dateStr2 = text.match(/^(\w{3,5})/)[0]+' '+text.match(/(&\s+\d{1,2})/)[0].substring(1).trim()+' 20'+course.substring(course.length-2)+' UTC';			
@@ -190,7 +187,6 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 					output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})					
 				} else {
-					if (course.indexOf('5203') !== -1)			console.log("3")					
 					var dateStr = text.match(/^(\w{3,5}\s+\d{1,2})/)[0]+' 20'+course.substring(course.length-2)+' UTC';
 					
 					var date = new Date(dateStr);
@@ -204,7 +200,6 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 				}
 			} else {		
-				if (course.indexOf('5203') !== -1)				console.log("4")											
 				var keep = false;
 				var text = $(col).find('a').each(function(i, a) {
 					if ($(a).text().trim().indexOf("Objective") !== -1 || $(a).text().trim().indexOf("Slide") !== -1)
@@ -969,7 +964,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 		if (formatObj === undefined) {
 			formatObj = out.formatObj;		
 		
-			formatter.addHeaders(formatObj, session, userInfo);
+			formatter.addHeaders(formatObj);
 	
 			var today = new Date();
 			var tempDate = undefined;
@@ -1092,6 +1087,8 @@ function processDashboard(html, module, session, userInfo, callback) {
 			if (yesterday < new Date(assignments[i].data.dueDate))
 				formatter.addAssignment(formatObj, assignments[i])
 		}
+		
+		formatter.addLoginForms(formatObj, session, userInfo)
 	
 		callback(util._cleanHTML(formatObj, classes.length > 0?formatObj.html():html, out.ignoredURLs));		
 	});

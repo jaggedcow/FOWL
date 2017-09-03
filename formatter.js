@@ -21,13 +21,10 @@ function initPage(html) {
 	
 	return parsedHTML;
 }
-function addHeaders(parsedHTML, session, userInfo) {	
+function addHeaders(parsedHTML) {	
 	parsedHTML('<h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><div><h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1></div><div class="topnav" style="padding: 2em; padding-top: 0em;" id="faketopnav"></div>').appendTo(mainId)
 	
 	parsedHTML('<div id="fakeweek" style="padding:1%; width:40%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 class="fakeheader" id="fakeweeklabel">This Week</h2></div><div  id="fakepcciacontainer" style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2 class="fakeheader">PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2 class="fakeheader">Pending Assignments</h2></div></div><div id="fakecoursecontainer" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2 class="fakeheader">Course Pages</h2></div>').appendTo('#faketopnav');
-	
-	parsedHTML('<iframe id="fakeloginframe" name="fakeloginframe" style="position:fixed; top:-900px; width:900px; height:0px; border:none;" src=""></iframe>').appendTo('body')
-	parsedHTML('<form id="fakeloginform" method="post" target="fakeloginframe" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="'+session+'" type="hidden"><input name="pw" id="pw" value="'+util.decrypt(userInfo[session].pass)+'" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('body')
 }
 
 function addClass(parsedHTML, content, expired) {
@@ -438,6 +435,11 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 	return {outputHomework: futureHomeworkExists, maxDate: maxPreviousDate};
 }
 
+function addLoginForms(parsedHTML, session, userInfo) {
+	parsedHTML('<iframe id="fakeloginframe" name="fakeloginframe" style="position:fixed; top:-900px; width:900px; height:0px; border:none;" src=""></iframe>').appendTo('body')
+	parsedHTML('<form id="fakeloginform" method="post" target="fakeloginframe" action="https://owl.uwo.ca/access/login" enctype="application/x-www-form-urlencoded"><input name="eid" id="eid" value="'+session+'" type="hidden"><input name="pw" id="pw" value="'+util.decrypt(userInfo[session].pass)+'" type="hidden"><input name="fakesubmit" type="hidden" value="Login"></form>').appendTo('body')
+}
+
 function addButtons(parsedHTML, addNextButton) {
 	if (addNextButton)
 		parsedHTML('<div class="fakebox hoverButton noselect" id="showAllButton" style="padding: 2px 8px 8px 8px; -webkit-box-shadow: hsla(0, 20%, 55%, 0.5) 0px 2px 2px; box-shadow: hsla(0, 0%, 55%, 0.5) 0px 2px 2px; margin-bottom: 8px; margin-top: 20px; margin-right: 20%; margin-left: 20%; text-align: center; cursor: pointer;"><h5>Show Upcoming Weeks</h5></div>').appendTo('#fakeweek');		
@@ -478,5 +480,6 @@ exports.addLecture 				= addLecture
 exports.addLectureHeader 		= addLectureHeader
 exports.addLectureFooter 		= addLectureFooter
 exports.addLecturePlaceholder 	= addLecturePlaceholder
+exports.addLoginForms			= addLoginForms
 exports.addPCCIA 				= addPCCIA
 exports.initPage 				= initPage
