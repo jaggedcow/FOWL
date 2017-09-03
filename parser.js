@@ -161,10 +161,8 @@ function _processPageLectureSync(parsedHTML, course, href) {
 			// removes duplicates
 			if ($(col).find('table').length > 0 || nestedTable) {
 				nestedTable = true
-				console.log("DELETED", $(col).text().substring(0,20))
 				return;
 			}
-				console.log("KEPT", $(col).text().substring(0,20))
 
 			var text = $(col).text().trim();
 
