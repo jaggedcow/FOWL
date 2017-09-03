@@ -35,25 +35,16 @@ $(document).ready(function() {
 	if (currDate.getMonth() === 9 && currDate.getDate() > 27) {		// todo: replace this with something smarter that finds weekends
 		setTimeout(function(){
 			$('body, #container').animate({backgroundColor:'#424242'}, 'slow');	
+			$('#toolMenuWrap').animate({backgroundColor:'#656565'}, 'slow');				
 			$('#toolMenu li').animate({backgroundColor:'#808080', borderColor:'#656565'}, 'slow');
 			$('.fakebox').animate({backgroundColor:'#f37015'}, 'slow');	
 			$('.fakebutton').animate({color:'#f37015'}, 'slow');			
 			$('.fakeheader').animate({color:'#dbdbdb'}, 'slow');	
 			$('#innercontent span').animate({color:'#424242'}, 'slow')					
-			$('#innercontent a').animate({color:'#424242'}, 'slow')											
+			$('#innercontent a').animate({color:'#424242'}, 'slow')		
+			
+			$('#toolMenu ul li.is-current a').animate({color:'#f37015', borderColor:'#f37015', borderLeftColor:'#f37015'}, 'slow');		
 		}, 1200)
-	}
-	
-	if (currDate.getMonth() === 3 && currDate.getDate() === 0 && !readCookie('aprilfooled')) {
-		$('#portalContainer').hide();
-		$('#fakeloginframe').css({width:$(document).width()+'px', height:$(document).height()+'px', top: 0+'px'})		
-		
-		setTimeout(function() {
-			alert("April Fools!")
-			$('#portalContainer').show();		
-			$('#fakeloginframe').animate({top:$(document).height()}, 800)
-			createCookie('aprilfooled', true, 7)				
-		}, 12000)
 	}
 	
 	var _cutoff = 365
@@ -144,10 +135,11 @@ $(document).ready(function() {
 		$("#fakeloginform").submit();		
 		window.lastFakeLoginCheck = new Date();	
 	}, 3600000)
-	
+		
 	$(window).on("focus pageshow pagecontainershow", function() {
 		performDayTick()					
-		if (window.lastFakeLoginCheck && new Date().getTime() - window.lastFakeLoginCheck.getTime() > 3600000) {				console.log("Focus login")
+		if (window.lastFakeLoginCheck && new Date().getTime() - window.lastFakeLoginCheck.getTime() > 3600000) {				
+			console.log("Focus login")
 			$("#fakeloginform").submit();		
 			window.lastFakeLoginCheck = new Date();		
 		}
@@ -229,10 +221,14 @@ function performDayTick(counter) {
 	$('.start_'+tomorrow+' .fakedate').text('Tomorrow')		
 	$('.end_'+today+' .fakedate').text('Tonight')		
 	
-	if (compareDates(addDays(0), getTextDate($('#fakeexpiry').text())) === 0) {
-		createCookie('tempUser',$('#eid').val(),2/24*60)
-		createCookie('tempPw',$('#pw').val(),2/24*60)		
-		window.location.reload(true)		
+	if (compareDates(addDays(0), getTextDate($('#fakeexpiry').text())) === 0) {	
+		$.ajax({
+	        url: window.location,
+	        success: function(data) {
+	            console.log("Data expired, successfully fetched from server")
+	            $('#pageBody .Mrphs-pagebody').html($(data).find('#pageBody .Mrphs-pagebody').html())
+	        }
+	    });
 	}
 }
 
@@ -318,11 +314,7 @@ function formatDate(date) {
 function addDays(date, days) {
 	if (date === undefined && days === undefined) {
 		return new Date()
-/*
-	    var result = new Date();
-	    result.setTime(result.getTime() - 30 * 86400000);
-	    return result;	
-*/	
+
 	} else if (days === undefined && typeof date === 'number') {
 		days = date;
 		date = new Date();

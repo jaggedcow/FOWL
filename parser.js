@@ -651,6 +651,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 	var sites = {}	
 	var classes = []
 
+	
 	var formatObj = formatter.initPage(html);
 	
 	formatObj('ul.otherSitesCategorList').children().map(function(i, li) {
@@ -666,7 +667,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 				classes.push({title:title, href:href, hash:hash, displayTitle:util.replaceClasses(title)})
 			}
 		})
-	});		
+	});	
 
 	var cachedContent = util.checkStaticCache(classes)
 	var cachedLinks = util.checkDynamicCache(session)	
@@ -948,128 +949,135 @@ function processDashboard(html, module, session, userInfo, callback) {
 		var pccia = out.pccia;
 		var lectures = out.lectures;
 		
-		var formatObj = out.formatObj;		
+		var formatObj = util.checkHTMLCache(classes);
 		
-		formatter.addHeaders(formatObj, session, userInfo);
-
-		var today = new Date();
-		var tempDate = undefined;
-		today = util.addDays(today, -0.25);	// adjusts for time zones
-		var tomorrow = util.addDays(today, 1);
-		var twodays = util.addDays(today, 2);			
-		var yesterday = util.addDays(today, -1)	
-		var lastDate = undefined
-
-		for (var i = 0; i < classes.length; i++) {
-			if (classes[i].displayUntil === undefined || yesterday < new Date(classes[i].displayUntil))
-				formatter.addClass(formatObj, classes[i])
-		}
+		if (formatObj === undefined) {
+			formatObj = out.formatObj;		
 		
-		for (var i = 0; i < classes.length; i++) {
-			if (yesterday >= new Date(classes[i].displayUntil))
-				formatter.addClass(formatObj, classes[i], true)
-		}		
-		
-		formatter.addLectureHeader(formatObj)
+			formatter.addHeaders(formatObj, session, userInfo);
+	
+			var today = new Date();
+			var tempDate = undefined;
+			today = util.addDays(today, -0.25);	// adjusts for time zones
+			var tomorrow = util.addDays(today, 1);
+			var twodays = util.addDays(today, 2);			
+			var yesterday = util.addDays(today, -1)	
+			var lastDate = undefined
+	
+			for (var i = 0; i < classes.length; i++) {
+				if (classes[i].displayUntil === undefined || yesterday < new Date(classes[i].displayUntil))
+					formatter.addClass(formatObj, classes[i])
+			}
+			
+			for (var i = 0; i < classes.length; i++) {
+				if (yesterday >= new Date(classes[i].displayUntil))
+					formatter.addClass(formatObj, classes[i], true)
+			}		
+			
+			formatter.addLectureHeader(formatObj)
+					
+											
+			for (var i = 0; i < lectures.length; i++) {
+				var content = lectures[i];								
 				
-										
-		for (var i = 0; i < lectures.length; i++) {
-			var content = lectures[i];								
-			
-			var dates = []
-			if (util.isArray(content.data.date)) {
-				for (var j = 0; j < content.data.date.length; j++)
-					dates.push(new Date(content.data.date[j]));
-			} else {
-				dates = [new Date(content.data.date)];
-			}
-			
-			// only sets it for the first lecture (aka earliest date)
-			if (tempDate === undefined) {
-				tempDate = dates[0]
-				placeholderDate = tempDate
-				placeholderCount = 0
-				while (today < placeholderDate) {
-					placeholderDate = util.addDays(placeholderDate, -1);
-					placeholderCount++;			
-				}
-				for (var j = 0; j < placeholderCount-1; j++) {
-					placeholderDate = util.addDays(placeholderDate, 1);					
-					compareDate = util.compareDates(placeholderDate, today);
-					formatter.addLecturePlaceholder(formatObj, placeholderDate, compareDate);
-				}
-			}
-			
-			var compareDate = 0
-			
-			var isEmptyDate = true;
-			var emptyDateCounter = 0;
-			
-			while (isEmptyDate && emptyDateCounter < 99) {		
-				for (var j = 0; j < dates.length; j++) {
-					if (lastDate !== undefined && isFinite(lastDate) && (dates[j].getMonth() !== lastDate.getMonth() || dates[j].getDate() !== lastDate.getDate()))
-						tempDate = util.addDays(tempDate, 1)		
-					
-					if (dates[j] < util.addDays(tempDate,1)) {
-						isEmptyDate = false;
-						emptyDateCounter = 0;
-					}
-					if (!isFinite(dates[j])) {
-						isEmptyDate = false;
-						emptyDateCounter = 0;						
-					}
-					
-					lastDate = dates[j]
-						
-					compareDate = util.compareDates(dates[j], today)			
-				}	
-									
-				if (!isEmptyDate) {					
-					formatter.addLecture(formatObj, content, dates[0], compareDate);
+				var dates = []
+				if (util.isArray(content.data.date)) {
+					for (var j = 0; j < content.data.date.length; j++)
+						dates.push(new Date(content.data.date[j]));
 				} else {
-					compareDate = util.compareDates(tempDate, today)			
-					formatter.addLecturePlaceholder(formatObj, tempDate, compareDate)						
+					dates = [new Date(content.data.date)];
 				}
-			
-				if (isEmptyDate) {
-					tempDate = util.addDays(tempDate, 1)				
-					emptyDateCounter++
+				
+				// only sets it for the first lecture (aka earliest date)
+				if (tempDate === undefined) {
+					tempDate = dates[0]
+					placeholderDate = tempDate
+					placeholderCount = 0
+					while (today < placeholderDate) {
+						placeholderDate = util.addDays(placeholderDate, -1);
+						placeholderCount++;			
+					}
+					for (var j = 0; j < placeholderCount-1; j++) {
+						placeholderDate = util.addDays(placeholderDate, 1);					
+						compareDate = util.compareDates(placeholderDate, today);
+						formatter.addLecturePlaceholder(formatObj, placeholderDate, compareDate);
+					}
+				}
+				
+				var compareDate = 0
+				
+				var isEmptyDate = true;
+				var emptyDateCounter = 0;
+				
+				while (isEmptyDate && emptyDateCounter < 99) {		
+					for (var j = 0; j < dates.length; j++) {
+						if (lastDate !== undefined && isFinite(lastDate) && (dates[j].getMonth() !== lastDate.getMonth() || dates[j].getDate() !== lastDate.getDate()))
+							tempDate = util.addDays(tempDate, 1)		
+						
+						if (dates[j] < util.addDays(tempDate,1)) {
+							isEmptyDate = false;
+							emptyDateCounter = 0;
+						}
+						if (!isFinite(dates[j])) {
+							isEmptyDate = false;
+							emptyDateCounter = 0;						
+						}
+						
+						lastDate = dates[j]
+							
+						compareDate = util.compareDates(dates[j], today)			
+					}	
+										
+					if (!isEmptyDate) {					
+						formatter.addLecture(formatObj, content, dates[0], compareDate);
+					} else {
+						compareDate = util.compareDates(tempDate, today)			
+						formatter.addLecturePlaceholder(formatObj, tempDate, compareDate)						
+					}
+				
+					if (isEmptyDate) {
+						tempDate = util.addDays(tempDate, 1)				
+						emptyDateCounter++
+					}
 				}
 			}
-		}
-		
-		formatter.addLectureFooter(formatObj)
+			
+			formatter.addLectureFooter(formatObj)
+					
+			for (var i = 0; i < pccia.length; i++) {
+				if (today < new Date(pccia[i].data.displayUntil))
+					formatter.addPCCIA(formatObj, pccia[i])
+			}
+			
+			var maxPreviousDate = 0;
+			var futureHomeworkExists = false;		// used to toggle 'Show All' button
+			var logErrors = false;
+			for (var i = 0; i < homework.length; i++) {		
+				var content = homework[i];
+				if (Object.keys(content.data).length < 4)
+					continue;				
+					
+				var out = formatter.addHomework(formatObj, content, maxPreviousDate)
 				
-		for (var i = 0; i < pccia.length; i++) {
-			if (today < new Date(pccia[i].data.displayUntil))
-				formatter.addPCCIA(formatObj, pccia[i])
+				// this indirection is needed because if addHomework returns false in future calls, we still have some homework to show
+				if (out.outputHomework)
+					futureHomeworkExists = true;
+				maxPreviousDate = out.maxDate;
+			}	
+			
+			formatter.addButtons(formatObj, futureHomeworkExists)
+			formatter.addFooters(formatObj, maxPreviousDate)	
+			
+			util.cacheHTML(classes, formatObj)	
+		} else {
+			console.log("Skipping layout, using cached HTML content")
 		}
 		
 		for (var i = 0; i < assignments.length; i++) {
 			if (yesterday < new Date(assignments[i].data.dueDate))
 				formatter.addAssignment(formatObj, assignments[i])
 		}
-		
-		var maxPreviousDate = 0;
-		var futureHomeworkExists = false;		// used to toggle 'Show All' button
-		var logErrors = false;
-		for (var i = 0; i < homework.length; i++) {		
-			var content = homework[i];
-			if (Object.keys(content.data).length < 4)
-				continue;				
-				
-			var out = formatter.addHomework(formatObj, content, maxPreviousDate)
-			
-			// this indirection is needed because if addHomework returns false in future calls, we still have some homework to show
-			if (out.outputHomework)
-				futureHomeworkExists = true;
-			maxPreviousDate = out.maxDate;
-		}
-		
-		
-		formatter.addButtons(formatObj, futureHomeworkExists)
-		formatter.addFooters(formatObj, maxPreviousDate)
-
+	
 		callback(util._cleanHTML(formatObj, classes.length > 0?formatObj.html():html, out.ignoredURLs));		
 	});
 }

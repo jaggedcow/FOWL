@@ -214,19 +214,30 @@ function cacheDynamic(user, href, course) {
 	_dynamicCache[user].push({href:href, course:course})
 }
 
+_htmlCache = {}
+function cacheHTML(classes, html) {
+	var year = getYearFromClasses(classes)
+	if (isFinite(year)) {
+		_htmlCache[year] = {html:html, classes:classes};	
+	}
+}
+
 function checkDynamicCache(user) {
+	console.log("CHECK DYNAMIC", user)	
 	return _dynamicCache[user];
 }
 
 function checkStaticCache(classes) {
 	var year = getYearFromClasses(classes)
+	
+	console.log("CHECK STATIC", year)
 	var cache = _staticCache[year]
 	
-	if (_staticCache[year] === undefined)
+	if (cache === undefined)
 		return undefined
 	
 	// confirms that there are no new classes
-	if (_staticCache[year].classes.length !== classes.length)
+	if (cache.classes.length !== classes.length)
 		return undefined
 	
 	var titles = new Set()
@@ -236,12 +247,43 @@ function checkStaticCache(classes) {
 	
 	// confirms that all cached classes are present
 	for (var i = 0; i < classes.length; i++) {
-		if (!titles.contains(_staticCache[year].classes[i].title))
+		if (!titles.contains(cache.classes[i].title))
 			return undefined
 	}
 	
-	return undefined
-	return {data:_staticCache[year].data, dynamicClasses:_staticCache[year].dynamicClasses}
+	if (cache.data.homework.length === 0 && cache.data.lectures.length === 0 && cache.data.pccia.length === 0) {
+		delete _htmlCache[year]
+		return undefined
+	}
+	
+	return {data:cache.data, dynamicClasses:cache.dynamicClasses}
+}
+
+function checkHTMLCache(classes) {
+	var year = getYearFromClasses(classes)
+	
+	console.log("CHECK HTML", year)	
+	var cache = _htmlCache[year]
+	
+	if (cache === undefined)
+		return undefined
+	
+	// confirms that there are no new classes
+	if (cache.classes.length !== classes.length)
+		return undefined
+	
+	var titles = new Set()
+	for (var i = 0; i < classes.length; i++) {
+		titles.add(classes[i].title)	
+	}
+	
+	// confirms that all cached classes are present
+	for (var i = 0; i < classes.length; i++) {
+		if (!titles.contains(cache.classes[i].title))
+			return undefined
+	}
+	
+	return cache.html
 }
 
 function getYearFromClasses(classes) {
@@ -329,9 +371,11 @@ function replaceClasses(temp) {
 exports.addDays 			= addDays
 exports.cacheDynamic 		= cacheDynamic
 exports.cacheStatic 		= cacheStatic
+exports.cacheHTML 			= cacheHTML
 exports.changeYearIfNeeded 	= changeYearIfNeeded
 exports.checkDynamicCache	= checkDynamicCache
 exports.checkStaticCache	= checkStaticCache
+exports.checkHTMLCache		= checkHTMLCache
 exports.cleanHTML 			= cleanHTML
 exports._cleanHTML			= _cleanHTML
 exports.colourForCourse 	= colourForCourse
