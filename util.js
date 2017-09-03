@@ -223,14 +223,11 @@ function cacheHTML(classes, html) {
 }
 
 function checkDynamicCache(user) {
-	console.log("CHECK DYNAMIC", user)	
 	return _dynamicCache[user];
 }
 
 function checkStaticCache(classes) {
 	var year = getYearFromClasses(classes)
-	
-	console.log("CHECK STATIC", year)
 	var cache = _staticCache[year]
 	
 	if (cache === undefined)
@@ -260,9 +257,7 @@ function checkStaticCache(classes) {
 }
 
 function checkHTMLCache(classes) {
-	var year = getYearFromClasses(classes)
-	
-	console.log("CHECK HTML", year)	
+	var year = getYearFromClasses(classes)	
 	var cache = _htmlCache[year]
 	
 	if (cache === undefined)
