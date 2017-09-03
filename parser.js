@@ -1018,7 +1018,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 				var isEmptyDate = true;
 				var emptyDateCounter = 0;
 				
-				while (isEmptyDate && emptyDateCounter < 99) {		
+				while (isEmptyDate && emptyDateCounter < 365) {			
 					for (var j = 0; j < dates.length; j++) {
 						if (lastDate !== undefined && isFinite(lastDate) && (dates[j].getMonth() !== lastDate.getMonth() || dates[j].getDate() !== lastDate.getDate()))
 							tempDate = util.addDays(tempDate, 1)		
