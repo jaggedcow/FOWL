@@ -155,14 +155,20 @@ function _processPageLectureSync(parsedHTML, course, href) {
 	var lastDate = []
 	var lastDateStr;
 
-	parsedHTML('table').each(function(i, table) {	
-		// removes duplicates
-		if ($(table).find('table').length > 0)
-			return;
-					
-		$.load(table)('td, th').each(function(j, col) {
+	parsedHTML('table').each(function(i, table) {		
+		var nestedTable = false
+		var checker = function(j, col) {
+			// removes duplicates
+			if ($(col).find('table').length > 0 || nestedTable) {
+				nestedTable = true
+				console.log("DELETED", $(col).text().substring(0,20))
+				return;
+			}
+				console.log("KEPT", $(col).text().substring(0,20))
+
 			var text = $(col).text().trim();
-			if (text.search(/^(\w{3,5} +\d{1,2})/) !== -1) {
+
+			if (text.search(/^(\w{3,5} +\d{1,2})/) !== -1) {			
 					// deal with lectures!!
 				if (text.search(/^(\w{3,5} +\d{1,2} +& +\d{1,2})/) !== -1) {
 					// dealing with multiple dates
@@ -195,14 +201,14 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					
 					output.push({'type':'Lecture', 'data':{date:lastDate, html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 				}
-			} else {
+			} else {									
 				var keep = false;
 				var text = $(col).find('a').each(function(i, a) {
 					if ($(a).text().trim().indexOf("Objective") !== -1 || $(a).text().trim().indexOf("Slide") !== -1)
 						keep = true;
 				});
 				
-				if (keep) {					
+				if (keep) {								
 					if (util.isArray(lastDate)) {
 						output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 						output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
@@ -211,7 +217,12 @@ function _processPageLectureSync(parsedHTML, course, href) {
 					}
 				}
 			}
-		});
+		};
+		
+		if (course.indexOf('5139') !== -1)
+			$.load(table)('p').each(checker);		
+		else	
+			$.load(table)('td, th').each(checker);
 	});
 	
 	parsedHTML('div.textbox').each(function(i, table) {
