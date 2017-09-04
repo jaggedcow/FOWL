@@ -220,7 +220,7 @@ _htmlCache = {}
 function cacheHTML(classes, htmlObj, maxPreviousDate) {
 	var year = getYearFromClasses(classes)
 	if (isFinite(year)) {
-		_htmlCache[year] = {html:htmlObj.html(formatter.mainId).toString(), classes:classes, maxPreviousDate:maxPreviousDate};	
+		_htmlCache[year] = {html:htmlObj(formatter.mainId).html().toString(), classes:classes, maxPreviousDate:maxPreviousDate};	
 	}
 }
 

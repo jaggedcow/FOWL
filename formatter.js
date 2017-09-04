@@ -30,7 +30,7 @@ function initPage(html, cachedHTML) {
 	return parsedHTML;
 }
 function addHeaders(parsedHTML) {	
-	parsedHTML('<h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em;" id="fakelecturenav"></div><div><h1 class="fakeheader" style="padding-left:2.5%; margin-bottom: -30px; margin-top: -1em;">Homework</h1></div><div class="topnav" style="padding: 2em; padding-top: 0em;" id="faketopnav"></div>').appendTo(mainId)
+	parsedHTML('<h1 class="fakeheader" style="padding-left:0.75em; margin-bottom: -30px; position:relative;">Lectures</h1><div class="topnav" style="padding: 2em; padding-top: 1.5em;" id="fakelecturenav"></div><div><h1 class="fakeheader" style="padding-left:0.75em; margin-bottom: -30px; margin-top: -1em;">Homework</h1></div><div class="topnav" style="padding: 2em; padding-top: 0em;" id="faketopnav"></div>').appendTo(mainId)
 	
 	parsedHTML('<div id="fakeweek" style="padding:1%; width:40%; max-width:40%; display:inline-block; float:left; position:relative;"><h2 class="fakeheader" id="fakeweeklabel">This Week</h2></div><div  id="fakepcciacontainer" style="padding:1%; max-width:27%; display:inline-block; float:right;"><div id="fakepccia"><h2 class="fakeheader">PCCIA</h2></div><div id="fakeassignments" style="margin-top:3em;"><h2 class="fakeheader">Pending Assignments</h2></div></div><div id="fakecoursecontainer" style="padding:1%; max-width:27%; display:inline-block; float:right;"><h2 class="fakeheader">Course Pages</h2></div>').appendTo('#faketopnav');
 }
@@ -44,7 +44,7 @@ function addClass(parsedHTML, content, expired) {
 
 function addLectureHeader(parsedHTML) {
 	parsedHTML('<div id="fakelectureheader" style="display:table; width:102%; overflow-x:scroll;"></div>').appendTo('#fakelecturenav')
-	parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketodayheader" class="fakeheader">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:top;"><h2 id="faketomorrowheader" class="fakeheader">Tomorrow</h2></div><div style="display:table-row"></div><div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
+	parsedHTML('<div id="faketodaylecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:middle;"><h2 id="faketodayheader" class="fakeheader" style="margin-bottom:0em;">Today</h2></div><div id="faketomorrowlecture" style="padding:1%; padding-bottom:0px; width:48%; display:table-cell; position:relative; vertical-align:middle;"><h2 id="faketomorrowheader" class="fakeheader" style="margin-bottom:0em;">Tomorrow</h2></div><div style="display:table-row"></div><div id="fakelecturerow" style="display:table-row"></div>').appendTo('#fakelectureheader')
 }
 
 var pastDate = undefined
