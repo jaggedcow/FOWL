@@ -15,12 +15,10 @@ function loadPage(html) {
 	return $.load(html);
 }
 function initPage(html, cachedHTML) {
-	console.log("INIT", typeof cachedHTML)
 	var parsedHTML = loadPage(html);
 	
 	// removes normal OWL content
 	if (cachedHTML !== undefined) {	
-		console.log("WOW", typeof cachedHTML)
 		parsedHTML(mainId).html(cachedHTML);	
 	} else
 		parsedHTML(mainId).empty();	
