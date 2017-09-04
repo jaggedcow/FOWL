@@ -10,14 +10,24 @@ var config = require('./config.json')
 delete config.key	// so it's not kept in memory
 
 // must be called first, returns an opaque object that should be passed on all subsequent calls
-function initPage(html) {
-	var parsedHTML = $.load(html);
+
+function loadPage(html) {
+	return $.load(html);
+}
+function initPage(html, cachedHTML) {
+	console.log("INIT", typeof cachedHTML)
+	var parsedHTML = loadPage(html);
 	
 	// removes normal OWL content
-	parsedHTML(mainId).empty();
+	if (cachedHTML !== undefined) {	
+		console.log("WOW", typeof cachedHTML)
+		parsedHTML(mainId).html(cachedHTML);	
+	} else
+		parsedHTML(mainId).empty();	
 	parsedHTML('li.nav-menu').css('display','none')
 	parsedHTML('li.more-tab').css('display','none')	
 	parsedHTML('.nav-selected').css('display','default')
+	
 	
 	return parsedHTML;
 }
@@ -170,6 +180,10 @@ function addPCCIA(parsedHTML, content) {
 	} else 
 		output += '<span style="position:absolute; right:8px;">'+content.data.resources+'</span></div>'
 	parsedHTML(output).appendTo("#fakepccia")
+}
+
+function removeAllAssignments(parsedHTML) {
+	parsedHTML("#fakeassignments").html('<h2 class="fakeheader">Pending Assignments</h2>')
 }
 
 function addAssignment(parsedHTML, content) {
@@ -471,6 +485,7 @@ function addFooters(parsedHTML, maxPreviousDate) {
 }
 
 exports.addAssignment 			= addAssignment
+exports.removeAllAssignments	= removeAllAssignments
 exports.addButtons 				= addButtons
 exports.addClass 				= addClass
 exports.addFooters 				= addFooters
@@ -483,3 +498,5 @@ exports.addLecturePlaceholder 	= addLecturePlaceholder
 exports.addLoginForms			= addLoginForms
 exports.addPCCIA 				= addPCCIA
 exports.initPage 				= initPage
+exports.loadPage 				= loadPage
+exports.mainId	 				= mainId

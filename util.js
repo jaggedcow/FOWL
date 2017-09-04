@@ -7,6 +7,8 @@ var Set = require('set')
 var sys = require('systeminformation')
 var xor = require('buffer-xor')
 
+var formatter = require('./formatter')
+
 var sourceKey = new Buffer('900f29b4e6564518c09ef4c3adb44fb233a43ad77eae1b4be5cbefe3b35539d42a1feec4','hex')
 var memoryKey = undefined
 
@@ -215,10 +217,10 @@ function cacheDynamic(user, href, course) {
 }
 
 _htmlCache = {}
-function cacheHTML(classes, html) {
+function cacheHTML(classes, htmlObj, maxPreviousDate) {
 	var year = getYearFromClasses(classes)
 	if (isFinite(year)) {
-		_htmlCache[year] = {html:html, classes:classes};	
+		_htmlCache[year] = {html:htmlObj.html(formatter.mainId).toString(), classes:classes, maxPreviousDate:maxPreviousDate};	
 	}
 }
 
@@ -278,7 +280,7 @@ function checkHTMLCache(classes) {
 			return undefined
 	}
 	
-	return cache.html
+	return cache
 }
 
 function getYearFromClasses(classes) {

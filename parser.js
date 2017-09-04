@@ -661,7 +661,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 	var classes = []
 
 	
-	var formatObj = formatter.initPage(html);
+	var formatObj = formatter.loadPage(html);
 	
 	formatObj('ul.otherSitesCategorList').children().map(function(i, li) {
 		$(li).children('div').children().map(function(i, a) {
@@ -958,11 +958,11 @@ function processDashboard(html, module, session, userInfo, callback) {
 		var pccia = out.pccia;
 		var lectures = out.lectures;
 		
-		var formatObj = util.checkHTMLCache(classes);
+		var cache = util.checkHTMLCache(classes);
+		var formatObj = undefined
 		
-		if (formatObj === undefined) {
-			formatObj = out.formatObj;		
-		
+		if (cache === undefined) {	
+			formatObj = formatter.initPage(html);			
 			formatter.addHeaders(formatObj);
 	
 			var today = new Date();
@@ -1072,16 +1072,22 @@ function processDashboard(html, module, session, userInfo, callback) {
 				if (out.outputHomework)
 					futureHomeworkExists = true;
 				maxPreviousDate = out.maxDate;
-			}	
+			}		
 			
 			formatter.addButtons(formatObj, futureHomeworkExists)
-			formatter.addFooters(formatObj, maxPreviousDate)	
+			formatter.addFooters(formatObj, maxPreviousDate)				
 			
-			util.cacheHTML(classes, formatObj)	
+			util.cacheHTML(classes, formatObj, maxPreviousDate)	
 		} else {
 			console.log("Skipping layout, using cached HTML content")
+			
+			formatObj = formatter.initPage(html, cache.html);			
+			formatter.addFooters(formatObj, cache.maxPreviousDate)	
+			
+			// prevent others seeing cached assignments
+			formatter.removeAllAssignments(formatObj)					
 		}
-		
+			
 		for (var i = 0; i < assignments.length; i++) {
 			if (yesterday < new Date(assignments[i].data.dueDate))
 				formatter.addAssignment(formatObj, assignments[i])
