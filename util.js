@@ -122,7 +122,7 @@ function _cleanHTML(parsedHTML, temp, ignoredURLs) {
 	});	
 	
 	temp = replaceAll('http://owl.uwo.ca', 'https://owl.uwo.ca', temp);
-	temp = replaceAll('OWL', 'FOWL', temp);
+	temp = replaceAll('<title>OWL', '<title>FOWL', temp);
 	temp = replaceAll('Welcome to FOWL', 'Welcome to Fake OWL', temp);	
 	temp = replaceAll("window.location='https://owl.uwo.ca/portal'", "window.location='/portal'", temp);
 	temp = replaceAll('<a href="https://owl.uwo.ca/portal">','<a href="/portal">',temp)		// requires full tag to prevent removing other portal links
