@@ -966,17 +966,17 @@ function processDashboard(html, module, session, userInfo, callback) {
 		var cache = util.checkHTMLCache(classes);
 		var formatObj = undefined
 		
+		var today = new Date();
+		var tempDate = undefined;
+		today = util.addDays(today, -0.25);	// adjusts for time zones
+		var tomorrow = util.addDays(today, 1);
+		var twodays = util.addDays(today, 2);			
+		var yesterday = util.addDays(today, -1)	
+		var lastDate = undefined
+		
 		if (cache === undefined) {	
 			formatObj = formatter.initPage(html);			
 			formatter.addHeaders(formatObj);
-	
-			var today = new Date();
-			var tempDate = undefined;
-			today = util.addDays(today, -0.25);	// adjusts for time zones
-			var tomorrow = util.addDays(today, 1);
-			var twodays = util.addDays(today, 2);			
-			var yesterday = util.addDays(today, -1)	
-			var lastDate = undefined
 	
 			for (var i = 0; i < classes.length; i++) {
 				if (classes[i].displayUntil === undefined || yesterday < new Date(classes[i].displayUntil))
