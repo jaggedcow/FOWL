@@ -67,7 +67,7 @@ function addLecture(parsedHTML, content, date, compareToToday) {
 		if (pastDate === undefined)
 			pastDate = dateNum
 			
-		var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; width:100%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
+		var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; max-width:100%; min-width:40%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
 		var lectures = Object.keys(lectureData).sort()	// might actually result in lectures out of order...
 		for (var i = 0; i < lectures.length; i++) {
 			lectureContent = lectureData[lectures[i]]
