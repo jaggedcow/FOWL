@@ -184,6 +184,7 @@ function dropShadowForCourse(course) {
 }
 
 function logVisit(username, classes, json, cached) {
+	return;
 	if (username === undefined) {
 		// TODO: why is this happening?
 		return;
