@@ -67,11 +67,11 @@ function addLecture(parsedHTML, content, date, compareToToday) {
 		if (pastDate === undefined)
 			pastDate = dateNum
 			
-		var output = '<div class="day_'+pastDate+'" style="display:'+displayType+'; max-width:100%; min-width:40%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
+		var output = '<div class="day_'+pastDate+className+'" style="display:'+displayType+'; max-width:100%; min-width:40%; padding:1%; padding-right:4%; padding-top: 0px; padding-bottom: 1%;">'
 		var lectures = Object.keys(lectureData).sort()	// might actually result in lectures out of order...
 		for (var i = 0; i < lectures.length; i++) {
 			lectureContent = lectureData[lectures[i]]
-			output += '<div class="fakebox '+lectures[i]+className+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(lectureContent.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(lectureContent.course)+'; opacity: 1.0;"><p>'+lectureContent.data.html+'</p></div>'
+			output += '<div class="fakebox '+lectures[i]+'" style="margin-top:0px; padding: 2px 8px 8px 8px; '+util.dropShadowForCourse(lectureContent.course)+'margin-bottom: 8px; width:100%; background-color:'+util.colourForCourse(lectureContent.course)+'; opacity: 1.0;"><p>'+lectureContent.data.html+'</p></div>'
 		}
 		output += '<div style="height:100%"></div></div>'	// TODO: cache all lectures
 		
