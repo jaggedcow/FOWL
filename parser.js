@@ -503,6 +503,8 @@ var silentDates = new Set(_dates)
 function _processPageDates(obj, firstDate, lastDate, course) {	
 	if (obj.date === undefined)
 		return {data: obj, firstDate:firstDate, endDate:lastDate};
+	if (typeof obj.date !== 'string')
+		return {data: obj, firstDate:firstDate, endDate:lastDate};		
 	if (obj.date_processed)
 		return {data: obj, firstDate:firstDate, endDate:lastDate};	
 	var temp = []	// used to determine the first and last dates
