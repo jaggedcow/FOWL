@@ -107,6 +107,11 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 					// temp workaround for Professional Identity having only one page
 					if (course.indexOf('5250') !== -1 && pageType.match('Lecture')) {
 						homework = [href]
+					}	
+					
+					// temp workaround for Repro having only one page
+					if (course.indexOf('5205') !== -1 && pageType.match('Homework')) {
+						homework = [href]
 					}					
 					
 					if (homework.length === 0) {
