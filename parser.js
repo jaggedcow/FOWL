@@ -1050,7 +1050,9 @@ function processDashboard(html, module, session, userInfo, callback) {
 					}	
 										
 					if (!isEmptyDate) {					
-						formatter.addLecture(formatObj, content, dates[0], compareDate);
+						var monthDiff = dates[0].getMonth() - today.getMonth() + 12 * (dates[0].getYear() - today.getYear())
+						if (!isNaN(dates[0]) && dates[0] !== "Invalid Date" && monthDiff > -4)
+							formatter.addLecture(formatObj, content, dates[0], compareDate);
 					} else {
 						compareDate = util.compareDates(tempDate, today)			
 						formatter.addLecturePlaceholder(formatObj, tempDate, compareDate)						
