@@ -645,8 +645,9 @@ function _processPageDates(obj, firstDate, lastDate, course) {
 		}
 		
 		if (out.length === 0) {
-			if (!silentDates.contains(obj.textDate))
-				console.log("Could not process date:", obj.textDate)
+			if (!silentDates.contains(obj.textDate)) {
+				if (config.debug) console.log("Could not process date:", obj.textDate)
+			}
 			return {data: obj, firstDate:firstDate, endDate:lastDate};	
 		} else if (out.length === 1) {
 			obj.date = out[0]
@@ -697,7 +698,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 
 	// bypass usual stuff and just scrape the dynamic content
 	if (cachedLinks !== undefined) {
-		console.log("Skipping all pages, using dynamic cache")
+		if (config.debug) console.log("Skipping all pages, using dynamic cache")
 		var homework = cachedContent.data.homework
 		var pccia = cachedContent.data.pccia
 		var lectures = cachedContent.data.lectures	
@@ -808,7 +809,7 @@ function processJSON(html, module, session, userInfo, JSONoutput, prettyOutput, 
 		if (cachedContent === undefined || cachedContent.dynamicClasses.contains(sites[site].course))
 			_processPage(sites[site]['href'], module, sites[site]['course'], session, userInfo, cachedContent !== undefined, _callback)
 		else {
-			console.log('Skipping static cached page:', sites[site])
+			if (config.debug) console.log('Skipping static cached page:', sites[site])
 			_callback()
 		}
 	}, function(err, results) {
@@ -1093,7 +1094,7 @@ function processDashboard(html, module, session, userInfo, callback) {
 			
 			util.cacheHTML(classes, formatObj, maxPreviousDate)	
 		} else {
-			console.log("Skipping layout, using cached HTML content")
+			if (config.debug) console.log("Skipping layout, using cached HTML content")
 			
 			formatObj = formatter.initPage(html, cache.html);			
 			formatter.addFooters(formatObj, cache.maxPreviousDate)	
