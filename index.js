@@ -69,7 +69,9 @@ function processLogin(module, response, pathname, username, cookiejar) {
 					response.end();	
 					
 					delete userInfo[username].cookie	// logs out user
-					delete userInfo[username].session																
+					delete userInfo[username].session		
+					
+					callback(null)																		
 				});			
 			});	 
 			
@@ -201,7 +203,9 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 						response.end();	
 						
 						delete userInfo[username].cookie	// logs out user
-						delete userInfo[username].session						
+						delete userInfo[username].session	
+						
+						callback(null)									
 					});		
 				});	            
 	        });
@@ -216,12 +220,16 @@ function processRequest(req, module, response, pathname, username, cookiejar) {
 						response.end();	
 											
 						delete userInfo[username].cookie	// logs out user
-						delete userInfo[username].session					
+						delete userInfo[username].session	
+						
+						callback(null)								
 					});	
 				} else {
 					response.writeHead(200, {"Content-Type": "text/html"});  		
 					response.write(util.cleanHTML(html));		
 					response.end();	
+					
+					callback(null)				
 				}
 			});	    
 	    }
@@ -326,7 +334,7 @@ serverFunc = function(req, response) {
 				
 				async.retry(_attempts, function(callback) {						
 					request('http://owl.uwo.ca/portal', function(err, resp, html) {
-						if (err)
+						if (err || !resp)
 							return callback(err);
 						if (resp) {
 							cookieIn = resp.headers['set-cookie']		
@@ -341,6 +349,8 @@ serverFunc = function(req, response) {
 							response.writeHead(200, {"Content-Type": "text/html"}); 		
 							response.write(util.cleanHTML(html));		
 							response.end();	
+							
+							callback(null)				
 						}
 					});
 				},
