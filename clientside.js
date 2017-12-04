@@ -286,12 +286,15 @@ function addListeners() {
 			nextDateNum = getDateText(nextDate)
 		} while($('.day_'+nextDateNum).length === 0 && ndelta < _cutoff) 		
 
-		if (pdelta < _cutoff && ndelta < _cutoff) {			
+		if (pdelta < _cutoff && ndelta < _cutoff) {		
+			
+			console.log(prevDateNum, nextDateNum, getDateText(addDays(window.prevDate,1)))	
 			$('.day_'+prevDateNum).css('display','table-cell')
 			$('.placeholder_'+prevDateNum).css('display','table-cell')			
-			$('.day_'+nextDateNum).hide()
+			$('.day_'+nextDateNum).hide()		
 			// NB: messes up when going back across the summer
 			$('.placeholder_'+getDateText(addDays(window.prevDate,1))).hide()
+			$('.placeholder_'+getDateText(addDays(window.prevDate,2))).hide()			
 						
 						
 			window.nextDate = window.prevDate
