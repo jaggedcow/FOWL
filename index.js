@@ -23,6 +23,13 @@ var parser = require('./parser')
 // logged in user sessions
 var userInfo = {};
 
+
+process.on('uncaughtException', function (err) {
+  console.log("Uncaught Exception:", err);
+  process.exit(1);  // This is VITAL. Don't swallow the err and try to continue.
+});
+
+
 function processLogin(module, response, pathname, username, cookiejar) {	
 	if (config.debug) console.log("LOGIN", pathname)	
 	

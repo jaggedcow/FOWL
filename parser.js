@@ -216,7 +216,6 @@ function _processPageLectureSync(parsedHTML, course, href) {
 				});
 				
 				if (keep) {		
-					if (course.indexOf('5203') !== -1)			console.log("5")											
 					if (util.isArray(lastDate)) {
 						output.push({'type':'Lecture', 'data':{date:lastDate[0], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})
 						output.push({'type':'Lecture', 'data':{date:lastDate[1], html:$(col).html(), textDate:lastDateStr, date_processed:true}, 'course':course})

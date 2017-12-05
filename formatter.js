@@ -219,7 +219,7 @@ function addHomework(parsedHTML, content, maxPreviousDate) {
 		if (!isNaN(Date.parse(content.data.date)))
 			dateStr1 = '<span class="fakedate">'+df(content.data.date, 'mmm dd')+'</span>';
 		else {
-			console.log("INVALID DATE", content.data.date);
+			if (config.debug) console.log("INVALID DATE", content.data.date);
 			dateStr1 = "Invalid Date"
 			logErrors = true;
 		}
