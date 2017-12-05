@@ -1,8 +1,8 @@
 var _counter = 0;
 var _cutoff = 365	
+var count = 1;
 	
 $(document).ready(function() {
-	var count = 1;
 	window.prevDate = addDays(0)
 	window.nextDate = addDays(1)
 	
