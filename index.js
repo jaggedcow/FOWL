@@ -26,6 +26,7 @@ var userInfo = {};
 
 process.on('uncaughtException', function (err) {
   console.log("Uncaught Exception:", err);
+  console.log(err.stack || e)
   process.exit(1);  // This is VITAL. Don't swallow the err and try to continue.
 });
 
