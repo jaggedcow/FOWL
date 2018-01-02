@@ -11,11 +11,15 @@ var sys = require('systeminformation')
 var url = require("url")
 
 var _attempts = 5
+var _cookieLength = 7
 var config = require('./config.json')
 delete config.key	// so it's not kept in memory
 
 if (config.attempts > 0)
 	_attempts = config.attempts
+	
+if (config.cookieExpiry > 0)
+	_cookieLength = config.cookieExpiry	
 
 var util = require('./util')
 var parser = require('./parser')
@@ -65,10 +69,10 @@ function processLogin(module, response, pathname, username, cookiejar) {
 				if (err)
 					return callback(err)				       	
 				if (userInfo[username].saveInfo) {
-					cookiejar.set('user', post.eid, {expires:util.addDays(new Date(), 7)});
-					cookiejar.set('pw', util.encrypt(post.pw), {expires:util.addDays(new Date(), 7)});
-					cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), 7)});				
-					cookiejar.set('saveInfo', true, {expires:util.addDays(new Date(), 7)});								
+					cookiejar.set('user', post.eid, {expires:util.addDays(new Date(), _cookieLength)});
+					cookiejar.set('pw', util.encrypt(post.pw), {expires:util.addDays(new Date(), _cookieLength)});
+					cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), _cookieLength)});				
+					cookiejar.set('saveInfo', true, {expires:util.addDays(new Date(), _cookieLength)});								
 				} 
 						
 				parser.processDashboard(html, module, username, userInfo, function(res) {
@@ -125,10 +129,10 @@ function processJSON(module, response, query, username, cookiejar) {
 				if (err)
 					return callback(err)
 				if (userInfo[username].saveInfo) {
-					cookiejar.set('user', post.eid, {expires:util.addDays(new Date(), 7)});
-					cookiejar.set('pw', util.encrypt(post.pw), {expires:util.addDays(new Date(), 7)});
-					cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), 7)});
-					cookiejar.set('saveInfo', true, {expires:util.addDays(new Date(), 7)});															
+					cookiejar.set('user', post.eid, {expires:util.addDays(new Date(), _cookieLength)});
+					cookiejar.set('pw', util.encrypt(post.pw), {expires:util.addDays(new Date(), _cookieLength)});
+					cookiejar.set('key', util.getKey(), {expires:util.addDays(new Date(), _cookieLength)});
+					cookiejar.set('saveInfo', true, {expires:util.addDays(new Date(), _cookieLength)});															
 				} 
 				
 				parser.processJSON(html, request, username, userInfo, true, query.pretty, function(res) {
