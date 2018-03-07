@@ -89,7 +89,7 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 						var title = $(link).text()
 						
 						// added to remove multiple lecture links in Blood, valid pages have Week 1, etc										
-						if (!pageType.match('Lecture') || title.regexIndexOf('[0-9]') !== -1 || course.indexOf('5210') !== -1) {
+						if (!pageType.match('Lecture') || title.regexIndexOf('[0-9]') !== -1 || course.indexOf('5210') !== -1 || (title.indexOf('Week') !== -1 && course.indexOf('5208') !== -1)) {
 							homework.push(href);
 						}
 					});
