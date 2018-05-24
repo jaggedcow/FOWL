@@ -365,6 +365,8 @@ function replaceClasses(temp) {
 	temp = temp.replace(/MEDICINE 5210\w? \d{3} FW(\d){2}/g, 'Family Med');		
 	temp = temp.replace(/MEDICINE 5218\w? \d{3} FW(\d){2}/g, 'MSK + PCCIA');	
 	temp = temp.replace(/MEDICINE 5208\w? \d{3} FW(\d){2}/g, 'Emergency Care');	
+	temp = temp.replace(/MEDICINE 5206\w? \d{3} FW(\d){2}/g, 'Neuro + PCCIA');	
+	temp = temp.replace(/MEDICINE 5207\w? \d{3} FW(\d){2}/g, 'Psych + PCCIA');			
 	
 	return temp
 }

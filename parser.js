@@ -125,9 +125,9 @@ function _processPageInner(href, module, pageType, course, session, userInfo, ca
 										
 							var out = parsedHTML('table');
 							
-							if (out.length > 0)
+							if (out.length > 0) {							
 								_callback(err, _processPageTableSync(out, pageType, course))
-							else {
+							} else {
 								if (config.debug) console.log("NO HOMEWORK", course, href)								
 								_callback(err, undefined)
 							}
@@ -299,8 +299,8 @@ function _processPageLectureSync(parsedHTML, course, href) {
 function _processPageTableSync(input, type, course) {
 	var startRow = -1;
 	var week, topic, objectives, resources, date, module, lecturer		// keeps track of which columns are which data
-	
-	var parsedHTML = $.load(input.html());
+
+	var parsedHTML = $.load(input.html());	
 	var firstDate		// keeps track of when each block starts (to replace 'prior to Week N' dates)
 	var endDate			// keeps track of when each block ends (to replace 'prior to end of X' dates)
 	
@@ -311,7 +311,7 @@ function _processPageTableSync(input, type, course) {
 	var rowLength = -1
 	var setRowLength = false
 	
-	var output = parsedHTML('tr').map(function(i, row) {
+	var output = parsedHTML('tr', input).map(function(i, row) {			
 		var temp = {}
 		var skipRow = false;
 		var skipLastDate = false;		
@@ -376,7 +376,7 @@ function _processPageTableSync(input, type, course) {
 			
 			if (type.match('Assignments')) {					
 				temp[header] = title;			
-			} else if (type.match('PCCIA')) {
+			} else if (type.match('PCCIA')) {				
 				if (week === undefined || i === startRow) {
 					if (title.indexOf('Week') !== -1) {
 						week = j;
